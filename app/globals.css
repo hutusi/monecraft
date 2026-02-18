@@ -1,0 +1,127 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background: #87bfff;
+}
+
+.game-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 20%, #bfe4ff 0%, #7ab2f2 45%, #5084c8 100%);
+}
+
+.game-canvas-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: #0d1f2d;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  user-select: none;
+  pointer-events: none;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.help {
+  margin-top: 8px;
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.hotbar {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  flex-wrap: wrap;
+  max-width: min(94vw, 820px);
+}
+
+.hotbar-item {
+  border: 1px solid #00000033;
+  background: #f6f1df;
+  color: #1b1b1b;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hotbar-item.active {
+  background: #ffd36a;
+  border-color: #a37000;
+  font-weight: 700;
+}
+
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: "";
+  position: absolute;
+  background: #111;
+}
+
+.crosshair::before {
+  width: 2px;
+  height: 18px;
+  left: 8px;
+  top: 0;
+}
+
+.crosshair::after {
+  width: 18px;
+  height: 2px;
+  left: 0;
+  top: 8px;
+}
+
+.caps-indicator {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  border-radius: 8px;
+  border: 1px solid #00000035;
+  background: #efebe4;
+  color: #232323;
+  padding: 8px 12px;
+  font-size: 12px;
+  user-select: none;
+}
+
+.caps-indicator.on {
+  background: #b4fca2;
+  border-color: #1b6d15;
+  color: #0c3f09;
+}
