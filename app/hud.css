@@ -1,0 +1,78 @@
+.hud {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  color: #102131;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  user-select: none;
+  pointer-events: none;
+  max-width: min(94vw, 780px);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.help {
+  margin-top: 8px;
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.stats-line {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.save-controls {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.save-btn {
+  border: 1px solid #0000004a;
+  border-radius: 6px;
+  background: #f8f2e6;
+  color: #1d1d1d;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.save-msg {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.health-wrap {
+  margin-top: 10px;
+}
+
+.health-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.health-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  max-width: min(94vw, 640px);
+}
+
+.heart {
+  color: #934d4d;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.heart.filled {
+  color: #db1f1f;
+}

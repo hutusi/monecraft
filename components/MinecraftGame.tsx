@@ -3,261 +3,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { BlockId, collidesAt, hasSupportUnderPlayer, VoxelWorld, voxelRaycast } from "@/lib/world";
-
-const PLAYER_HEIGHT = 1.8;
-const PLAYER_HALF_WIDTH = 0.3;
-const EYE_HEIGHT = 1.62;
-const GRAVITY = 26;
-const JUMP_VELOCITY = 8.2;
-const WALK_SPEED = 4.8;
-const SPRINT_SPEED = 12.8;
-const CROUCH_SPEED = 2.1;
-const MAX_HEARTS = 50;
-const RENDER_RADIUS = 90;
-const RENDER_GRID = 20;
-
-const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
-  [BlockId.Grass]: 2,
-  [BlockId.Dirt]: 2,
-  [BlockId.Sand]: 2,
-  [BlockId.Leaves]: 2,
-  [BlockId.Wood]: 3,
-  [BlockId.Planks]: 3,
-  [BlockId.Stone]: 5,
-  [BlockId.Cobblestone]: 5,
-  [BlockId.Brick]: 5,
-  [BlockId.Glass]: 2,
-  [BlockId.SliverOre]: 7,
-  [BlockId.RubyOre]: 9
-};
-
-type InventorySlot = {
-  id: string;
-  label: string;
-  kind: "block" | "weapon" | "tool";
-  count: number;
-  blockId?: BlockId;
-  attack?: number;
-  minePower?: number;
-  mineTier?: number;
-};
-
-type Recipe = {
-  id: string;
-  label: string;
-  cost: Array<{ slotId: string; count: number }>;
-  result: { slotId: string; count: number };
-};
-
-type MobKind = "sheep" | "chicken" | "horse" | "zombie" | "skeleton" | "spider";
-
-type MobEntity = {
-  kind: MobKind;
-  hostile: boolean;
-  hp: number;
-  group: THREE.Group;
-  legs: THREE.Mesh[];
-  direction: THREE.Vector3;
-  turnTimer: number;
-  speed: number;
-  detectRange: number;
-  attackDamage: number;
-  attackCooldown: number;
-  attackTimer: number;
-  halfHeight: number;
-  bobSeed: number;
-};
-
-type MobModel = {
-  group: THREE.Group;
-  legs: THREE.Mesh[];
-  halfHeight: number;
-  materials: THREE.Material[];
-  geometries: THREE.BufferGeometry[];
-};
-
-const INITIAL_INVENTORY: InventorySlot[] = [
-  { id: "grass", label: "Grass", kind: "block", blockId: BlockId.Grass, count: 64 },
-  { id: "dirt", label: "Dirt", kind: "block", blockId: BlockId.Dirt, count: 64 },
-  { id: "stone", label: "Stone", kind: "block", blockId: BlockId.Stone, count: 64 },
-  { id: "wood", label: "Wood", kind: "block", blockId: BlockId.Wood, count: 64 },
-  { id: "planks", label: "Planks", kind: "block", blockId: BlockId.Planks, count: 20 },
-  { id: "cobble", label: "Cobble", kind: "block", blockId: BlockId.Cobblestone, count: 20 },
-  { id: "sand", label: "Sand", kind: "block", blockId: BlockId.Sand, count: 20 },
-  { id: "brick", label: "Brick", kind: "block", blockId: BlockId.Brick, count: 0 },
-  { id: "glass", label: "Glass", kind: "block", blockId: BlockId.Glass, count: 0 },
-  { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre, count: 0 },
-  { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre, count: 0 },
-  { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1, count: 1 },
-  { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2, count: 0 },
-  { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3, count: 0 },
-  { id: "knife", label: "Knife", kind: "weapon", attack: 9, count: 1 },
-  { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13, count: 0 },
-  { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18, count: 0 }
-];
-
-const BLOCK_TO_SLOT: Partial<Record<BlockId, string>> = {
-  [BlockId.Grass]: "grass",
-  [BlockId.Dirt]: "dirt",
-  [BlockId.Stone]: "stone",
-  [BlockId.Wood]: "wood",
-  [BlockId.Leaves]: "dirt",
-  [BlockId.Planks]: "planks",
-  [BlockId.Cobblestone]: "cobble",
-  [BlockId.Sand]: "sand",
-  [BlockId.Brick]: "brick",
-  [BlockId.Glass]: "glass",
-  [BlockId.SliverOre]: "sliver_ore",
-  [BlockId.RubyOre]: "ruby_ore"
-};
-
-const RECIPES: Recipe[] = [
-  { id: "planks", label: "2 Wood -> 4 Planks", cost: [{ slotId: "wood", count: 2 }], result: { slotId: "planks", count: 4 } },
-  { id: "glass", label: "4 Sand -> 2 Glass", cost: [{ slotId: "sand", count: 4 }], result: { slotId: "glass", count: 2 } },
-  {
-    id: "brick",
-    label: "2 Dirt + 2 Stone -> 2 Brick",
-    cost: [
-      { slotId: "dirt", count: 2 },
-      { slotId: "stone", count: 2 }
-    ],
-    result: { slotId: "brick", count: 2 }
-  },
-  {
-    id: "wood_pickaxe",
-    label: "2 Planks + 2 Wood -> Wood Pickaxe",
-    cost: [
-      { slotId: "planks", count: 2 },
-      { slotId: "wood", count: 2 }
-    ],
-    result: { slotId: "wood_pickaxe", count: 1 }
-  },
-  {
-    id: "stone_pickaxe",
-    label: "2 Cobble + 1 Wood -> Stone Pickaxe",
-    cost: [
-      { slotId: "cobble", count: 2 },
-      { slotId: "wood", count: 1 }
-    ],
-    result: { slotId: "stone_pickaxe", count: 1 }
-  },
-  {
-    id: "sliver_pickaxe",
-    label: "2 Sliver Ore + 1 Wood -> Sliver Pickaxe",
-    cost: [
-      { slotId: "sliver_ore", count: 2 },
-      { slotId: "wood", count: 1 }
-    ],
-    result: { slotId: "sliver_pickaxe", count: 1 }
-  },
-  {
-    id: "knife",
-    label: "1 Stone + 1 Wood -> Knife",
-    cost: [
-      { slotId: "stone", count: 1 },
-      { slotId: "wood", count: 1 }
-    ],
-    result: { slotId: "knife", count: 1 }
-  },
-  {
-    id: "wood_sword",
-    label: "2 Planks + 1 Wood -> Wood Sword",
-    cost: [
-      { slotId: "planks", count: 2 },
-      { slotId: "wood", count: 1 }
-    ],
-    result: { slotId: "wood_sword", count: 1 }
-  },
-  {
-    id: "stone_sword",
-    label: "2 Cobble + 1 Wood -> Stone Sword",
-    cost: [
-      { slotId: "cobble", count: 2 },
-      { slotId: "wood", count: 1 }
-    ],
-    result: { slotId: "stone_sword", count: 1 }
-  }
-];
-
-type SaveDataV1 = {
-  version: 1;
-  seed: number;
-  changes: Array<[number, number]>;
-  inventoryCounts: Record<string, number>;
-  selectedSlot: number;
-  player: { x: number; y: number; z: number };
-};
-
-const SAVE_KEY = "minecraft_save_v1";
-
-function createMobModel(
-  bodyColor: number,
-  headColor: number,
-  legColor: number,
-  eyeColor: number,
-  detailColor: number,
-  bodySize: [number, number, number],
-  headSize: [number, number, number]
-): MobModel {
-  const group = new THREE.Group();
-  const materials = [
-    new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.86, metalness: 0.02 }),
-    new THREE.MeshStandardMaterial({ color: headColor, roughness: 0.84, metalness: 0.02 }),
-    new THREE.MeshStandardMaterial({ color: legColor, roughness: 0.9, metalness: 0.02 }),
-    new THREE.MeshStandardMaterial({ color: eyeColor, roughness: 0.3, metalness: 0.05, emissive: new THREE.Color(eyeColor).multiplyScalar(0.15) }),
-    new THREE.MeshStandardMaterial({ color: detailColor, roughness: 0.82, metalness: 0.02 })
-  ];
-
-  const bodyGeo = new THREE.BoxGeometry(bodySize[0], bodySize[1], bodySize[2]);
-  const headGeo = new THREE.BoxGeometry(headSize[0], headSize[1], headSize[2]);
-  const legGeo = new THREE.BoxGeometry(Math.max(0.12, bodySize[0] * 0.2), Math.max(0.3, bodySize[1] * 0.56), Math.max(0.12, bodySize[2] * 0.2));
-  const eyeGeo = new THREE.BoxGeometry(Math.max(0.05, headSize[0] * 0.13), Math.max(0.05, headSize[1] * 0.13), Math.max(0.03, headSize[2] * 0.1));
-
-  const body = new THREE.Mesh(bodyGeo, materials[0]);
-  body.position.y = bodySize[1] * 0.5;
-
-  const head = new THREE.Mesh(headGeo, materials[1]);
-  head.position.set(0, bodySize[1] * 0.88, bodySize[2] * 0.45);
-
-  const eyeL = new THREE.Mesh(eyeGeo, materials[3]);
-  eyeL.position.set(-headSize[0] * 0.2, head.position.y + headSize[1] * 0.05, head.position.z + headSize[2] * 0.47);
-  const eyeR = new THREE.Mesh(eyeGeo, materials[3]);
-  eyeR.position.set(headSize[0] * 0.2, head.position.y + headSize[1] * 0.05, head.position.z + headSize[2] * 0.47);
-
-  const snoutGeo = new THREE.BoxGeometry(headSize[0] * 0.5, headSize[1] * 0.33, headSize[2] * 0.36);
-  const snout = new THREE.Mesh(snoutGeo, materials[4]);
-  snout.position.set(0, head.position.y - headSize[1] * 0.1, head.position.z + headSize[2] * 0.62);
-
-  const stripeGeo = new THREE.BoxGeometry(bodySize[0] * 0.72, bodySize[1] * 0.2, bodySize[2] * 0.24);
-  const stripe = new THREE.Mesh(stripeGeo, materials[4]);
-  stripe.position.set(0, body.position.y + bodySize[1] * 0.35, 0);
-
-  group.add(body, head, eyeL, eyeR, snout, stripe);
-
-  const legs: THREE.Mesh[] = [];
-  const legY = legGeo.parameters.height * 0.5;
-  const offsets = [
-    [-bodySize[0] * 0.28, legY, -bodySize[2] * 0.25],
-    [bodySize[0] * 0.28, legY, -bodySize[2] * 0.25],
-    [-bodySize[0] * 0.28, legY, bodySize[2] * 0.25],
-    [bodySize[0] * 0.28, legY, bodySize[2] * 0.25]
-  ];
-
-  for (const offset of offsets) {
-    const leg = new THREE.Mesh(legGeo, materials[2]);
-    leg.position.set(offset[0], offset[1], offset[2]);
-    legs.push(leg);
-    group.add(leg);
-  }
-
-  return {
-    group,
-    legs,
-    halfHeight: Math.max(bodySize[1], legGeo.parameters.height) * 0.5 + 0.2,
-    materials,
-    geometries: [bodyGeo, headGeo, legGeo, eyeGeo, snoutGeo, stripeGeo]
-  };
-}
+import Hud from "@/components/game/Hud";
+import Hotbar from "@/components/game/Hotbar";
+import InventoryPanel from "@/components/game/InventoryPanel";
+import RespawnOverlay from "@/components/game/RespawnOverlay";
+import { createMobForKind } from "@/lib/game/mobs";
+import { inventoryCountsMap, readSave, writeSave } from "@/lib/game/save";
+import {
+  BLOCK_TO_SLOT,
+  BREAK_HARDNESS,
+  CROUCH_SPEED,
+  EYE_HEIGHT,
+  GRAVITY,
+  INITIAL_INVENTORY,
+  JUMP_VELOCITY,
+  MAX_HEARTS,
+  PLAYER_HEIGHT,
+  PLAYER_HALF_WIDTH,
+  RECIPES,
+  RENDER_GRID,
+  RENDER_RADIUS,
+  SAVE_KEY,
+  SPRINT_SPEED,
+  WALK_SPEED
+} from "@/lib/game/config";
+import type { InventorySlot, MobEntity, MobKind, Recipe, SaveDataV1 } from "@/lib/game/types";
 
 export default function MinecraftGame() {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -337,16 +107,7 @@ export default function MinecraftGame() {
     const mount = mountRef.current;
     if (!mount) return;
 
-    let loadedSave: SaveDataV1 | null = null;
-    try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as SaveDataV1;
-        if (parsed?.version === 1 && Number.isFinite(parsed.seed) && Array.isArray(parsed.changes)) loadedSave = parsed;
-      }
-    } catch {
-      loadedSave = null;
-    }
+    const loadedSave: SaveDataV1 | null = readSave(SAVE_KEY);
 
     const worldSeed = loadedSave?.seed ?? Math.floor(Math.random() * 2147483647);
     const world = new VoxelWorld(undefined, undefined, undefined, worldSeed);
@@ -458,47 +219,8 @@ export default function MinecraftGame() {
 
     const spawnMob = (kind: MobKind, hostile: boolean, count: number, centerX: number, centerZ: number, radius: number) => {
       for (let i = 0; i < count; i += 1) {
-        let model: MobModel;
-        let speed = 1;
-        let hp = 10;
-        let detectRange = 0;
-        let attackDamage = 0;
-        let attackCooldown = 0;
-
-        if (kind === "sheep") {
-          model = createMobModel(0xf5f5f5, 0xd8d8d8, 0xb7b7b7, 0x111111, 0xcecece, [1.05, 0.75, 1.35], [0.58, 0.48, 0.5]);
-          speed = 0.9;
-          hp = 10;
-        } else if (kind === "chicken") {
-          model = createMobModel(0xffefba, 0xffe095, 0xe0b970, 0x111111, 0xd28730, [0.52, 0.44, 0.62], [0.3, 0.28, 0.28]);
-          speed = 1.2;
-          hp = 7;
-        } else if (kind === "horse") {
-          model = createMobModel(0x8a5d36, 0x74472a, 0x5d3a22, 0x101010, 0x3e2413, [1.45, 1.1, 2.2], [0.56, 0.6, 0.62]);
-          speed = 1.4;
-          hp = 14;
-        } else if (kind === "zombie") {
-          model = createMobModel(0x669e57, 0x4e7e45, 0x41663a, 0xff3333, 0x264a2f, [0.78, 1.1, 0.52], [0.52, 0.52, 0.52]);
-          speed = 1.05;
-          hp = 10;
-          detectRange = 11;
-          attackDamage = 1;
-          attackCooldown = 1.35;
-        } else if (kind === "skeleton") {
-          model = createMobModel(0xe4e4e2, 0xcfcfcb, 0xb4b4b1, 0xff3333, 0x8f8f8f, [0.75, 1.08, 0.48], [0.48, 0.48, 0.48]);
-          speed = 1.08;
-          hp = 9;
-          detectRange = 12;
-          attackDamage = 1;
-          attackCooldown = 1.4;
-        } else {
-          model = createMobModel(0x2e2e2e, 0x1f1f1f, 0x161616, 0xff3333, 0x4a0f0f, [1.15, 0.52, 1.15], [0.5, 0.42, 0.5]);
-          speed = 1.2;
-          hp = 8;
-          detectRange = 10;
-          attackDamage = 1;
-          attackCooldown = 1.1;
-        }
+        const spec = createMobForKind(kind);
+        const model = spec.model;
 
         const spawnPos = randomLandPointNear(centerX, centerZ, radius);
         model.group.position.set(spawnPos.x, spawnPos.y + model.halfHeight, spawnPos.z);
@@ -507,15 +229,15 @@ export default function MinecraftGame() {
         mobs.push({
           kind,
           hostile,
-          hp,
+          hp: spec.hp,
           group: model.group,
           legs: model.legs,
           direction: new THREE.Vector3(Math.random() - 0.5, 0, Math.random() - 0.5).normalize(),
           turnTimer: 1 + Math.random() * 3,
-          speed,
-          detectRange,
-          attackDamage,
-          attackCooldown,
+          speed: spec.speed,
+          detectRange: spec.detectRange,
+          attackDamage: spec.attackDamage,
+          attackCooldown: spec.attackCooldown,
           attackTimer: Math.random(),
           halfHeight: model.halfHeight,
           bobSeed: Math.random() * 10
@@ -598,8 +320,6 @@ export default function MinecraftGame() {
 
     const persistSave = () => {
       try {
-        const inventoryCounts: Record<string, number> = {};
-        for (const slot of inventoryRef.current) inventoryCounts[slot.id] = slot.count;
         const changes: Array<[number, number]> = [];
         for (const [idx, block] of changedBlocks.entries()) changes.push([idx, block]);
 
@@ -607,7 +327,7 @@ export default function MinecraftGame() {
           version: 1,
           seed: world.seed,
           changes,
-          inventoryCounts,
+          inventoryCounts: inventoryCountsMap(inventoryRef.current),
           selectedSlot: selectedSlotRef.current,
           player: {
             x: player.position.x,
@@ -616,7 +336,7 @@ export default function MinecraftGame() {
           }
         };
 
-        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        writeSave(SAVE_KEY, saveData);
         setSaveMessage("Saved");
         setTimeout(() => setSaveMessage(""), 1200);
       } catch {
@@ -627,8 +347,7 @@ export default function MinecraftGame() {
 
     const loadFromSave = () => {
       try {
-        const raw = localStorage.getItem(SAVE_KEY);
-        if (!raw) {
+        if (!readSave(SAVE_KEY)) {
           setSaveMessage("No save found");
           setTimeout(() => setSaveMessage(""), 1400);
           return;
@@ -1142,91 +861,31 @@ export default function MinecraftGame() {
   return (
     <div className="game-root">
       <div ref={mountRef} className="game-canvas-wrap" />
-
-      <div className="hud">
-        <div className="title">Minecraft-ish</div>
-        <div className="help">
-          <span>{locked ? "Mouse: Look" : "Click to lock mouse"}</span>
-          <span>Move: W/S forward-back, A/D strafe</span>
-          <span>Sprint: W + CapsLock | Crouch: Shift</span>
-          <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
-          <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
-          <span>Inventory/Crafting: I | Hotbar: 1..12</span>
-        </div>
-        <div className="stats-line">Passive Mobs: {passiveCount} | Hostile Mobs: {hostileCount}</div>
-        <div className="stats-line">Daylight: {daylightPercent}%</div>
-        <div className="stats-line">Selected: {selectedSlotData?.label ?? "None"}</div>
-        <div className="save-controls">
-          <button className="save-btn" onClick={() => saveNowRef.current?.()}>
-            Save World
-          </button>
-          <button className="save-btn" onClick={() => loadNowRef.current?.()}>
-            Load Save
-          </button>
-          {saveMessage ? <span className="save-msg">{saveMessage}</span> : null}
-        </div>
-
-        <div className="health-wrap">
-          <div className="health-label">Health: {hearts} / {MAX_HEARTS} hearts</div>
-          <div className="health-bar">
-            {heartDisplay.map((filled, idx) => (
-              <span key={idx} className={filled ? "heart filled" : "heart"}>
-                ♥
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="hotbar-bottom">
-        {inventory.map((slot, idx) => (
-          <button
-            key={slot.id}
-            className={idx === selectedSlot ? "hotbar-slot active" : "hotbar-slot"}
-            onClick={() => setSelectedSlot(idx)}
-          >
-            <span className="slot-index">{idx + 1}</span>
-            <span className="slot-label">{slot.label}</span>
-            <span className="slot-count">{slot.count}</span>
-          </button>
-        ))}
-      </div>
-
+      <Hud
+        locked={locked}
+        passiveCount={passiveCount}
+        hostileCount={hostileCount}
+        daylightPercent={daylightPercent}
+        selectedSlotData={selectedSlotData}
+        hearts={hearts}
+        maxHearts={MAX_HEARTS}
+        heartDisplay={heartDisplay}
+        saveMessage={saveMessage}
+        onSave={() => saveNowRef.current?.()}
+        onLoad={() => loadNowRef.current?.()}
+      />
+      <Hotbar inventory={inventory} selectedSlot={selectedSlot} onSelectSlot={setSelectedSlot} />
       {inventoryOpen ? (
-        <div className="inventory-panel">
-          <div className="inventory-title">Inventory & Crafting</div>
-          <div className="inventory-grid">
-            {inventory.map((slot, idx) => (
-              <button
-                key={`inv-${slot.id}`}
-                className={idx === selectedSlot ? "inventory-slot active" : "inventory-slot"}
-                onClick={() => setSelectedSlot(idx)}
-              >
-                <span>{slot.label}</span>
-                <span>x{slot.count}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="crafting-title">Recipes</div>
-          <div className="crafting-list">
-            {RECIPES.map((recipe) => (
-              <button key={recipe.id} className="craft-btn" onClick={() => craft(recipe)} disabled={!canCraft(recipe)}>
-                {recipe.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <InventoryPanel
+          inventory={inventory}
+          selectedSlot={selectedSlot}
+          recipes={RECIPES}
+          canCraft={canCraft}
+          onSelectSlot={setSelectedSlot}
+          onCraft={craft}
+        />
       ) : null}
-
-      {respawnSeconds > 0 ? (
-        <div className="respawn-overlay">
-          <div className="respawn-card">
-            <div className="respawn-title">You Died</div>
-            <div className="respawn-sub">Respawning in {respawnSeconds}...</div>
-          </div>
-        </div>
-      ) : null}
+      <RespawnOverlay seconds={respawnSeconds} />
 
       <div className="crosshair" />
       <div className={capsActive ? "caps-indicator on" : "caps-indicator"}>CapsLock {capsActive ? "ON (Sprint Enabled)" : "OFF"}</div>

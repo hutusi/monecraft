@@ -1,4 +1,6 @@
-import "./globals.css";
+import "./base.css";
+import "./hud.css";
+import "./ui.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
