@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { hasSupportUnderPlayer, VoxelWorld } from "@/lib/world";
+import { collidesAt, hasSupportUnderPlayer, VoxelWorld } from "@/lib/world";
 
 type PlayerState = {
   position: THREE.Vector3;
@@ -14,8 +14,8 @@ type MoveTickArgs = {
   keys: Set<string>;
   capsActive: boolean;
   player: PlayerState;
-  stepAxis: (axis: "x" | "y" | "z", amount: number) => void;
   applyDamage: (amount: number) => void;
+  playerHeight: number;
   playerHalfWidth: number;
   walkSpeed: number;
   sprintSpeed: number;
@@ -34,8 +34,8 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
     keys,
     capsActive,
     player,
-    stepAxis,
     applyDamage,
+    playerHeight,
     playerHalfWidth,
     walkSpeed,
     sprintSpeed,
@@ -45,6 +45,22 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
     worldBorderPadding
   } = args;
   let { voidTimer } = args;
+
+  const stepAxis = (axis: "x" | "y" | "z", amount: number) => {
+    const stepSize = 0.05 * Math.sign(amount);
+    let remaining = amount;
+    while (Math.abs(remaining) > 1e-6) {
+      const step = Math.abs(remaining) > Math.abs(stepSize) ? stepSize : remaining;
+      player.position[axis] += step;
+      if (collidesAt(world, player.position, playerHalfWidth, playerHeight)) {
+        player.position[axis] -= step;
+        if (axis === "y" && step < 0) player.onGround = true;
+        if (axis === "y") player.velocity.y = 0;
+        break;
+      }
+      remaining -= step;
+    }
+  };
 
   const forwardInput = (keys.has("KeyW") ? 1 : 0) - (keys.has("KeyS") ? 1 : 0);
   const strafeInput = (keys.has("KeyD") ? 1 : 0) - (keys.has("KeyA") ? 1 : 0);

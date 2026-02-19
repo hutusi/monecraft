@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { BlockId, collidesAt, VoxelWorld } from "@/lib/world";
+import { BlockId, VoxelWorld } from "@/lib/world";
 import { readSave } from "@/lib/game/save";
 import { tickDayNight } from "@/lib/game/runtime/dayNight";
 import { bindGameInput } from "@/lib/game/runtime/input";
 import { spawnMobGroup, tickMobs } from "@/lib/game/runtime/mobs";
 import { doPlace, processMining, tryAttackMob, weaponDamage } from "@/lib/game/runtime/miningCombat";
 import { createPersistenceHandlers } from "@/lib/game/runtime/persistence";
+import { createApplyDamage, tickDeathAndRespawn } from "@/lib/game/runtime/playerLife";
 import { tickPlayerMovement } from "@/lib/game/runtime/playerMotion";
 import { createSurfaceYAt, randomLandPointNear as pickRandomLandPointNear } from "@/lib/game/runtime/spawn";
 import {
@@ -227,22 +228,18 @@ export function useMinecraftGame() {
 
     updateCamera();
 
-    const applyDamage = (amount: number) => {
-      if (isDeadRef.current) return;
-      const v = Math.max(0, Math.floor(amount));
-      if (v <= 0) return;
-      const next = Math.max(0, heartsRef.current - v);
-      heartsRef.current = next;
-      setHearts(next);
-      if (next <= 0) {
-        isDeadRef.current = true;
-        respawnTimerRef.current = 3;
-        respawnShownRef.current = 3;
-        setRespawnSeconds(3);
-        controls.keys.clear();
+    const applyDamage = createApplyDamage({
+      heartsRef,
+      isDeadRef,
+      respawnTimerRef,
+      respawnShownRef,
+      setHearts,
+      setRespawnSeconds,
+      clearControls: () => controls.keys.clear(),
+      exitPointerLock: () => {
         if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
       }
-    };
+    });
 
     let currentRegionX = Number.NaN;
     let currentRegionZ = Number.NaN;
@@ -278,22 +275,6 @@ export function useMinecraftGame() {
     const autoSaveId = window.setInterval(persistSave, 15000);
     const onBeforeUnload = () => persistSave();
     window.addEventListener("beforeunload", onBeforeUnload);
-
-    const stepAxis = (axis: "x" | "y" | "z", amount: number) => {
-      const stepSize = 0.05 * Math.sign(amount);
-      let remaining = amount;
-      while (Math.abs(remaining) > 1e-6) {
-        const step = Math.abs(remaining) > Math.abs(stepSize) ? stepSize : remaining;
-        player.position[axis] += step;
-        if (collidesAt(world, player.position, PLAYER_HALF_WIDTH, PLAYER_HEIGHT)) {
-          player.position[axis] -= step;
-          if (axis === "y" && step < 0) player.onGround = true;
-          if (axis === "y") player.velocity.y = 0;
-          break;
-        }
-        remaining -= step;
-      }
-    };
 
     const setBlockTracked = (x: number, y: number, z: number, nextBlock: BlockId) => {
       if (!world.inBounds(x, y, z)) return;
@@ -395,28 +376,27 @@ export function useMinecraftGame() {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
-      if (isDeadRef.current) {
-        respawnTimerRef.current -= dt;
-        const left = Math.max(0, Math.ceil(respawnTimerRef.current));
-        if (left !== respawnShownRef.current) {
-          respawnShownRef.current = left;
-          setRespawnSeconds(left);
-        }
-        if (respawnTimerRef.current <= 0) {
-          heartsRef.current = MAX_HEARTS;
-          setHearts(MAX_HEARTS);
-          isDeadRef.current = false;
-          respawnShownRef.current = 0;
-          setRespawnSeconds(0);
-          respawn();
-        } else {
-          tickMobsRuntime(dt, now);
-          rebuildWorldMesh(false);
-          updateCamera();
-          renderer.render(scene, camera);
-          animationFrame = requestAnimationFrame(clock);
-          return;
-        }
+      if (
+        tickDeathAndRespawn({
+          dt,
+          maxHearts: MAX_HEARTS,
+          heartsRef,
+          isDeadRef,
+          respawnTimerRef,
+          respawnShownRef,
+          setHearts,
+          setRespawnSeconds,
+          onRespawn: respawn,
+          onDeadFrame: () => {
+            tickMobsRuntime(dt, now);
+            rebuildWorldMesh(false);
+            updateCamera();
+            renderer.render(scene, camera);
+          }
+        }).skipFrame
+      ) {
+        animationFrame = requestAnimationFrame(clock);
+        return;
       }
 
       ({ voidTimer } = tickPlayerMovement({
@@ -426,8 +406,8 @@ export function useMinecraftGame() {
         keys: controls.keys,
         capsActive: capsActiveRef.current,
         player,
-        stepAxis,
         applyDamage,
+        playerHeight: PLAYER_HEIGHT,
         playerHalfWidth: PLAYER_HALF_WIDTH,
         walkSpeed: WALK_SPEED,
         sprintSpeed: SPRINT_SPEED,
