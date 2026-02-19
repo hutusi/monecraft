@@ -16,7 +16,9 @@ export const enum BlockId {
   Cobblestone = 8,
   Sand = 9,
   Brick = 10,
-  Glass = 11
+  Glass = 11,
+  SliverOre = 12,
+  RubyOre = 13
 }
 
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
@@ -30,7 +32,9 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Cobblestone]: [0.42, 0.43, 0.45],
   [BlockId.Sand]: [0.86, 0.8, 0.5],
   [BlockId.Brick]: [0.68, 0.28, 0.2],
-  [BlockId.Glass]: [0.73, 0.9, 0.95]
+  [BlockId.Glass]: [0.73, 0.9, 0.95],
+  [BlockId.SliverOre]: [0.56, 0.58, 0.61],
+  [BlockId.RubyOre]: [0.56, 0.58, 0.61]
 };
 
 const FACE_DEFS: {
@@ -54,12 +58,14 @@ export class VoxelWorld {
   readonly sizeX: number;
   readonly sizeY: number;
   readonly sizeZ: number;
+  readonly seed: number;
   readonly blocks: Uint8Array;
 
-  constructor(sizeX = WORLD_SIZE_X, sizeY = WORLD_SIZE_Y, sizeZ = WORLD_SIZE_Z) {
+  constructor(sizeX = WORLD_SIZE_X, sizeY = WORLD_SIZE_Y, sizeZ = WORLD_SIZE_Z, seed = 1337) {
     this.sizeX = sizeX;
     this.sizeY = sizeY;
     this.sizeZ = sizeZ;
+    this.seed = seed;
     this.blocks = new Uint8Array(sizeX * sizeY * sizeZ);
   }
 
@@ -136,6 +142,17 @@ export class VoxelWorld {
   }
 
   generate(): void {
+    const seededHash = (x: number, z: number): number => hash2D(x + this.seed * 0.013, z - this.seed * 0.017);
+    const rand = (() => {
+      let t = (this.seed >>> 0) + 0x6d2b79f5;
+      return () => {
+        t += 0x6d2b79f5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+    })();
+
     const maxX = this.sizeX - 1;
     const maxZ = this.sizeZ - 1;
 
@@ -147,15 +164,15 @@ export class VoxelWorld {
       for (let z = 0; z < this.sizeZ; z += 1) {
         // Flatter terrain profile.
         const nA = Math.sin(x * 0.025) * 0.9 + Math.cos(z * 0.027) * 0.85;
-        const nB = (hash2D(x, z) - 0.5) * 1.6;
+        const nB = (seededHash(x, z) - 0.5) * 1.6;
         const height = Math.max(5, Math.min(this.sizeY - 6, Math.floor(9 + nA + nB)));
 
-        const sandy = hash2D(x * 0.12, z * 0.12) > 0.84;
+        const sandy = seededHash(x * 0.12, z * 0.12) > 0.84;
 
         for (let y = 1; y <= height; y += 1) {
           if (y === height) this.set(x, y, z, sandy ? BlockId.Sand : BlockId.Grass);
           else if (y > height - 3) this.set(x, y, z, BlockId.Dirt);
-          else if (y > height - 6 && hash2D(x * 0.33 + y, z * 0.29) > 0.9) this.set(x, y, z, BlockId.Cobblestone);
+          else if (y > height - 6 && seededHash(x * 0.33 + y, z * 0.29) > 0.9) this.set(x, y, z, BlockId.Cobblestone);
           else this.set(x, y, z, BlockId.Stone);
         }
       }
@@ -173,14 +190,100 @@ export class VoxelWorld {
       }
     }
 
+    const carveSphere = (cx: number, cy: number, cz: number, radius: number) => {
+      const r2 = radius * radius;
+      const minX = Math.max(1, Math.floor(cx - radius));
+      const maxXc = Math.min(this.sizeX - 2, Math.ceil(cx + radius));
+      const minY = Math.max(1, Math.floor(cy - radius));
+      const maxYc = Math.min(this.sizeY - 2, Math.ceil(cy + radius));
+      const minZ = Math.max(1, Math.floor(cz - radius));
+      const maxZc = Math.min(this.sizeZ - 2, Math.ceil(cz + radius));
+      for (let y = minY; y <= maxYc; y += 1) {
+        for (let z = minZ; z <= maxZc; z += 1) {
+          for (let x = minX; x <= maxXc; x += 1) {
+            const dx = x - cx;
+            const dy = y - cy;
+            const dz = z - cz;
+            if (dx * dx + dy * dy + dz * dz > r2) continue;
+            const block = this.get(x, y, z);
+            if (block !== BlockId.Bedrock) this.set(x, y, z, BlockId.Air);
+          }
+        }
+      }
+    };
+
+    // Cave tunnels.
+    const caveCount = 280;
+    for (let i = 0; i < caveCount; i += 1) {
+      let x = 12 + rand() * (this.sizeX - 24);
+      let y = 3 + rand() * (this.sizeY - 9);
+      let z = 12 + rand() * (this.sizeZ - 24);
+      let yaw = rand() * Math.PI * 2;
+      let pitch = (rand() - 0.5) * 0.26;
+      const length = 55 + Math.floor(rand() * 55);
+      for (let step = 0; step < length; step += 1) {
+        const r = 1.3 + rand() * 1.3;
+        carveSphere(x, y, z, r);
+        yaw += (rand() - 0.5) * 0.28;
+        pitch = Math.max(-0.55, Math.min(0.55, pitch + (rand() - 0.5) * 0.16));
+        x += Math.cos(yaw);
+        z += Math.sin(yaw);
+        y += Math.sin(pitch) * 0.8;
+        if (x < 8 || x > this.sizeX - 8 || z < 8 || z > this.sizeZ - 8 || y < 2 || y > this.sizeY - 4) break;
+      }
+    }
+
+    const hasNearbyAir = (x: number, y: number, z: number): boolean => {
+      return (
+        this.get(x + 1, y, z) === BlockId.Air ||
+        this.get(x - 1, y, z) === BlockId.Air ||
+        this.get(x, y + 1, z) === BlockId.Air ||
+        this.get(x, y - 1, z) === BlockId.Air ||
+        this.get(x, y, z + 1) === BlockId.Air ||
+        this.get(x, y, z - 1) === BlockId.Air
+      );
+    };
+
+    const placeOreVein = (x: number, y: number, z: number, ore: BlockId, minSize: number, maxSize: number) => {
+      const size = minSize + Math.floor(rand() * Math.max(1, maxSize - minSize + 1));
+      for (let i = 0; i < size; i += 1) {
+        const vx = x + Math.floor((rand() - 0.5) * 4);
+        const vy = y + Math.floor((rand() - 0.5) * 3);
+        const vz = z + Math.floor((rand() - 0.5) * 4);
+        if (!this.inBounds(vx, vy, vz) || vy <= 1) continue;
+        const b = this.get(vx, vy, vz);
+        if (b === BlockId.Stone || b === BlockId.Cobblestone) this.set(vx, vy, vz, ore);
+      }
+    };
+
+    // Sliver ore in caves (mid depth).
+    for (let i = 0; i < 140000; i += 1) {
+      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+      const y = 3 + Math.floor(rand() * Math.max(4, this.sizeY - 10));
+      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+      const block = this.get(x, y, z);
+      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+      placeOreVein(x, y, z, BlockId.SliverOre, 2, 8);
+    }
+
+    // Ruby ore deeper and rarer.
+    for (let i = 0; i < 52000; i += 1) {
+      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 16));
+      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+      const block = this.get(x, y, z);
+      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+      placeOreVein(x, y, z, BlockId.RubyOre, 2, 8);
+    }
+
     const treeCount = 3800;
     for (let i = 0; i < treeCount; i += 1) {
-      const x = 4 + Math.floor(Math.random() * (this.sizeX - 8));
-      const z = 4 + Math.floor(Math.random() * (this.sizeZ - 8));
+      const x = 4 + Math.floor(rand() * (this.sizeX - 8));
+      const z = 4 + Math.floor(rand() * (this.sizeZ - 8));
       const topY = this.highestSolidY(x, z);
       if (this.get(x, topY, z) !== BlockId.Grass) continue;
 
-      const trunkHeight = 3 + Math.floor(Math.random() * 3);
+      const trunkHeight = 3 + Math.floor(rand() * 3);
       for (let y = 1; y <= trunkHeight; y += 1) this.set(x, topY + y, z, BlockId.Wood);
 
       const leafStart = topY + trunkHeight - 1;
@@ -196,8 +299,8 @@ export class VoxelWorld {
     }
 
     for (let i = 0; i < 240; i += 1) {
-      const cx = 12 + Math.floor(Math.random() * (this.sizeX - 24));
-      const cz = 12 + Math.floor(Math.random() * (this.sizeZ - 24));
+      const cx = 12 + Math.floor(rand() * (this.sizeX - 24));
+      const cz = 12 + Math.floor(rand() * (this.sizeZ - 24));
       this.placeHouse(cx, cz);
     }
   }
@@ -220,18 +323,122 @@ export class VoxelWorld {
       colors.push(color[0], color[1], color[2]);
     };
 
+    const texJitter = (x: number, y: number, z: number): number => {
+      const n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+      return (n - Math.floor(n)) * 0.22 - 0.11;
+    };
+
+    const layeredNoise = (x: number, y: number, z: number): number => {
+      const a = Math.sin(x * 0.27 + z * 0.19 + y * 0.11);
+      const b = Math.cos(x * 0.51 - z * 0.43 + y * 0.09);
+      const c = Math.sin(x * 1.31 + y * 0.71 + z * 1.09) * 0.33;
+      return (a * 0.44 + b * 0.36 + c) * 0.5;
+    };
+
+    const materialTint = (block: number, x: number, y: number, z: number, ny: number): [number, number, number] => {
+      const n = layeredNoise(x, y, z);
+      const jitter = texJitter(x, y, z);
+      const shade = ny > 0 ? 1.07 : ny < 0 ? 0.78 : 0.9;
+      const c = BLOCK_COLORS[block] ?? [1, 0, 1];
+
+      if (block === BlockId.Grass) {
+        const topBoost = ny > 0 ? 0.16 : 0;
+        return [
+          Math.min(1, Math.max(0, (c[0] + n * 0.06 + topBoost * 0.3) * (shade + jitter * 0.5))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.1 + topBoost) * (shade + 0.02))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.05) * (shade + jitter * 0.45)))
+        ];
+      }
+
+      if (block === BlockId.Dirt || block === BlockId.Sand) {
+        const band = Math.sin((y + x * 0.06 + z * 0.06) * 1.1) * 0.04;
+        return [
+          Math.min(1, Math.max(0, (c[0] + n * 0.05 + band) * (shade + jitter * 0.35))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + band * 0.5) * (shade + jitter * 0.25))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.03) * (shade + jitter * 0.2)))
+        ];
+      }
+
+      if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Bedrock) {
+        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03;
+        return [
+          Math.min(1, Math.max(0, (c[0] + n * 0.045 + speckle) * (shade + jitter * 0.22))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.05 + speckle) * (shade + jitter * 0.24))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.045 + speckle) * (shade + jitter * 0.22)))
+        ];
+      }
+
+      if (block === BlockId.Wood || block === BlockId.Planks) {
+        const grain = Math.sin((x + z) * 0.35 + y * 1.7) * 0.08;
+        return [
+          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04) * (shade + jitter * 0.2))),
+          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02) * (shade + jitter * 0.15)))
+        ];
+      }
+
+      if (block === BlockId.Leaves) {
+        return [
+          Math.min(1, Math.max(0, (c[0] + n * 0.07) * (shade + jitter * 0.3))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.12) * (shade + 0.03))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.06) * (shade + jitter * 0.2)))
+        ];
+      }
+
+      if (block === BlockId.SliverOre || block === BlockId.RubyOre) {
+        const sparkle = Math.sin(x * 5.1 + y * 4.7 + z * 5.9) * 0.08;
+        const oreTint =
+          block === BlockId.SliverOre
+            ? [0.23, 0.26, 0.3] // white/silver mineral flecks
+            : [0.28, -0.2, -0.2]; // red mineral flecks
+        return [
+          Math.min(1, Math.max(0, (c[0] + n * 0.04 + sparkle + oreTint[0]) * (shade + jitter * 0.16))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + sparkle * 0.65 + oreTint[1]) * (shade + jitter * 0.16))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.04 + sparkle * 0.8 + oreTint[2]) * (shade + jitter * 0.16)))
+        ];
+      }
+
+      return [
+        Math.min(1, Math.max(0, (c[0] + n * 0.03) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[1] + n * 0.03) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[2] + n * 0.03) * (shade + jitter * 0.2)))
+      ];
+    };
+
+    const faceOcclusion = (x: number, y: number, z: number, nx: number, ny: number, nz: number): number => {
+      const ax = nz;
+      const ay = 0;
+      const az = -nx;
+      const bx = 0;
+      const by = 1;
+      const bz = 0;
+
+      const sx = x + nx;
+      const sy = y + ny;
+      const sz = z + nz;
+
+      let occ = 0;
+      if (this.isSolid(sx + ax, sy + ay, sz + az)) occ += 1;
+      if (this.isSolid(sx - ax, sy - ay, sz - az)) occ += 1;
+      if (this.isSolid(sx + bx, sy + by, sz + bz)) occ += 1;
+      if (this.isSolid(sx - bx, sy - by, sz - bz)) occ += 1;
+      return Math.max(0.66, 1 - occ * 0.07);
+    };
+
     for (let y = clampedMinY; y <= clampedMaxY; y += 1) {
       for (let z = clampedMinZ; z <= clampedMaxZ; z += 1) {
         for (let x = clampedMinX; x <= clampedMaxX; x += 1) {
           const block = this.get(x, y, z);
           if (block === BlockId.Air) continue;
-          const color = BLOCK_COLORS[block] ?? [1, 0, 1];
-
           for (const face of FACE_DEFS) {
             const nx = face.dir[0];
             const ny = face.dir[1];
             const nz = face.dir[2];
             if (this.isSolid(x + nx, y + ny, z + nz)) continue;
+
+            const base = materialTint(block, x + nx * 0.5, y + ny * 0.5, z + nz * 0.5, ny);
+            const ao = faceOcclusion(x, y, z, nx, ny, nz);
+            const color: [number, number, number] = [base[0] * ao, base[1] * ao, base[2] * ao];
 
             const a = face.corners[0];
             const b = face.corners[1];

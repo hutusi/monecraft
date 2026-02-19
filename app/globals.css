@@ -58,6 +58,29 @@ body {
   font-weight: 700;
 }
 
+.save-controls {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.save-btn {
+  border: 1px solid #0000004a;
+  border-radius: 6px;
+  background: #f8f2e6;
+  color: #1d1d1d;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.save-msg {
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .health-wrap {
   margin-top: 10px;
 }
@@ -256,6 +279,37 @@ body {
 .craft-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.respawn-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 4, 4, 0.55);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.respawn-card {
+  border: 1px solid #ffffff3b;
+  border-radius: 12px;
+  background: rgba(20, 20, 20, 0.85);
+  color: #fff;
+  padding: 18px 24px;
+  text-align: center;
+  min-width: 220px;
+}
+
+.respawn-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.respawn-sub {
+  margin-top: 6px;
+  font-size: 14px;
 }
 
 @media (max-width: 720px) {

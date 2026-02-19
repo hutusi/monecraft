@@ -26,16 +26,20 @@ const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
   [BlockId.Stone]: 5,
   [BlockId.Cobblestone]: 5,
   [BlockId.Brick]: 5,
-  [BlockId.Glass]: 2
+  [BlockId.Glass]: 2,
+  [BlockId.SliverOre]: 7,
+  [BlockId.RubyOre]: 9
 };
 
 type InventorySlot = {
   id: string;
   label: string;
-  kind: "block" | "weapon";
+  kind: "block" | "weapon" | "tool";
   count: number;
   blockId?: BlockId;
   attack?: number;
+  minePower?: number;
+  mineTier?: number;
 };
 
 type Recipe = {
@@ -82,6 +86,11 @@ const INITIAL_INVENTORY: InventorySlot[] = [
   { id: "sand", label: "Sand", kind: "block", blockId: BlockId.Sand, count: 20 },
   { id: "brick", label: "Brick", kind: "block", blockId: BlockId.Brick, count: 0 },
   { id: "glass", label: "Glass", kind: "block", blockId: BlockId.Glass, count: 0 },
+  { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre, count: 0 },
+  { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre, count: 0 },
+  { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1, count: 1 },
+  { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2, count: 0 },
+  { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3, count: 0 },
   { id: "knife", label: "Knife", kind: "weapon", attack: 9, count: 1 },
   { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13, count: 0 },
   { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18, count: 0 }
@@ -97,7 +106,9 @@ const BLOCK_TO_SLOT: Partial<Record<BlockId, string>> = {
   [BlockId.Cobblestone]: "cobble",
   [BlockId.Sand]: "sand",
   [BlockId.Brick]: "brick",
-  [BlockId.Glass]: "glass"
+  [BlockId.Glass]: "glass",
+  [BlockId.SliverOre]: "sliver_ore",
+  [BlockId.RubyOre]: "ruby_ore"
 };
 
 const RECIPES: Recipe[] = [
@@ -111,6 +122,33 @@ const RECIPES: Recipe[] = [
       { slotId: "stone", count: 2 }
     ],
     result: { slotId: "brick", count: 2 }
+  },
+  {
+    id: "wood_pickaxe",
+    label: "2 Planks + 2 Wood -> Wood Pickaxe",
+    cost: [
+      { slotId: "planks", count: 2 },
+      { slotId: "wood", count: 2 }
+    ],
+    result: { slotId: "wood_pickaxe", count: 1 }
+  },
+  {
+    id: "stone_pickaxe",
+    label: "2 Cobble + 1 Wood -> Stone Pickaxe",
+    cost: [
+      { slotId: "cobble", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "stone_pickaxe", count: 1 }
+  },
+  {
+    id: "sliver_pickaxe",
+    label: "2 Sliver Ore + 1 Wood -> Sliver Pickaxe",
+    cost: [
+      { slotId: "sliver_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "sliver_pickaxe", count: 1 }
   },
   {
     id: "knife",
@@ -141,13 +179,33 @@ const RECIPES: Recipe[] = [
   }
 ];
 
-function createMobModel(bodyColor: number, headColor: number, legColor: number, eyeColor: number, bodySize: [number, number, number], headSize: [number, number, number]): MobModel {
+type SaveDataV1 = {
+  version: 1;
+  seed: number;
+  changes: Array<[number, number]>;
+  inventoryCounts: Record<string, number>;
+  selectedSlot: number;
+  player: { x: number; y: number; z: number };
+};
+
+const SAVE_KEY = "minecraft_save_v1";
+
+function createMobModel(
+  bodyColor: number,
+  headColor: number,
+  legColor: number,
+  eyeColor: number,
+  detailColor: number,
+  bodySize: [number, number, number],
+  headSize: [number, number, number]
+): MobModel {
   const group = new THREE.Group();
   const materials = [
-    new THREE.MeshLambertMaterial({ color: bodyColor }),
-    new THREE.MeshLambertMaterial({ color: headColor }),
-    new THREE.MeshLambertMaterial({ color: legColor }),
-    new THREE.MeshLambertMaterial({ color: eyeColor })
+    new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.86, metalness: 0.02 }),
+    new THREE.MeshStandardMaterial({ color: headColor, roughness: 0.84, metalness: 0.02 }),
+    new THREE.MeshStandardMaterial({ color: legColor, roughness: 0.9, metalness: 0.02 }),
+    new THREE.MeshStandardMaterial({ color: eyeColor, roughness: 0.3, metalness: 0.05, emissive: new THREE.Color(eyeColor).multiplyScalar(0.15) }),
+    new THREE.MeshStandardMaterial({ color: detailColor, roughness: 0.82, metalness: 0.02 })
   ];
 
   const bodyGeo = new THREE.BoxGeometry(bodySize[0], bodySize[1], bodySize[2]);
@@ -166,7 +224,15 @@ function createMobModel(bodyColor: number, headColor: number, legColor: number, 
   const eyeR = new THREE.Mesh(eyeGeo, materials[3]);
   eyeR.position.set(headSize[0] * 0.2, head.position.y + headSize[1] * 0.05, head.position.z + headSize[2] * 0.47);
 
-  group.add(body, head, eyeL, eyeR);
+  const snoutGeo = new THREE.BoxGeometry(headSize[0] * 0.5, headSize[1] * 0.33, headSize[2] * 0.36);
+  const snout = new THREE.Mesh(snoutGeo, materials[4]);
+  snout.position.set(0, head.position.y - headSize[1] * 0.1, head.position.z + headSize[2] * 0.62);
+
+  const stripeGeo = new THREE.BoxGeometry(bodySize[0] * 0.72, bodySize[1] * 0.2, bodySize[2] * 0.24);
+  const stripe = new THREE.Mesh(stripeGeo, materials[4]);
+  stripe.position.set(0, body.position.y + bodySize[1] * 0.35, 0);
+
+  group.add(body, head, eyeL, eyeR, snout, stripe);
 
   const legs: THREE.Mesh[] = [];
   const legY = legGeo.parameters.height * 0.5;
@@ -184,7 +250,13 @@ function createMobModel(bodyColor: number, headColor: number, legColor: number, 
     group.add(leg);
   }
 
-  return { group, legs, halfHeight: Math.max(bodySize[1], legGeo.parameters.height) * 0.5 + 0.2, materials, geometries: [bodyGeo, headGeo, legGeo, eyeGeo] };
+  return {
+    group,
+    legs,
+    halfHeight: Math.max(bodySize[1], legGeo.parameters.height) * 0.5 + 0.2,
+    materials,
+    geometries: [bodyGeo, headGeo, legGeo, eyeGeo, snoutGeo, stripeGeo]
+  };
 }
 
 export default function MinecraftGame() {
@@ -194,7 +266,14 @@ export default function MinecraftGame() {
   const inventoryRef = useRef<InventorySlot[]>(INITIAL_INVENTORY);
   const inventoryOpenRef = useRef(false);
   const heartsRef = useRef(MAX_HEARTS);
-  const breakProgressRef = useRef<Map<string, number>>(new Map());
+  const isDeadRef = useRef(false);
+  const respawnTimerRef = useRef(0);
+  const respawnShownRef = useRef(0);
+  const leftMouseHeldRef = useRef(false);
+  const mineProgressRef = useRef(0);
+  const mineTargetRef = useRef<string>("");
+  const saveNowRef = useRef<(() => void) | null>(null);
+  const loadNowRef = useRef<(() => void) | null>(null);
 
   const [locked, setLocked] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(0);
@@ -205,6 +284,8 @@ export default function MinecraftGame() {
   const [daylightPercent, setDaylightPercent] = useState(100);
   const [passiveCount, setPassiveCount] = useState(0);
   const [hostileCount, setHostileCount] = useState(0);
+  const [respawnSeconds, setRespawnSeconds] = useState(0);
+  const [saveMessage, setSaveMessage] = useState("");
 
   const heartDisplay = useMemo(() => Array.from({ length: MAX_HEARTS }, (_, i) => i < hearts), [hearts]);
 
@@ -256,8 +337,36 @@ export default function MinecraftGame() {
     const mount = mountRef.current;
     if (!mount) return;
 
-    const world = new VoxelWorld();
+    let loadedSave: SaveDataV1 | null = null;
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SaveDataV1;
+        if (parsed?.version === 1 && Number.isFinite(parsed.seed) && Array.isArray(parsed.changes)) loadedSave = parsed;
+      }
+    } catch {
+      loadedSave = null;
+    }
+
+    const worldSeed = loadedSave?.seed ?? Math.floor(Math.random() * 2147483647);
+    const world = new VoxelWorld(undefined, undefined, undefined, worldSeed);
     world.generate();
+
+    const changedBlocks = new Map<number, number>();
+    const baselineByIndex = new Map<number, number>();
+
+    if (loadedSave) {
+      for (const [idx, block] of loadedSave.changes) {
+        const layer = world.sizeX * world.sizeZ;
+        const y = Math.floor(idx / layer);
+        const rem = idx - y * layer;
+        const z = Math.floor(rem / world.sizeX);
+        const x = rem - z * world.sizeX;
+        if (!world.inBounds(x, y, z)) continue;
+        world.set(x, y, z, block as BlockId);
+        changedBlocks.set(idx, block);
+      }
+    }
 
     const scene = new THREE.Scene();
     const daySky = new THREE.Color(0x8bc2ff);
@@ -272,14 +381,14 @@ export default function MinecraftGame() {
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
 
-    const hemiLight = new THREE.HemisphereLight(0xc8edff, 0x4f4435, 1.2);
+    const hemiLight = new THREE.HemisphereLight(0xd7efff, 0x463c32, 1.15);
     scene.add(hemiLight);
 
-    const sun = new THREE.DirectionalLight(0xfff2d2, 1.2);
+    const sun = new THREE.DirectionalLight(0xfff4da, 1.28);
     sun.position.set(40, 95, 24);
     scene.add(sun);
 
-    const worldMaterial = new THREE.MeshLambertMaterial({ vertexColors: true });
+    const worldMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.02 });
     let worldMesh = new THREE.Mesh(new THREE.BufferGeometry(), worldMaterial);
     scene.add(worldMesh);
 
@@ -297,6 +406,23 @@ export default function MinecraftGame() {
       velocity: new THREE.Vector3(),
       onGround: false
     };
+
+    if (loadedSave?.inventoryCounts) {
+      setInventory((prev) =>
+        prev.map((slot) => ({
+          ...slot,
+          count: Math.max(0, Math.floor(loadedSave?.inventoryCounts?.[slot.id] ?? slot.count))
+        }))
+      );
+    }
+    if (typeof loadedSave?.selectedSlot === "number") {
+      const idx = Math.max(0, Math.min(INITIAL_INVENTORY.length - 1, loadedSave.selectedSlot));
+      setSelectedSlot(idx);
+      selectedSlotRef.current = idx;
+    }
+    if (loadedSave?.player) {
+      player.position.set(loadedSave.player.x, loadedSave.player.y, loadedSave.player.z);
+    }
 
     const mobs: MobEntity[] = [];
     const disposables: Array<{ materials: THREE.Material[]; geometries: THREE.BufferGeometry[] }> = [];
@@ -318,7 +444,19 @@ export default function MinecraftGame() {
       return new THREE.Vector3(world.sizeX / 2, 12, world.sizeZ / 2);
     };
 
-    const spawnMob = (kind: MobKind, hostile: boolean, count: number) => {
+    const randomLandPointNear = (centerX: number, centerZ: number, radius: number): THREE.Vector3 => {
+      for (let i = 0; i < 50; i += 1) {
+        const x = centerX + (Math.random() * 2 - 1) * radius;
+        const z = centerZ + (Math.random() * 2 - 1) * radius;
+        const clampedX = Math.max(10, Math.min(world.sizeX - 10, x));
+        const clampedZ = Math.max(10, Math.min(world.sizeZ - 10, z));
+        const y = surfaceYAt(clampedX, clampedZ);
+        if (y > 2) return new THREE.Vector3(clampedX, y, clampedZ);
+      }
+      return randomLandPoint();
+    };
+
+    const spawnMob = (kind: MobKind, hostile: boolean, count: number, centerX: number, centerZ: number, radius: number) => {
       for (let i = 0; i < count; i += 1) {
         let model: MobModel;
         let speed = 1;
@@ -328,33 +466,33 @@ export default function MinecraftGame() {
         let attackCooldown = 0;
 
         if (kind === "sheep") {
-          model = createMobModel(0xf5f5f5, 0xd8d8d8, 0xb7b7b7, 0x111111, [1.05, 0.75, 1.35], [0.58, 0.48, 0.5]);
+          model = createMobModel(0xf5f5f5, 0xd8d8d8, 0xb7b7b7, 0x111111, 0xcecece, [1.05, 0.75, 1.35], [0.58, 0.48, 0.5]);
           speed = 0.9;
           hp = 10;
         } else if (kind === "chicken") {
-          model = createMobModel(0xffefba, 0xffe095, 0xe0b970, 0x111111, [0.52, 0.44, 0.62], [0.3, 0.28, 0.28]);
+          model = createMobModel(0xffefba, 0xffe095, 0xe0b970, 0x111111, 0xd28730, [0.52, 0.44, 0.62], [0.3, 0.28, 0.28]);
           speed = 1.2;
           hp = 7;
         } else if (kind === "horse") {
-          model = createMobModel(0x8a5d36, 0x74472a, 0x5d3a22, 0x101010, [1.45, 1.1, 2.2], [0.56, 0.6, 0.62]);
+          model = createMobModel(0x8a5d36, 0x74472a, 0x5d3a22, 0x101010, 0x3e2413, [1.45, 1.1, 2.2], [0.56, 0.6, 0.62]);
           speed = 1.4;
           hp = 14;
         } else if (kind === "zombie") {
-          model = createMobModel(0x669e57, 0x4e7e45, 0x41663a, 0xff3333, [0.78, 1.1, 0.52], [0.52, 0.52, 0.52]);
+          model = createMobModel(0x669e57, 0x4e7e45, 0x41663a, 0xff3333, 0x264a2f, [0.78, 1.1, 0.52], [0.52, 0.52, 0.52]);
           speed = 1.05;
           hp = 10;
           detectRange = 11;
           attackDamage = 1;
           attackCooldown = 1.35;
         } else if (kind === "skeleton") {
-          model = createMobModel(0xe4e4e2, 0xcfcfcb, 0xb4b4b1, 0xff3333, [0.75, 1.08, 0.48], [0.48, 0.48, 0.48]);
+          model = createMobModel(0xe4e4e2, 0xcfcfcb, 0xb4b4b1, 0xff3333, 0x8f8f8f, [0.75, 1.08, 0.48], [0.48, 0.48, 0.48]);
           speed = 1.08;
           hp = 9;
           detectRange = 12;
           attackDamage = 1;
           attackCooldown = 1.4;
         } else {
-          model = createMobModel(0x2e2e2e, 0x1f1f1f, 0x161616, 0xff3333, [1.15, 0.52, 1.15], [0.5, 0.42, 0.5]);
+          model = createMobModel(0x2e2e2e, 0x1f1f1f, 0x161616, 0xff3333, 0x4a0f0f, [1.15, 0.52, 1.15], [0.5, 0.42, 0.5]);
           speed = 1.2;
           hp = 8;
           detectRange = 10;
@@ -362,7 +500,7 @@ export default function MinecraftGame() {
           attackCooldown = 1.1;
         }
 
-        const spawnPos = randomLandPoint();
+        const spawnPos = randomLandPointNear(centerX, centerZ, radius);
         model.group.position.set(spawnPos.x, spawnPos.y + model.halfHeight, spawnPos.z);
         scene.add(model.group);
 
@@ -387,12 +525,15 @@ export default function MinecraftGame() {
       }
     };
 
-    spawnMob("sheep", false, 14);
-    spawnMob("chicken", false, 12);
-    spawnMob("horse", false, 8);
-    spawnMob("zombie", true, 8);
-    spawnMob("skeleton", true, 6);
-    spawnMob("spider", true, 6);
+    const spawnCenterX = player.position.x;
+    const spawnCenterZ = player.position.z;
+    const spawnRadius = RENDER_RADIUS * 0.7;
+    spawnMob("sheep", false, 14, spawnCenterX, spawnCenterZ, spawnRadius);
+    spawnMob("chicken", false, 12, spawnCenterX, spawnCenterZ, spawnRadius);
+    spawnMob("horse", false, 8, spawnCenterX, spawnCenterZ, spawnRadius);
+    spawnMob("zombie", true, 8, spawnCenterX, spawnCenterZ, spawnRadius);
+    spawnMob("skeleton", true, 6, spawnCenterX, spawnCenterZ, spawnRadius);
+    spawnMob("spider", true, 6, spawnCenterX, spawnCenterZ, spawnRadius);
 
     setPassiveCount(mobs.filter((mob) => !mob.hostile).length);
     setHostileCount(mobs.filter((mob) => mob.hostile).length);
@@ -405,26 +546,33 @@ export default function MinecraftGame() {
     };
 
     const respawn = () => {
-      const spawn = randomLandPoint();
+      const spawn = randomLandPointNear(world.sizeX / 2, world.sizeZ / 2, RENDER_RADIUS * 0.9);
       player.position.set(spawn.x, spawn.y + 2, spawn.z);
       player.velocity.set(0, 0, 0);
       controls.pitch = 0;
       controls.keys.clear();
+      leftMouseHeldRef.current = false;
+      mineTargetRef.current = "";
+      mineProgressRef.current = 0;
       updateCamera();
     };
 
     updateCamera();
 
     const applyDamage = (amount: number) => {
+      if (isDeadRef.current) return;
       const v = Math.max(0, Math.floor(amount));
       if (v <= 0) return;
       const next = Math.max(0, heartsRef.current - v);
       heartsRef.current = next;
       setHearts(next);
       if (next <= 0) {
-        heartsRef.current = MAX_HEARTS;
-        setHearts(MAX_HEARTS);
-        respawn();
+        isDeadRef.current = true;
+        respawnTimerRef.current = 3;
+        respawnShownRef.current = 3;
+        setRespawnSeconds(3);
+        controls.keys.clear();
+        if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
       }
     };
 
@@ -447,6 +595,59 @@ export default function MinecraftGame() {
     };
 
     rebuildWorldMesh(true);
+
+    const persistSave = () => {
+      try {
+        const inventoryCounts: Record<string, number> = {};
+        for (const slot of inventoryRef.current) inventoryCounts[slot.id] = slot.count;
+        const changes: Array<[number, number]> = [];
+        for (const [idx, block] of changedBlocks.entries()) changes.push([idx, block]);
+
+        const saveData: SaveDataV1 = {
+          version: 1,
+          seed: world.seed,
+          changes,
+          inventoryCounts,
+          selectedSlot: selectedSlotRef.current,
+          player: {
+            x: player.position.x,
+            y: player.position.y,
+            z: player.position.z
+          }
+        };
+
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        setSaveMessage("Saved");
+        setTimeout(() => setSaveMessage(""), 1200);
+      } catch {
+        setSaveMessage("Save failed");
+        setTimeout(() => setSaveMessage(""), 1200);
+      }
+    };
+
+    const loadFromSave = () => {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) {
+          setSaveMessage("No save found");
+          setTimeout(() => setSaveMessage(""), 1400);
+          return;
+        }
+        setSaveMessage("Loaded");
+        setTimeout(() => {
+          window.location.reload();
+        }, 120);
+      } catch {
+        setSaveMessage("Load failed");
+        setTimeout(() => setSaveMessage(""), 1200);
+      }
+    };
+
+    saveNowRef.current = persistSave;
+    loadNowRef.current = loadFromSave;
+    const autoSaveId = window.setInterval(persistSave, 15000);
+    const onBeforeUnload = () => persistSave();
+    window.addEventListener("beforeunload", onBeforeUnload);
 
     const rotateByMouse = (movementX: number, movementY: number) => {
       const sensitivity = 0.0021;
@@ -471,6 +672,16 @@ export default function MinecraftGame() {
       }
     };
 
+    const setBlockTracked = (x: number, y: number, z: number, nextBlock: BlockId) => {
+      if (!world.inBounds(x, y, z)) return;
+      const idx = world.index(x, y, z);
+      if (!baselineByIndex.has(idx)) baselineByIndex.set(idx, world.get(x, y, z));
+      world.set(x, y, z, nextBlock);
+      const baseline = baselineByIndex.get(idx) ?? BlockId.Air;
+      if (nextBlock === baseline) changedBlocks.delete(idx);
+      else changedBlocks.set(idx, nextBlock);
+    };
+
     const addBlockDrop = (block: BlockId) => {
       const slotId = BLOCK_TO_SLOT[block];
       if (slotId) adjustSlotCount(slotId, 1);
@@ -487,6 +698,25 @@ export default function MinecraftGame() {
       const slot = inventoryRef.current[selectedSlotRef.current];
       if (slot?.kind === "weapon" && slot.count > 0) return slot.attack ?? 8;
       return 6;
+    };
+
+    const selectedTool = (): InventorySlot | null => {
+      const slot = inventoryRef.current[selectedSlotRef.current];
+      if (slot?.kind === "tool" && slot.count > 0) return slot;
+      return null;
+    };
+
+    const canMineBlock = (block: BlockId): boolean => {
+      const toolTier = selectedTool()?.mineTier ?? 0;
+      if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Brick) return toolTier >= 1;
+      if (block === BlockId.SliverOre) return toolTier >= 2;
+      if (block === BlockId.RubyOre) return toolTier >= 3;
+      return true;
+    };
+
+    const miningSpeed = (): number => {
+      const tool = selectedTool();
+      return tool?.minePower ?? 0.8;
     };
 
     const removeMobAt = (index: number) => {
@@ -541,25 +771,7 @@ export default function MinecraftGame() {
       const result = voxelRaycast(world, camera.position, raycaster.ray.direction, 7);
       if (!result) return;
 
-      if (!place) {
-        const bx = result.hit.x;
-        const by = result.hit.y;
-        const bz = result.hit.z;
-        const targetBlock = world.get(bx, by, bz);
-        if (targetBlock === BlockId.Bedrock || targetBlock === BlockId.Air) return;
-
-        const key = `${bx},${by},${bz}`;
-        const nextHits = (breakProgressRef.current.get(key) ?? 0) + 1;
-        const requiredHits = BREAK_HARDNESS[targetBlock as BlockId] ?? 2;
-        if (nextHits < requiredHits) {
-          breakProgressRef.current.set(key, nextHits);
-          return;
-        }
-        breakProgressRef.current.delete(key);
-
-        world.set(bx, by, bz, BlockId.Air);
-        addBlockDrop(targetBlock as BlockId);
-      } else {
+      if (place) {
         const tx = result.previous.x;
         const ty = result.previous.y;
         const tz = result.previous.z;
@@ -568,9 +780,9 @@ export default function MinecraftGame() {
         const block = tryUseSelectedPlaceable();
         if (block === null || block === BlockId.Bedrock) return;
 
-        world.set(tx, ty, tz, block);
+        setBlockTracked(tx, ty, tz, block);
         if (collidesAt(world, player.position, PLAYER_HALF_WIDTH, PLAYER_HEIGHT)) {
-          world.set(tx, ty, tz, BlockId.Air);
+          setBlockTracked(tx, ty, tz, BlockId.Air);
           const slot = inventoryRef.current[selectedSlotRef.current];
           if (slot) adjustSlotCount(slot.id, 1);
           return;
@@ -578,6 +790,45 @@ export default function MinecraftGame() {
       }
 
       rebuildWorldMesh(true);
+    };
+
+    const processMining = (dt: number) => {
+      if (!leftMouseHeldRef.current || inventoryOpenRef.current || isDeadRef.current) return;
+      if (document.pointerLockElement !== renderer.domElement) return;
+
+      raycaster.setFromCamera(pointer, camera);
+      const result = voxelRaycast(world, camera.position, raycaster.ray.direction, 7);
+      if (!result) {
+        mineTargetRef.current = "";
+        mineProgressRef.current = 0;
+        return;
+      }
+
+      const bx = result.hit.x;
+      const by = result.hit.y;
+      const bz = result.hit.z;
+      const targetBlock = world.get(bx, by, bz);
+      if (targetBlock === BlockId.Bedrock || targetBlock === BlockId.Air || !canMineBlock(targetBlock as BlockId)) {
+        mineTargetRef.current = "";
+        mineProgressRef.current = 0;
+        return;
+      }
+
+      const key = `${bx},${by},${bz}`;
+      if (mineTargetRef.current !== key) {
+        mineTargetRef.current = key;
+        mineProgressRef.current = 0;
+      }
+
+      const hardness = BREAK_HARDNESS[targetBlock as BlockId] ?? 2;
+      mineProgressRef.current += dt * miningSpeed() * 2.1;
+      if (mineProgressRef.current < hardness) return;
+
+      setBlockTracked(bx, by, bz, BlockId.Air);
+      addBlockDrop(targetBlock as BlockId);
+      rebuildWorldMesh(true);
+      mineProgressRef.current = 0;
+      mineTargetRef.current = "";
     };
 
     const onResize = () => {
@@ -604,6 +855,7 @@ export default function MinecraftGame() {
       }
 
       if (inventoryOpenRef.current) return;
+      if (isDeadRef.current) return;
 
       if (evt.code === "KeyE") {
         evt.preventDefault();
@@ -622,15 +874,27 @@ export default function MinecraftGame() {
 
     const onMouseDown = (evt: MouseEvent) => {
       if (inventoryOpenRef.current) return;
+      if (isDeadRef.current) return;
       if (document.pointerLockElement !== renderer.domElement) {
         renderer.domElement.requestPointerLock();
         return;
       }
 
       if (evt.button === 0) {
-        if (!tryAttackMob()) doBreakOrPlace(false);
+        leftMouseHeldRef.current = true;
+        if (tryAttackMob()) {
+          mineTargetRef.current = "";
+          mineProgressRef.current = 0;
+        }
       }
       if (evt.button === 2) doBreakOrPlace(true);
+    };
+
+    const onMouseUp = (evt: MouseEvent) => {
+      if (evt.button !== 0) return;
+      leftMouseHeldRef.current = false;
+      mineTargetRef.current = "";
+      mineProgressRef.current = 0;
     };
 
     const onContextMenu = (evt: MouseEvent) => evt.preventDefault();
@@ -641,6 +905,7 @@ export default function MinecraftGame() {
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
     document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("contextmenu", onContextMenu);
     document.addEventListener("pointerlockchange", onPointerLock);
 
@@ -702,6 +967,12 @@ export default function MinecraftGame() {
 
         if (mob.hostile && distanceToPlayer < 1.5 && mob.attackTimer <= 0) {
           applyDamage(mob.attackDamage);
+          if (!isDeadRef.current && distanceToPlayer > 0.001) {
+            const knock = toPlayer.normalize().multiplyScalar(4.2);
+            player.velocity.x += knock.x;
+            player.velocity.z += knock.z;
+            player.velocity.y = Math.max(player.velocity.y, 3.4);
+          }
           mob.attackTimer = mob.attackCooldown;
         }
 
@@ -719,6 +990,30 @@ export default function MinecraftGame() {
       const now = performance.now();
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+
+      if (isDeadRef.current) {
+        respawnTimerRef.current -= dt;
+        const left = Math.max(0, Math.ceil(respawnTimerRef.current));
+        if (left !== respawnShownRef.current) {
+          respawnShownRef.current = left;
+          setRespawnSeconds(left);
+        }
+        if (respawnTimerRef.current <= 0) {
+          heartsRef.current = MAX_HEARTS;
+          setHearts(MAX_HEARTS);
+          isDeadRef.current = false;
+          respawnShownRef.current = 0;
+          setRespawnSeconds(0);
+          respawn();
+        } else {
+          tickMobs(dt, now);
+          rebuildWorldMesh(false);
+          updateCamera();
+          renderer.render(scene, camera);
+          animationFrame = requestAnimationFrame(clock);
+          return;
+        }
+      }
 
       const forwardInput = (controls.keys.has("KeyW") ? 1 : 0) - (controls.keys.has("KeyS") ? 1 : 0);
       const strafeInput = (controls.keys.has("KeyD") ? 1 : 0) - (controls.keys.has("KeyA") ? 1 : 0);
@@ -783,6 +1078,7 @@ export default function MinecraftGame() {
         voidTimer = 0;
       }
 
+      processMining(dt);
       dayClock += dt;
       const cycleSeconds = 240;
       const phase = (dayClock % cycleSeconds) / cycleSeconds;
@@ -813,11 +1109,16 @@ export default function MinecraftGame() {
 
     return () => {
       cancelAnimationFrame(animationFrame);
+      window.clearInterval(autoSaveId);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      saveNowRef.current = null;
+      loadNowRef.current = null;
       window.removeEventListener("resize", onResize);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
       document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("pointerlockchange", onPointerLock);
       document.exitPointerLock();
@@ -848,13 +1149,22 @@ export default function MinecraftGame() {
           <span>{locked ? "Mouse: Look" : "Click to lock mouse"}</span>
           <span>Move: W/S forward-back, A/D strafe</span>
           <span>Sprint: W + CapsLock | Crouch: Shift</span>
-          <span>Attack: Left click | Place: Right click or E</span>
-          <span>Blocks now need multiple hits to break</span>
+          <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
+          <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
           <span>Inventory/Crafting: I | Hotbar: 1..12</span>
         </div>
         <div className="stats-line">Passive Mobs: {passiveCount} | Hostile Mobs: {hostileCount}</div>
         <div className="stats-line">Daylight: {daylightPercent}%</div>
         <div className="stats-line">Selected: {selectedSlotData?.label ?? "None"}</div>
+        <div className="save-controls">
+          <button className="save-btn" onClick={() => saveNowRef.current?.()}>
+            Save World
+          </button>
+          <button className="save-btn" onClick={() => loadNowRef.current?.()}>
+            Load Save
+          </button>
+          {saveMessage ? <span className="save-msg">{saveMessage}</span> : null}
+        </div>
 
         <div className="health-wrap">
           <div className="health-label">Health: {hearts} / {MAX_HEARTS} hearts</div>
@@ -905,6 +1215,15 @@ export default function MinecraftGame() {
                 {recipe.label}
               </button>
             ))}
+          </div>
+        </div>
+      ) : null}
+
+      {respawnSeconds > 0 ? (
+        <div className="respawn-overlay">
+          <div className="respawn-card">
+            <div className="respawn-title">You Died</div>
+            <div className="respawn-sub">Respawning in {respawnSeconds}...</div>
           </div>
         </div>
       ) : null}
