@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { BlockId, collidesAt, VoxelWorld } from "@/lib/world";
 import { readSave } from "@/lib/game/save";
 import { tickDayNight } from "@/lib/game/runtime/dayNight";
+import { bindGameInput } from "@/lib/game/runtime/input";
 import { spawnMobGroup, tickMobs } from "@/lib/game/runtime/mobs";
 import { doPlace, processMining, tryAttackMob, weaponDamage } from "@/lib/game/runtime/miningCombat";
 import { createPersistenceHandlers } from "@/lib/game/runtime/persistence";
@@ -278,13 +279,6 @@ export function useMinecraftGame() {
     const onBeforeUnload = () => persistSave();
     window.addEventListener("beforeunload", onBeforeUnload);
 
-    const rotateByMouse = (movementX: number, movementY: number) => {
-      const sensitivity = 0.0021;
-      controls.yaw -= movementX * sensitivity;
-      controls.pitch -= movementY * sensitivity;
-      controls.pitch = Math.max(-Math.PI / 2 + 0.01, Math.min(Math.PI / 2 - 0.01, controls.pitch));
-    };
-
     const stepAxis = (axis: "x" | "y" | "z", amount: number) => {
       const stepSize = 0.05 * Math.sign(amount);
       let remaining = amount;
@@ -316,6 +310,28 @@ export function useMinecraftGame() {
       if (slotId) adjustSlotCount(slotId, 1);
     };
 
+    const createMiningContext = () => ({
+      world,
+      camera,
+      pointerLockElement: renderer.domElement,
+      pointer,
+      raycaster,
+      playerPosition: player.position,
+      playerHeight: PLAYER_HEIGHT,
+      playerHalfWidth: PLAYER_HALF_WIDTH,
+      selectedSlotRef,
+      inventoryRef,
+      mineProgressRef,
+      mineTargetRef,
+      leftMouseHeldRef,
+      inventoryOpenRef,
+      isDeadRef,
+      adjustSlotCount,
+      addBlockDrop,
+      setBlockTracked,
+      rebuildWorldMesh
+    });
+
     const removeMobAt = (index: number) => {
       const mob = mobs[index];
       scene.remove(mob.group);
@@ -324,112 +340,31 @@ export function useMinecraftGame() {
       else adjustSlotCount("wood", 1);
     };
 
-    const onResize = () => {
-      camera.aspect = mount.clientWidth / mount.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
-    };
+    const placeSelectedBlock = () => doPlace(createMiningContext());
 
-    const onMouseMove = (evt: MouseEvent) => {
-      if (document.pointerLockElement === renderer.domElement) rotateByMouse(evt.movementX, evt.movementY);
-    };
-
-    const placeSelectedBlock = () =>
-      doPlace({
-        world,
-        camera,
-        pointerLockElement: renderer.domElement,
-        pointer,
-        raycaster,
-        playerPosition: player.position,
-        playerHeight: PLAYER_HEIGHT,
-        playerHalfWidth: PLAYER_HALF_WIDTH,
-        selectedSlotRef,
-        inventoryRef,
-        mineProgressRef,
-        mineTargetRef,
-        leftMouseHeldRef,
-        inventoryOpenRef,
-        isDeadRef,
-        adjustSlotCount,
-        addBlockDrop,
-        setBlockTracked,
-        rebuildWorldMesh
-      });
-
-    const onKeyDown = (evt: KeyboardEvent) => {
-      if (evt.code.startsWith("Digit")) {
-        const idx = Number.parseInt(evt.code.slice(5), 10) - 1;
-        if (idx >= 0 && idx < inventoryRef.current.length) setSelectedSlot(idx);
-      }
-
-      if (evt.code === "KeyI") {
-        setInventoryOpen((prev) => !prev);
-        controls.keys.clear();
-        if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
-        return;
-      }
-
-      if (inventoryOpenRef.current) return;
-      if (isDeadRef.current) return;
-
-      if (evt.code === "KeyE") {
-        evt.preventDefault();
-        placeSelectedBlock();
-      }
-
-      controls.keys.add(evt.code);
-      setCapsActive(evt.getModifierState("CapsLock"));
-      if (evt.code === "Space") evt.preventDefault();
-    };
-
-    const onKeyUp = (evt: KeyboardEvent) => {
-      controls.keys.delete(evt.code);
-      setCapsActive(evt.getModifierState("CapsLock"));
-    };
-
-    const onMouseDown = (evt: MouseEvent) => {
-      if (inventoryOpenRef.current) return;
-      if (isDeadRef.current) return;
-      if (document.pointerLockElement !== renderer.domElement) {
-        renderer.domElement.requestPointerLock();
-        return;
-      }
-
-      if (evt.button === 0) {
-        leftMouseHeldRef.current = true;
-        if (
-          tryAttackMob(mobs, camera, player.position, weaponDamage(inventoryRef, selectedSlotRef), (idx) => {
-            removeMobAt(idx);
-            setPassiveCount(mobs.filter((mob) => !mob.hostile).length);
-            setHostileCount(mobs.filter((mob) => mob.hostile).length);
-          })
-        ) {
-          mineTargetRef.current = "";
-          mineProgressRef.current = 0;
-        }
-      }
-      if (evt.button === 2) placeSelectedBlock();
-    };
-
-    const onMouseUp = (evt: MouseEvent) => {
-      if (evt.button !== 0) return;
-      leftMouseHeldRef.current = false;
-      mineTargetRef.current = "";
-      mineProgressRef.current = 0;
-    };
-
-    const onContextMenu = (evt: MouseEvent) => evt.preventDefault();
-    const onPointerLock = () => setLocked(document.pointerLockElement === renderer.domElement);
-
-    window.addEventListener("resize", onResize);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
-    document.addEventListener("contextmenu", onContextMenu);
-    document.addEventListener("pointerlockchange", onPointerLock);
+    const unbindInput = bindGameInput({
+      mount,
+      camera,
+      renderer,
+      controls,
+      inventoryRef,
+      inventoryOpenRef,
+      isDeadRef,
+      leftMouseHeldRef,
+      mineTargetRef,
+      mineProgressRef,
+      setLocked,
+      setSelectedSlot,
+      setInventoryOpen,
+      setCapsActive,
+      placeSelectedBlock,
+      tryAttackAction: () =>
+        tryAttackMob(mobs, camera, player.position, weaponDamage(inventoryRef, selectedSlotRef), (idx) => {
+          removeMobAt(idx);
+          setPassiveCount(mobs.filter((mob) => !mob.hostile).length);
+          setHostileCount(mobs.filter((mob) => mob.hostile).length);
+        })
+    });
 
     let last = performance.now();
     let dayClock = 0;
@@ -503,30 +438,7 @@ export function useMinecraftGame() {
         voidTimer
       }));
 
-      processMining(
-        {
-          world,
-          camera,
-          pointerLockElement: renderer.domElement,
-          pointer,
-          raycaster,
-          playerPosition: player.position,
-          playerHeight: PLAYER_HEIGHT,
-          playerHalfWidth: PLAYER_HALF_WIDTH,
-          selectedSlotRef,
-          inventoryRef,
-          mineProgressRef,
-          mineTargetRef,
-          leftMouseHeldRef,
-          inventoryOpenRef,
-          isDeadRef,
-          adjustSlotCount,
-          addBlockDrop,
-          setBlockTracked,
-          rebuildWorldMesh
-        },
-        dt
-      );
+      processMining(createMiningContext(), dt);
       ({ dayClock, dayHudTimer } = tickDayNight({
         dt,
         dayClock,
@@ -555,14 +467,7 @@ export function useMinecraftGame() {
       window.removeEventListener("beforeunload", onBeforeUnload);
       saveNowRef.current = null;
       loadNowRef.current = null;
-      window.removeEventListener("resize", onResize);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("keyup", onKeyUp);
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("contextmenu", onContextMenu);
-      document.removeEventListener("pointerlockchange", onPointerLock);
+      unbindInput();
       document.exitPointerLock();
 
       for (const mob of mobs) scene.remove(mob.group);
