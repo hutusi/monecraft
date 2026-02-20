@@ -35,7 +35,7 @@ export default function Hud(props: HudProps) {
       <div className="help">
         <span>{locked ? "Mouse: Look" : "Click to lock mouse"}</span>
         <span>Move: W/S forward-back, A/D strafe</span>
-        <span>Sprint: W + CapsLock | Crouch: Shift</span>
+        <span>Sprint: W + CapsLock | Crouch: C</span>
         <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
         <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
         <span>Inventory/Crafting: I | Hotbar: 1..12</span>

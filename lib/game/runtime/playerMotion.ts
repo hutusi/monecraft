@@ -65,7 +65,7 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
   const forwardInput = (keys.has("KeyW") ? 1 : 0) - (keys.has("KeyS") ? 1 : 0);
   const strafeInput = (keys.has("KeyD") ? 1 : 0) - (keys.has("KeyA") ? 1 : 0);
   const wantsJump = keys.has("Space");
-  const crouching = keys.has("ShiftLeft") || keys.has("ShiftRight");
+  const crouching = keys.has("KeyC");
 
   const up = new THREE.Vector3(0, 1, 0);
   const dirForward = new THREE.Vector3();

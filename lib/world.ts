@@ -33,8 +33,8 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Sand]: [0.86, 0.8, 0.5],
   [BlockId.Brick]: [0.68, 0.28, 0.2],
   [BlockId.Glass]: [0.73, 0.9, 0.95],
-  [BlockId.SliverOre]: [0.56, 0.58, 0.61],
-  [BlockId.RubyOre]: [0.56, 0.58, 0.61]
+  [BlockId.SliverOre]: [0.54, 0.56, 0.58],
+  [BlockId.RubyOre]: [0.54, 0.56, 0.58]
 };
 
 const FACE_DEFS: {
@@ -335,8 +335,14 @@ export class VoxelWorld {
       return (a * 0.44 + b * 0.36 + c) * 0.5;
     };
 
+    const microNoise = (x: number, y: number, z: number): number => {
+      const n = Math.sin(x * 8.9 + y * 11.3 + z * 9.7) * 0.5 + Math.cos(x * 13.1 - y * 7.4 + z * 12.8) * 0.5;
+      return n * 0.04;
+    };
+
     const materialTint = (block: number, x: number, y: number, z: number, ny: number): [number, number, number] => {
       const n = layeredNoise(x, y, z);
+      const micro = microNoise(x, y, z);
       const jitter = texJitter(x, y, z);
       const shade = ny > 0 ? 1.07 : ny < 0 ? 0.78 : 0.9;
       const c = BLOCK_COLORS[block] ?? [1, 0, 1];
@@ -344,23 +350,23 @@ export class VoxelWorld {
       if (block === BlockId.Grass) {
         const topBoost = ny > 0 ? 0.16 : 0;
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.06 + topBoost * 0.3) * (shade + jitter * 0.5))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.1 + topBoost) * (shade + 0.02))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.05) * (shade + jitter * 0.45)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.06 + micro * 0.7 + topBoost * 0.3) * (shade + jitter * 0.5))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.1 + micro + topBoost) * (shade + 0.02))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.05 + micro * 0.65) * (shade + jitter * 0.45)))
         ];
       }
 
       if (block === BlockId.Dirt || block === BlockId.Sand) {
         const band = Math.sin((y + x * 0.06 + z * 0.06) * 1.1) * 0.04;
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.05 + band) * (shade + jitter * 0.35))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + band * 0.5) * (shade + jitter * 0.25))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.03) * (shade + jitter * 0.2)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.05 + micro * 0.55 + band) * (shade + jitter * 0.35))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.42 + band * 0.5) * (shade + jitter * 0.25))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2)))
         ];
       }
 
       if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Bedrock) {
-        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03;
+        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03 + micro * 0.75;
         return [
           Math.min(1, Math.max(0, (c[0] + n * 0.045 + speckle) * (shade + jitter * 0.22))),
           Math.min(1, Math.max(0, (c[1] + n * 0.05 + speckle) * (shade + jitter * 0.24))),
@@ -371,37 +377,37 @@ export class VoxelWorld {
       if (block === BlockId.Wood || block === BlockId.Planks) {
         const grain = Math.sin((x + z) * 0.35 + y * 1.7) * 0.08;
         return [
-          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04) * (shade + jitter * 0.2))),
-          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02) * (shade + jitter * 0.15)))
+          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04 + micro * 0.3) * (shade + jitter * 0.2))),
+          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03 + micro * 0.2) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02 + micro * 0.14) * (shade + jitter * 0.15)))
         ];
       }
 
       if (block === BlockId.Leaves) {
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.07) * (shade + jitter * 0.3))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.12) * (shade + 0.03))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.06) * (shade + jitter * 0.2)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.07 + micro * 0.3) * (shade + jitter * 0.3))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.12 + micro * 0.45) * (shade + 0.03))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.06 + micro * 0.2) * (shade + jitter * 0.2)))
         ];
       }
 
       if (block === BlockId.SliverOre || block === BlockId.RubyOre) {
-        const sparkle = Math.sin(x * 5.1 + y * 4.7 + z * 5.9) * 0.08;
-        const oreTint =
-          block === BlockId.SliverOre
-            ? [0.23, 0.26, 0.3] // white/silver mineral flecks
-            : [0.28, -0.2, -0.2]; // red mineral flecks
+        const oreNoise = Math.sin(x * 11.7 + y * 9.3 + z * 10.1) + Math.cos(x * 7.4 - y * 8.8 + z * 6.6);
+        const fleckMask = oreNoise > 1.05 ? 1 : oreNoise > 0.7 ? 0.55 : 0.15;
+        const chip = Math.sin(x * 19.7 + y * 13.4 + z * 17.9) > 0.92 ? 1 : 0;
+        const fleck = fleckMask * 0.12 + chip * 0.08;
+        const oreTint = block === BlockId.SliverOre ? [0.26, 0.26, 0.27] : [0.3, -0.2, -0.18];
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.04 + sparkle + oreTint[0]) * (shade + jitter * 0.16))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + sparkle * 0.65 + oreTint[1]) * (shade + jitter * 0.16))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.04 + sparkle * 0.8 + oreTint[2]) * (shade + jitter * 0.16)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.04 + micro * 0.45 + fleck * oreTint[0]) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.45 + fleck * oreTint[1]) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.04 + micro * 0.45 + fleck * oreTint[2]) * (shade + jitter * 0.18)))
         ];
       }
 
       return [
-        Math.min(1, Math.max(0, (c[0] + n * 0.03) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[1] + n * 0.03) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[2] + n * 0.03) * (shade + jitter * 0.2)))
+        Math.min(1, Math.max(0, (c[0] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[1] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2)))
       ];
     };
 
