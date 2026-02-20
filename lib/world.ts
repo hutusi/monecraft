@@ -340,9 +340,19 @@ export class VoxelWorld {
       return n * 0.04;
     };
 
+    const pixelPatch = (x: number, y: number, z: number): number => {
+      const px = Math.floor((x + 2048) * 4);
+      const py = Math.floor((y + 2048) * 4);
+      const pz = Math.floor((z + 2048) * 4);
+      const h = Math.sin(px * 0.91 + py * 1.13 + pz * 0.77) * 43758.5453;
+      const v = h - Math.floor(h);
+      return (Math.floor(v * 5) - 2) * 0.02;
+    };
+
     const materialTint = (block: number, x: number, y: number, z: number, ny: number): [number, number, number] => {
       const n = layeredNoise(x, y, z);
       const micro = microNoise(x, y, z);
+      const patch = pixelPatch(x, y, z);
       const jitter = texJitter(x, y, z);
       const shade = ny > 0 ? 1.07 : ny < 0 ? 0.78 : 0.9;
       const c = BLOCK_COLORS[block] ?? [1, 0, 1];
@@ -351,22 +361,22 @@ export class VoxelWorld {
         const topBoost = ny > 0 ? 0.16 : 0;
         return [
           Math.min(1, Math.max(0, (c[0] + n * 0.06 + micro * 0.7 + topBoost * 0.3) * (shade + jitter * 0.5))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.1 + micro + topBoost) * (shade + 0.02))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.05 + micro * 0.65) * (shade + jitter * 0.45)))
+          Math.min(1, Math.max(0, (c[1] + n * 0.1 + micro + patch + topBoost) * (shade + 0.02))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.05 + micro * 0.65 + patch * 0.75) * (shade + jitter * 0.45)))
         ];
       }
 
       if (block === BlockId.Dirt || block === BlockId.Sand) {
         const band = Math.sin((y + x * 0.06 + z * 0.06) * 1.1) * 0.04;
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.05 + micro * 0.55 + band) * (shade + jitter * 0.35))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.42 + band * 0.5) * (shade + jitter * 0.25))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.05 + micro * 0.55 + patch + band) * (shade + jitter * 0.35))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.42 + patch * 0.8 + band * 0.5) * (shade + jitter * 0.25))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35 + patch * 0.7) * (shade + jitter * 0.2)))
         ];
       }
 
       if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Bedrock) {
-        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03 + micro * 0.75;
+        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03 + micro * 0.75 + patch * 0.9;
         return [
           Math.min(1, Math.max(0, (c[0] + n * 0.045 + speckle) * (shade + jitter * 0.22))),
           Math.min(1, Math.max(0, (c[1] + n * 0.05 + speckle) * (shade + jitter * 0.24))),
@@ -377,17 +387,17 @@ export class VoxelWorld {
       if (block === BlockId.Wood || block === BlockId.Planks) {
         const grain = Math.sin((x + z) * 0.35 + y * 1.7) * 0.08;
         return [
-          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04 + micro * 0.3) * (shade + jitter * 0.2))),
-          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03 + micro * 0.2) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02 + micro * 0.14) * (shade + jitter * 0.15)))
+          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04 + micro * 0.3 + patch * 0.55) * (shade + jitter * 0.2))),
+          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03 + micro * 0.2 + patch * 0.45) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02 + micro * 0.14 + patch * 0.35) * (shade + jitter * 0.15)))
         ];
       }
 
       if (block === BlockId.Leaves) {
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.07 + micro * 0.3) * (shade + jitter * 0.3))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.12 + micro * 0.45) * (shade + 0.03))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.06 + micro * 0.2) * (shade + jitter * 0.2)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.07 + micro * 0.3 + patch * 0.45) * (shade + jitter * 0.3))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.12 + micro * 0.45 + patch * 0.6) * (shade + 0.03))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.06 + micro * 0.2 + patch * 0.35) * (shade + jitter * 0.2)))
         ];
       }
 
@@ -398,16 +408,16 @@ export class VoxelWorld {
         const fleck = fleckMask * 0.12 + chip * 0.08;
         const oreTint = block === BlockId.SliverOre ? [0.26, 0.26, 0.27] : [0.3, -0.2, -0.18];
         return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.04 + micro * 0.45 + fleck * oreTint[0]) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.45 + fleck * oreTint[1]) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.04 + micro * 0.45 + fleck * oreTint[2]) * (shade + jitter * 0.18)))
+          Math.min(1, Math.max(0, (c[0] + n * 0.04 + micro * 0.45 + patch * 0.75 + fleck * oreTint[0]) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[1] + n * 0.04 + micro * 0.45 + patch * 0.75 + fleck * oreTint[1]) * (shade + jitter * 0.18))),
+          Math.min(1, Math.max(0, (c[2] + n * 0.04 + micro * 0.45 + patch * 0.75 + fleck * oreTint[2]) * (shade + jitter * 0.18)))
         ];
       }
 
       return [
-        Math.min(1, Math.max(0, (c[0] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[1] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35) * (shade + jitter * 0.2)))
+        Math.min(1, Math.max(0, (c[0] + n * 0.03 + micro * 0.35 + patch * 0.6) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[1] + n * 0.03 + micro * 0.35 + patch * 0.6) * (shade + jitter * 0.2))),
+        Math.min(1, Math.max(0, (c[2] + n * 0.03 + micro * 0.35 + patch * 0.6) * (shade + jitter * 0.2)))
       ];
     };
 

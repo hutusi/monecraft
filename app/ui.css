@@ -127,7 +127,23 @@
   font-size: 16px;
   font-weight: 700;
   color: #211b14;
+  margin-bottom: 6px;
+}
+
+.inventory-subtitle {
+  font-size: 12px;
+  color: #3b3023;
   margin-bottom: 10px;
+}
+
+.inventory-section-title {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2f2418;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .inventory-grid {
@@ -159,8 +175,14 @@
   font-weight: 700;
 }
 
+.inventory-slot.pending {
+  background: linear-gradient(180deg, #c8e4ff 0%, #9ac3f0 100%);
+  border-color: #3f6da6;
+  font-weight: 700;
+}
+
 .crafting-title {
-  margin-top: 14px;
+  margin-top: 16px;
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 700;

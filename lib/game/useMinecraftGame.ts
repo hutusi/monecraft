@@ -194,6 +194,18 @@ export function useMinecraftGame() {
     });
   };
 
+  const swapInventorySlots = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    setInventory((prev) => {
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= prev.length || toIndex >= prev.length) return prev;
+      const next = prev.map(cloneSlot);
+      const temp = next[fromIndex];
+      next[fromIndex] = next[toIndex];
+      next[toIndex] = temp;
+      return next;
+    });
+  };
+
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
@@ -243,6 +255,7 @@ export function useMinecraftGame() {
     const worldMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.02 });
     let worldMesh = new THREE.Mesh(new THREE.BufferGeometry(), worldMaterial);
     scene.add(worldMesh);
+    scene.add(camera);
 
     const pointer = new THREE.Vector2(0, 0);
     const raycaster = new THREE.Raycaster();
@@ -319,6 +332,93 @@ export function useMinecraftGame() {
       camera.rotation.x = controls.pitch;
     };
 
+    const heldRoot = new THREE.Group();
+    camera.add(heldRoot);
+    const heldGeometries: THREE.BufferGeometry[] = [];
+    const heldMaterials: THREE.Material[] = [];
+    let heldMesh: THREE.Object3D | null = null;
+    let heldKey = "";
+
+    const clearHeldItem = () => {
+      if (heldMesh) heldRoot.remove(heldMesh);
+      heldMesh = null;
+      heldKey = "";
+      while (heldGeometries.length) heldGeometries.pop()?.dispose();
+      while (heldMaterials.length) heldMaterials.pop()?.dispose();
+    };
+
+    const blockColor = (blockId: BlockId | undefined): number => {
+      switch (blockId) {
+        case BlockId.Grass:
+          return 0x5ea74a;
+        case BlockId.Dirt:
+          return 0x7f5d3d;
+        case BlockId.Stone:
+          return 0x8f9296;
+        case BlockId.Wood:
+          return 0x8d653d;
+        case BlockId.Planks:
+          return 0xbe965d;
+        case BlockId.Cobblestone:
+          return 0x787c82;
+        case BlockId.Sand:
+          return 0xd8ca84;
+        case BlockId.Brick:
+          return 0xb65448;
+        case BlockId.Glass:
+          return 0xaed4dc;
+        case BlockId.SliverOre:
+          return 0x9fa3aa;
+        case BlockId.RubyOre:
+          return 0xa26464;
+        default:
+          return 0xbababa;
+      }
+    };
+
+    const updateHeldItem = () => {
+      const slot = inventoryRef.current[selectedSlotRef.current];
+      const key = slot?.id && slot.count > 0 ? `${slot.id}:${slot.count > 0 ? 1 : 0}` : "";
+      if (key === heldKey) return;
+      clearHeldItem();
+      if (!slot?.id || slot.count <= 0 || !slot.kind) return;
+
+      let mesh: THREE.Object3D;
+      if (slot.kind === "block") {
+        const geometry = new THREE.BoxGeometry(0.22, 0.22, 0.22);
+        const material = new THREE.MeshStandardMaterial({ color: blockColor(slot.blockId), roughness: 0.7, metalness: 0.05 });
+        heldGeometries.push(geometry);
+        heldMaterials.push(material);
+        mesh = new THREE.Mesh(geometry, material);
+      } else if (slot.kind === "tool") {
+        const group = new THREE.Group();
+        const handleGeom = new THREE.BoxGeometry(0.05, 0.28, 0.05);
+        const handleMat = new THREE.MeshStandardMaterial({ color: 0x8d653d, roughness: 0.82, metalness: 0.02 });
+        const headGeom = new THREE.BoxGeometry(0.18, 0.07, 0.07);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0x9da1a8, roughness: 0.58, metalness: 0.1 });
+        heldGeometries.push(handleGeom, headGeom);
+        heldMaterials.push(handleMat, headMat);
+        const handle = new THREE.Mesh(handleGeom, handleMat);
+        const head = new THREE.Mesh(headGeom, headMat);
+        handle.position.set(0, -0.06, 0);
+        head.position.set(0.05, 0.07, 0);
+        group.add(handle, head);
+        mesh = group;
+      } else {
+        const geometry = new THREE.BoxGeometry(0.07, 0.34, 0.03);
+        const material = new THREE.MeshStandardMaterial({ color: 0xc2c7cc, roughness: 0.5, metalness: 0.18 });
+        heldGeometries.push(geometry);
+        heldMaterials.push(material);
+        mesh = new THREE.Mesh(geometry, material);
+      }
+
+      mesh.position.set(0.34, -0.28, -0.55);
+      mesh.rotation.set(-0.35, -0.55, -0.12);
+      heldRoot.add(mesh);
+      heldMesh = mesh;
+      heldKey = key;
+    };
+
     const respawn = () => {
       const spawn = randomLandPointNear(world.sizeX / 2, world.sizeZ / 2, RENDER_RADIUS * 0.9);
       player.position.set(spawn.x, spawn.y + 2, spawn.z);
@@ -329,9 +429,11 @@ export function useMinecraftGame() {
       mineTargetRef.current = "";
       mineProgressRef.current = 0;
       updateCamera();
+      updateHeldItem();
     };
 
     updateCamera();
+    updateHeldItem();
 
     const applyDamage = createApplyDamage({
       heartsRef,
@@ -525,6 +627,7 @@ export function useMinecraftGame() {
       }));
 
       processMining(createMiningContext(), dt);
+      updateHeldItem();
       ({ dayClock, dayHudTimer } = tickDayNight({
         dt,
         dayClock,
@@ -563,6 +666,8 @@ export function useMinecraftGame() {
       }
 
       scene.remove(worldMesh);
+      clearHeldItem();
+      camera.remove(heldRoot);
       worldMesh.geometry.dispose();
       worldMaterial.dispose();
       renderer.dispose();
@@ -593,6 +698,7 @@ export function useMinecraftGame() {
     maxHearts: MAX_HEARTS,
     canCraft,
     craft,
+    swapInventorySlots,
     saveNow: () => saveNowRef.current?.(),
     loadNow: () => loadNowRef.current?.()
   };

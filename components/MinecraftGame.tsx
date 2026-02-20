@@ -32,10 +32,11 @@ export default function MinecraftGame() {
       {game.inventoryOpen ? (
         <InventoryPanel
           inventory={game.inventory}
-          selectedSlot={game.selectedSlot}
+          selectedHotbarSlot={game.selectedSlot}
+          hotbarSlots={game.hotbarSlots}
           recipes={game.recipes}
           canCraft={game.canCraft}
-          onSelectSlot={game.setSelectedSlot}
+          onSwapSlots={game.swapInventorySlots}
           onCraft={game.craft}
         />
       ) : null}
