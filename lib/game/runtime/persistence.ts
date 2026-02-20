@@ -1,5 +1,5 @@
 import { SAVE_KEY } from "@/lib/game/config";
-import { inventoryCountsMap, readSave, writeSave } from "@/lib/game/save";
+import { inventorySlotsSnapshot, readSave, writeSave } from "@/lib/game/save";
 import type { InventorySlot, SaveDataV1 } from "@/lib/game/types";
 
 type CreatePersistenceHandlersArgs = {
@@ -23,7 +23,7 @@ export function createPersistenceHandlers(args: CreatePersistenceHandlersArgs) {
         version: 1,
         seed: worldSeed,
         changes,
-        inventoryCounts: inventoryCountsMap(inventoryRef.current),
+        inventorySlots: inventorySlotsSnapshot(inventoryRef.current),
         selectedSlot: selectedSlotRef.current,
         player: {
           x: playerPosition.x,

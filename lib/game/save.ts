@@ -16,8 +16,6 @@ export function writeSave(saveKey: string, data: SaveDataV1): void {
   localStorage.setItem(saveKey, JSON.stringify(data));
 }
 
-export function inventoryCountsMap(inventory: InventorySlot[]): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const slot of inventory) out[slot.id] = slot.count;
-  return out;
+export function inventorySlotsSnapshot(inventory: InventorySlot[]): Array<{ id: string | null; count: number }> {
+  return inventory.map((slot) => ({ id: slot.id, count: slot.count }));
 }

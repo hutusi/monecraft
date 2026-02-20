@@ -1,5 +1,5 @@
 import { BlockId } from "@/lib/world";
-import type { InventorySlot, Recipe } from "@/lib/game/types";
+import type { InventorySlot, ItemDef, Recipe } from "@/lib/game/types";
 
 export const PLAYER_HEIGHT = 1.8;
 export const PLAYER_HALF_WIDTH = 0.3;
@@ -10,6 +10,9 @@ export const WALK_SPEED = 4.8;
 export const SPRINT_SPEED = 12.8;
 export const CROUCH_SPEED = 2.1;
 export const MAX_HEARTS = 50;
+export const HOTBAR_SLOTS = 10;
+export const INVENTORY_SLOTS = 40;
+export const MAX_STACK_SIZE = 99;
 export const RENDER_RADIUS = 90;
 export const RENDER_GRID = 20;
 
@@ -30,25 +33,54 @@ export const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
   [BlockId.RubyOre]: 9
 };
 
-export const INITIAL_INVENTORY: InventorySlot[] = [
-  { id: "grass", label: "Grass", kind: "block", blockId: BlockId.Grass, count: 64 },
-  { id: "dirt", label: "Dirt", kind: "block", blockId: BlockId.Dirt, count: 64 },
-  { id: "stone", label: "Stone", kind: "block", blockId: BlockId.Stone, count: 64 },
-  { id: "wood", label: "Wood", kind: "block", blockId: BlockId.Wood, count: 64 },
-  { id: "planks", label: "Planks", kind: "block", blockId: BlockId.Planks, count: 20 },
-  { id: "cobble", label: "Cobble", kind: "block", blockId: BlockId.Cobblestone, count: 20 },
-  { id: "sand", label: "Sand", kind: "block", blockId: BlockId.Sand, count: 20 },
-  { id: "brick", label: "Brick", kind: "block", blockId: BlockId.Brick, count: 0 },
-  { id: "glass", label: "Glass", kind: "block", blockId: BlockId.Glass, count: 0 },
-  { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre, count: 0 },
-  { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre, count: 0 },
-  { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1, count: 1 },
-  { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2, count: 0 },
-  { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3, count: 0 },
-  { id: "knife", label: "Knife", kind: "weapon", attack: 9, count: 1 },
-  { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13, count: 0 },
-  { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18, count: 0 }
+export const ITEM_DEFS: ItemDef[] = [
+  { id: "grass", label: "Grass", kind: "block", blockId: BlockId.Grass },
+  { id: "dirt", label: "Dirt", kind: "block", blockId: BlockId.Dirt },
+  { id: "stone", label: "Stone", kind: "block", blockId: BlockId.Stone },
+  { id: "wood", label: "Wood", kind: "block", blockId: BlockId.Wood },
+  { id: "planks", label: "Planks", kind: "block", blockId: BlockId.Planks },
+  { id: "cobble", label: "Cobble", kind: "block", blockId: BlockId.Cobblestone },
+  { id: "sand", label: "Sand", kind: "block", blockId: BlockId.Sand },
+  { id: "brick", label: "Brick", kind: "block", blockId: BlockId.Brick },
+  { id: "glass", label: "Glass", kind: "block", blockId: BlockId.Glass },
+  { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre },
+  { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre },
+  { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1 },
+  { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2 },
+  { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3 },
+  { id: "knife", label: "Knife", kind: "weapon", attack: 9 },
+  { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13 },
+  { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18 }
 ];
+
+export const ITEM_DEF_BY_ID: Record<string, ItemDef> = Object.fromEntries(ITEM_DEFS.map((item) => [item.id, item]));
+
+export function createEmptySlot(): InventorySlot {
+  return { id: null, label: "Empty", kind: null, count: 0 };
+}
+
+export function createSlot(itemId: string, count: number): InventorySlot {
+  const def = ITEM_DEF_BY_ID[itemId];
+  if (!def) return createEmptySlot();
+  return { ...def, count };
+}
+
+export function createInitialInventory(): InventorySlot[] {
+  const slots: InventorySlot[] = Array.from({ length: INVENTORY_SLOTS }, () => createEmptySlot());
+  const starter: Array<{ id: string; count: number }> = [
+    { id: "grass", count: 64 },
+    { id: "dirt", count: 64 },
+    { id: "stone", count: 64 },
+    { id: "wood", count: 64 },
+    { id: "planks", count: 20 },
+    { id: "cobble", count: 20 },
+    { id: "sand", count: 20 },
+    { id: "wood_pickaxe", count: 1 },
+    { id: "knife", count: 1 }
+  ];
+  for (let i = 0; i < starter.length && i < slots.length; i += 1) slots[i] = createSlot(starter[i].id, starter[i].count);
+  return slots;
+}
 
 export const BLOCK_TO_SLOT: Partial<Record<BlockId, string>> = {
   [BlockId.Grass]: "grass",

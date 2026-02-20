@@ -27,7 +27,7 @@ export default function MinecraftGame() {
         onLoad={game.loadNow}
       />
 
-      <Hotbar inventory={game.inventory} selectedSlot={game.selectedSlot} onSelectSlot={game.setSelectedSlot} />
+      <Hotbar inventory={game.inventory} selectedSlot={game.selectedSlot} hotbarSlots={game.hotbarSlots} onSelectSlot={game.setSelectedSlot} />
 
       {game.inventoryOpen ? (
         <InventoryPanel

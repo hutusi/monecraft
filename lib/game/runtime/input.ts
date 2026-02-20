@@ -11,13 +11,14 @@ type BindGameInputArgs = {
   camera: THREE.PerspectiveCamera;
   renderer: THREE.WebGLRenderer;
   controls: ControlsState;
-  inventoryRef: { current: { id: string }[] };
+  inventoryRef: { current: { id: string | null }[] };
   inventoryOpenRef: { current: boolean };
   isDeadRef: { current: boolean };
   leftMouseHeldRef: { current: boolean };
   mineTargetRef: { current: string };
   mineProgressRef: { current: number };
   setLocked: (locked: boolean) => void;
+  hotbarSlots: number;
   setSelectedSlot: (idx: number) => void;
   setInventoryOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   setCapsActive: (active: boolean) => void;
@@ -38,6 +39,7 @@ export function bindGameInput(args: BindGameInputArgs): () => void {
     mineTargetRef,
     mineProgressRef,
     setLocked,
+    hotbarSlots,
     setSelectedSlot,
     setInventoryOpen,
     setCapsActive,
@@ -64,8 +66,8 @@ export function bindGameInput(args: BindGameInputArgs): () => void {
 
   const onKeyDown = (evt: KeyboardEvent) => {
     if (evt.code.startsWith("Digit")) {
-      const idx = Number.parseInt(evt.code.slice(5), 10) - 1;
-      if (idx >= 0 && idx < inventoryRef.current.length) setSelectedSlot(idx);
+      const idx = evt.code === "Digit0" ? 9 : Number.parseInt(evt.code.slice(5), 10) - 1;
+      if (idx >= 0 && idx < Math.min(hotbarSlots, inventoryRef.current.length)) setSelectedSlot(idx);
     }
 
     if (evt.code === "KeyI") {

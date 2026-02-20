@@ -1,49 +1,62 @@
 .hotbar-bottom {
   position: absolute;
   left: 50%;
-  bottom: 18px;
+  bottom: 14px;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
-  width: min(96vw, 860px);
+  gap: 6px;
+  width: min(96vw, 760px);
   justify-content: center;
   z-index: 4;
   pointer-events: auto;
-  overflow-x: auto;
-  padding: 0 8px;
+  padding: 8px 10px;
+  border: 1px solid #00000055;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(62, 53, 42, 0.75), rgba(31, 25, 19, 0.82));
+  backdrop-filter: blur(1.5px);
 }
 
 .hotbar-slot {
-  min-width: 112px;
-  border: 2px solid #00000059;
+  width: 68px;
+  height: 68px;
+  border: 1px solid #00000080;
   border-radius: 10px;
-  background: rgba(250, 244, 229, 0.95);
-  color: #1b1b1b;
+  background: linear-gradient(180deg, #ece4d2 0%, #cec3aa 100%);
+  color: #1a1a1a;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 6px 4px;
   display: grid;
-  gap: 2px;
+  grid-template-rows: 12px 1fr 14px;
+  align-items: center;
   justify-items: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .hotbar-slot.active {
-  border-color: #d69512;
-  background: #ffe29d;
+  border-color: #ffe5a3;
+  background: linear-gradient(180deg, #f7d88f 0%, #e3b95c 100%);
   font-weight: 700;
+  transform: translateY(-2px);
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .slot-index {
-  font-size: 11px;
-  opacity: 0.8;
+  font-size: 10px;
+  opacity: 0.85;
 }
 
 .slot-label {
-  font-size: 12px;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.05;
 }
 
 .slot-count {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  align-self: end;
 }
 
 .crosshair {
@@ -101,12 +114,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(92vw, 580px);
-  border: 1px solid #00000045;
-  border-radius: 12px;
-  background: rgba(240, 234, 220, 0.96);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-  padding: 14px;
+  width: min(95vw, 920px);
+  border: 1px solid #00000060;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(239, 231, 214, 0.97), rgba(218, 206, 183, 0.97));
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34);
+  padding: 16px;
   z-index: 6;
 }
 
@@ -119,26 +132,30 @@
 
 .inventory-grid {
   display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 7px;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
 }
 
 .inventory-slot {
   border: 1px solid #00000033;
-  border-radius: 8px;
-  background: #f8f4ea;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #f8f4ea 0%, #ded5c4 100%);
   color: #1f1f1f;
-  padding: 10px;
+  min-height: 58px;
+  padding: 6px;
   cursor: pointer;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-rows: 1fr auto;
   align-items: center;
-  font-size: 13px;
+  justify-items: center;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.05;
 }
 
 .inventory-slot.active {
-  background: #ffe3a3;
-  border-color: #aa7b0f;
+  background: linear-gradient(180deg, #ffe3a3 0%, #eec16d 100%);
+  border-color: #8f6710;
   font-weight: 700;
 }
 
@@ -204,15 +221,30 @@
 
 @media (max-width: 720px) {
   .hotbar-bottom {
-    gap: 6px;
-    bottom: 12px;
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding: 0 10px;
+    gap: 4px;
+    bottom: 10px;
+    width: min(98vw, 680px);
+    padding: 6px;
   }
 
   .hotbar-slot {
-    min-width: 98px;
-    padding: 7px 8px;
+    width: 54px;
+    height: 54px;
+    grid-template-rows: 10px 1fr 12px;
+    padding: 4px 2px;
+  }
+
+  .inventory-panel {
+    width: min(97vw, 760px);
+    padding: 12px;
+  }
+
+  .inventory-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .inventory-slot {
+    min-height: 52px;
+    font-size: 10px;
   }
 }

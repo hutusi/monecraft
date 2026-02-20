@@ -15,11 +15,17 @@ import { createSurfaceYAt, randomLandPointNear as pickRandomLandPointNear } from
 import {
   BLOCK_TO_SLOT,
   CROUCH_SPEED,
+  createEmptySlot,
+  createInitialInventory,
+  createSlot,
   EYE_HEIGHT,
   GRAVITY,
-  INITIAL_INVENTORY,
+  HOTBAR_SLOTS,
+  INVENTORY_SLOTS,
+  ITEM_DEF_BY_ID,
   JUMP_VELOCITY,
   MAX_HEARTS,
+  MAX_STACK_SIZE,
   PLAYER_HEIGHT,
   PLAYER_HALF_WIDTH,
   RECIPES,
@@ -32,10 +38,11 @@ import {
 import type { InventorySlot, MobEntity, Recipe, SaveDataV1 } from "@/lib/game/types";
 
 export function useMinecraftGame() {
+  const initialInventory = useMemo(() => createInitialInventory(), []);
   const mountRef = useRef<HTMLDivElement | null>(null);
   const selectedSlotRef = useRef(0);
   const capsActiveRef = useRef(false);
-  const inventoryRef = useRef<InventorySlot[]>(INITIAL_INVENTORY);
+  const inventoryRef = useRef<InventorySlot[]>(initialInventory);
   const inventoryOpenRef = useRef(false);
   const heartsRef = useRef(MAX_HEARTS);
   const isDeadRef = useRef(false);
@@ -51,7 +58,7 @@ export function useMinecraftGame() {
   const [selectedSlot, setSelectedSlot] = useState(0);
   const [capsActive, setCapsActive] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
-  const [inventory, setInventory] = useState<InventorySlot[]>(INITIAL_INVENTORY);
+  const [inventory, setInventory] = useState<InventorySlot[]>(initialInventory);
   const [hearts, setHearts] = useState(MAX_HEARTS);
   const [daylightPercent, setDaylightPercent] = useState(100);
   const [passiveCount, setPassiveCount] = useState(0);
@@ -77,31 +84,113 @@ export function useMinecraftGame() {
     inventoryOpenRef.current = inventoryOpen;
   }, [inventoryOpen]);
 
-  const adjustSlotCount = (slotId: string, delta: number) => {
+  const cloneSlot = (slot: InventorySlot): InventorySlot => ({ ...slot });
+
+  const countsById = (slots: InventorySlot[]): Map<string, number> => {
+    const byId = new Map<string, number>();
+    for (const slot of slots) {
+      if (!slot.id || slot.count <= 0) continue;
+      byId.set(slot.id, (byId.get(slot.id) ?? 0) + slot.count);
+    }
+    return byId;
+  };
+
+  const adjustSlotCount = (slotId: string, delta: number, preferredIndex?: number) => {
+    if (!slotId || delta === 0) return;
     setInventory((prev) => {
-      const idx = prev.findIndex((slot) => slot.id === slotId);
-      if (idx < 0) return prev;
-      const next = [...prev];
-      next[idx] = { ...next[idx], count: Math.max(0, next[idx].count + delta) };
+      const next = prev.map(cloneSlot);
+      let remaining = Math.abs(delta);
+
+      if (delta < 0) {
+        const consumeFromIndex = (index: number) => {
+          if (remaining <= 0) return;
+          if (index < 0 || index >= next.length) return;
+          const slot = next[index];
+          if (slot.id !== slotId || slot.count <= 0) return;
+          const take = Math.min(remaining, slot.count);
+          slot.count -= take;
+          remaining -= take;
+          if (slot.count <= 0) next[index] = createEmptySlot();
+        };
+
+        if (typeof preferredIndex === "number") consumeFromIndex(preferredIndex);
+        for (let i = 0; i < next.length && remaining > 0; i += 1) consumeFromIndex(i);
+        if (remaining > 0) return prev;
+        return next;
+      }
+
+      if (!ITEM_DEF_BY_ID[slotId]) return prev;
+
+      const fillIndex = (index: number) => {
+        if (remaining <= 0) return;
+        if (index < 0 || index >= next.length) return;
+        const slot = next[index];
+        if (slot.id !== slotId || slot.count >= MAX_STACK_SIZE) return;
+        const add = Math.min(remaining, MAX_STACK_SIZE - slot.count);
+        slot.count += add;
+        remaining -= add;
+      };
+
+      if (typeof preferredIndex === "number") fillIndex(preferredIndex);
+      for (let i = 0; i < next.length && remaining > 0; i += 1) fillIndex(i);
+      for (let i = 0; i < next.length && remaining > 0; i += 1) {
+        if (next[i].id !== null || next[i].count !== 0) continue;
+        const add = Math.min(remaining, MAX_STACK_SIZE);
+        next[i] = createSlot(slotId, add);
+        remaining -= add;
+      }
       return next;
     });
   };
 
   const canCraft = (recipe: Recipe): boolean => {
-    const byId = new Map(inventoryRef.current.map((slot) => [slot.id, slot.count]));
-    return recipe.cost.every((cost) => (byId.get(cost.slotId) ?? 0) >= cost.count);
+    const slots = inventoryRef.current;
+    const byId = countsById(slots);
+    const hasCost = recipe.cost.every((cost) => (byId.get(cost.slotId) ?? 0) >= cost.count);
+    if (!hasCost) return false;
+
+    let freeForResult = 0;
+    for (const slot of slots) {
+      if (slot.id === recipe.result.slotId) freeForResult += MAX_STACK_SIZE - slot.count;
+      if (slot.id === null && slot.count === 0) freeForResult += MAX_STACK_SIZE;
+    }
+    return freeForResult >= recipe.result.count;
   };
 
   const craft = (recipe: Recipe) => {
     setInventory((prev) => {
-      const byId = new Map(prev.map((slot) => [slot.id, slot.count]));
+      const byId = countsById(prev);
       const allowed = recipe.cost.every((cost) => (byId.get(cost.slotId) ?? 0) >= cost.count);
       if (!allowed) return prev;
 
-      for (const cost of recipe.cost) byId.set(cost.slotId, (byId.get(cost.slotId) ?? 0) - cost.count);
-      byId.set(recipe.result.slotId, (byId.get(recipe.result.slotId) ?? 0) + recipe.result.count);
+      const next = prev.map(cloneSlot);
+      for (const cost of recipe.cost) {
+        let remaining = cost.count;
+        for (let i = 0; i < next.length && remaining > 0; i += 1) {
+          if (next[i].id !== cost.slotId || next[i].count <= 0) continue;
+          const take = Math.min(remaining, next[i].count);
+          next[i].count -= take;
+          remaining -= take;
+          if (next[i].count <= 0) next[i] = createEmptySlot();
+        }
+      }
 
-      return prev.map((slot) => ({ ...slot, count: Math.max(0, byId.get(slot.id) ?? slot.count) }));
+      if (!ITEM_DEF_BY_ID[recipe.result.slotId]) return next;
+      let remaining = recipe.result.count;
+
+      for (let i = 0; i < next.length && remaining > 0; i += 1) {
+        if (next[i].id !== recipe.result.slotId || next[i].count >= MAX_STACK_SIZE) continue;
+        const add = Math.min(remaining, MAX_STACK_SIZE - next[i].count);
+        next[i].count += add;
+        remaining -= add;
+      }
+      for (let i = 0; i < next.length && remaining > 0; i += 1) {
+        if (next[i].id !== null || next[i].count !== 0) continue;
+        const add = Math.min(remaining, MAX_STACK_SIZE);
+        next[i] = createSlot(recipe.result.slotId, add);
+        remaining -= add;
+      }
+      return next;
     });
   };
 
@@ -170,16 +259,32 @@ export function useMinecraftGame() {
       onGround: false
     };
 
-    if (loadedSave?.inventoryCounts) {
-      setInventory((prev) =>
-        prev.map((slot) => ({
-          ...slot,
-          count: Math.max(0, Math.floor(loadedSave?.inventoryCounts?.[slot.id] ?? slot.count))
-        }))
-      );
+    if (Array.isArray(loadedSave?.inventorySlots)) {
+      const slots = Array.from({ length: INVENTORY_SLOTS }, () => createEmptySlot());
+      for (let i = 0; i < Math.min(INVENTORY_SLOTS, loadedSave.inventorySlots.length); i += 1) {
+        const saved = loadedSave.inventorySlots[i];
+        if (!saved?.id || saved.count <= 0) continue;
+        if (!ITEM_DEF_BY_ID[saved.id]) continue;
+        slots[i] = createSlot(saved.id, Math.min(MAX_STACK_SIZE, Math.max(0, Math.floor(saved.count))));
+      }
+      setInventory(slots);
+    } else if (loadedSave?.inventoryCounts) {
+      const slots = Array.from({ length: INVENTORY_SLOTS }, () => createEmptySlot());
+      let cursor = 0;
+      for (const [id, raw] of Object.entries(loadedSave.inventoryCounts)) {
+        if (!ITEM_DEF_BY_ID[id]) continue;
+        let remaining = Math.max(0, Math.floor(raw));
+        while (remaining > 0 && cursor < slots.length) {
+          const add = Math.min(MAX_STACK_SIZE, remaining);
+          slots[cursor] = createSlot(id, add);
+          cursor += 1;
+          remaining -= add;
+        }
+      }
+      setInventory(slots);
     }
     if (typeof loadedSave?.selectedSlot === "number") {
-      const idx = Math.max(0, Math.min(INITIAL_INVENTORY.length - 1, loadedSave.selectedSlot));
+      const idx = Math.max(0, Math.min(HOTBAR_SLOTS - 1, loadedSave.selectedSlot));
       setSelectedSlot(idx);
       selectedSlotRef.current = idx;
     }
@@ -335,6 +440,7 @@ export function useMinecraftGame() {
       mineTargetRef,
       mineProgressRef,
       setLocked,
+      hotbarSlots: HOTBAR_SLOTS,
       setSelectedSlot,
       setInventoryOpen,
       setCapsActive,
@@ -464,7 +570,7 @@ export function useMinecraftGame() {
     };
   }, []);
 
-  const selectedSlotData = inventory[selectedSlot];
+  const selectedSlotData = inventory[selectedSlot]?.id ? inventory[selectedSlot] : undefined;
 
   return {
     mountRef,
@@ -482,6 +588,7 @@ export function useMinecraftGame() {
     saveMessage,
     heartDisplay,
     selectedSlotData,
+    hotbarSlots: HOTBAR_SLOTS,
     recipes: RECIPES,
     maxHearts: MAX_HEARTS,
     canCraft,

@@ -19,7 +19,7 @@ type MiningContext = {
   leftMouseHeldRef: { current: boolean };
   inventoryOpenRef: { current: boolean };
   isDeadRef: { current: boolean };
-  adjustSlotCount: (slotId: string, delta: number) => void;
+  adjustSlotCount: (slotId: string, delta: number, preferredIndex?: number) => void;
   addBlockDrop: (block: BlockId) => void;
   setBlockTracked: (x: number, y: number, z: number, nextBlock: BlockId) => void;
   rebuildWorldMesh: (force?: boolean) => void;
@@ -98,14 +98,14 @@ export function doPlace(ctx: MiningContext): void {
   if (!world.inBounds(tx, ty, tz) || world.get(tx, ty, tz) !== BlockId.Air) return;
 
   const slot = inventoryRef.current[selectedSlotRef.current];
-  if (!slot || slot.kind !== "block" || slot.count <= 0 || slot.blockId === undefined) return;
+  if (!slot || !slot.id || slot.kind !== "block" || slot.count <= 0 || slot.blockId === undefined) return;
   if (slot.blockId === BlockId.Bedrock) return;
 
-  adjustSlotCount(slot.id, -1);
+  adjustSlotCount(slot.id, -1, selectedSlotRef.current);
   setBlockTracked(tx, ty, tz, slot.blockId);
   if (collidesAt(world, playerPosition, playerHalfWidth, playerHeight)) {
     setBlockTracked(tx, ty, tz, BlockId.Air);
-    adjustSlotCount(slot.id, 1);
+    adjustSlotCount(slot.id, 1, selectedSlotRef.current);
     return;
   }
 

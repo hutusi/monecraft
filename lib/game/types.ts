@@ -1,10 +1,22 @@
 import * as THREE from "three";
 import { BlockId } from "@/lib/world";
 
-export type InventorySlot = {
+export type ItemKind = "block" | "weapon" | "tool";
+
+export type ItemDef = {
   id: string;
   label: string;
-  kind: "block" | "weapon" | "tool";
+  kind: ItemKind;
+  blockId?: BlockId;
+  attack?: number;
+  minePower?: number;
+  mineTier?: number;
+};
+
+export type InventorySlot = {
+  id: string | null;
+  label: string;
+  kind: ItemKind | null;
   count: number;
   blockId?: BlockId;
   attack?: number;
@@ -50,7 +62,8 @@ export type SaveDataV1 = {
   version: 1;
   seed: number;
   changes: Array<[number, number]>;
-  inventoryCounts: Record<string, number>;
+  inventoryCounts?: Record<string, number>;
+  inventorySlots?: Array<{ id: string | null; count: number }>;
   selectedSlot: number;
   player: { x: number; y: number; z: number };
 };

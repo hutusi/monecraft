@@ -38,7 +38,7 @@ export default function Hud(props: HudProps) {
         <span>Sprint: W + CapsLock | Crouch: C</span>
         <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
         <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
-        <span>Inventory/Crafting: I | Hotbar: 1..12</span>
+        <span>Inventory/Crafting: I | Hotbar: 1..0 | Max Stack: 99</span>
       </div>
       <div className="stats-line">Passive Mobs: {passiveCount} | Hostile Mobs: {hostileCount}</div>
       <div className="stats-line">Daylight: {daylightPercent}%</div>

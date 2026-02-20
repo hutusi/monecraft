@@ -15,9 +15,9 @@ export default function InventoryPanel({ inventory, selectedSlot, recipes, canCr
       <div className="inventory-title">Inventory & Crafting</div>
       <div className="inventory-grid">
         {inventory.map((slot, idx) => (
-          <button key={`inv-${slot.id}`} className={idx === selectedSlot ? "inventory-slot active" : "inventory-slot"} onClick={() => onSelectSlot(idx)}>
-            <span>{slot.label}</span>
-            <span>x{slot.count}</span>
+          <button key={`inv-${idx}`} className={idx === selectedSlot ? "inventory-slot active" : "inventory-slot"} onClick={() => onSelectSlot(idx)}>
+            <span>{slot.id ? slot.label : "Empty"}</span>
+            <span>{slot.count > 0 ? `x${slot.count}` : ""}</span>
           </button>
         ))}
       </div>
