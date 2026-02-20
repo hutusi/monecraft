@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export const WORLD_SIZE_X = 2000;
-export const WORLD_SIZE_Y = 24;
+export const WORLD_SIZE_Y = 100;
 export const WORLD_SIZE_Z = 2000;
 
 export const enum BlockId {
@@ -162,10 +162,13 @@ export class VoxelWorld {
 
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
-        // Flatter terrain profile.
-        const nA = Math.sin(x * 0.025) * 0.9 + Math.cos(z * 0.027) * 0.85;
-        const nB = (seededHash(x, z) - 0.5) * 1.6;
-        const height = Math.max(5, Math.min(this.sizeY - 6, Math.floor(9 + nA + nB)));
+        // Mostly flat terrain with gentle hills and occasional mountains.
+        const plain = Math.sin(x * 0.01) * 1.3 + Math.cos(z * 0.011) * 1.2 + (seededHash(x, z) - 0.5) * 1.7;
+        const hillMask = Math.max(0, seededHash(x * 0.036 + 137, z * 0.036 - 61) - 0.52);
+        const hills = hillMask * 16;
+        const mountainMask = Math.max(0, seededHash(x * 0.008 - 29, z * 0.008 + 17) - 0.83);
+        const mountains = mountainMask * mountainMask * 90;
+        const height = Math.max(9, Math.min(this.sizeY - 8, Math.floor(17 + plain + hills + mountains)));
 
         const sandy = seededHash(x * 0.12, z * 0.12) > 0.84;
 
@@ -213,7 +216,7 @@ export class VoxelWorld {
     };
 
     // Cave tunnels.
-    const caveCount = 280;
+    const caveCount = 420;
     for (let i = 0; i < caveCount; i += 1) {
       let x = 12 + rand() * (this.sizeX - 24);
       let y = 3 + rand() * (this.sizeY - 9);

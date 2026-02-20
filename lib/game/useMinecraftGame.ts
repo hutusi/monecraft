@@ -559,6 +559,7 @@ export function useMinecraftGame() {
     let dayClock = 0;
     let dayHudTimer = 0;
     let voidTimer = 0;
+    let regenTimer = 0;
 
     const tickMobsRuntime = (dt: number, time: number) =>
       tickMobs({
@@ -625,6 +626,17 @@ export function useMinecraftGame() {
         worldBorderPadding: 1.2,
         voidTimer
       }));
+
+      if (!isDeadRef.current && heartsRef.current < MAX_HEARTS) {
+        regenTimer += dt;
+        if (regenTimer >= 3) {
+          heartsRef.current = Math.min(MAX_HEARTS, heartsRef.current + 1);
+          setHearts(heartsRef.current);
+          regenTimer = 0;
+        }
+      } else {
+        regenTimer = 0;
+      }
 
       processMining(createMiningContext(), dt);
       updateHeldItem();

@@ -104,9 +104,11 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
   stepAxis("z", player.velocity.z * dt);
   stepAxis("y", player.velocity.y * dt);
 
-  if (crouching && (player.onGround || wasGrounded) && !hasSupportUnderPlayer(world, player.position, playerHalfWidth)) {
+  if (crouching && (player.onGround || wasGrounded) && !hasSupportUnderPlayer(world, player.position, playerHalfWidth + 0.12)) {
     player.position.x = prevX;
     player.position.z = prevZ;
+    player.velocity.x = 0;
+    player.velocity.z = 0;
   }
 
   player.position.x = Math.min(world.sizeX - worldBorderPadding, Math.max(worldBorderPadding, player.position.x));

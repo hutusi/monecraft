@@ -79,7 +79,12 @@ export function tryAttackMob(
   mob.hp -= damage;
 
   const knock = mob.group.position.clone().sub(playerPosition).setY(0);
-  if (knock.lengthSq() > 0.0001) mob.direction.copy(knock.normalize());
+  if (knock.lengthSq() > 0.0001) {
+    const dir = knock.normalize();
+    mob.direction.copy(dir);
+    mob.group.position.addScaledVector(dir, 0.75);
+    mob.group.position.y += 0.12;
+  }
 
   if (mob.hp <= 0) onMobKilled(bestIndex);
   return true;
