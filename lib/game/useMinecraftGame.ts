@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { BlockId, VoxelWorld } from "@/lib/world";
+import { BlockId, VoxelWorld, WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z } from "@/lib/world";
 import { readSave } from "@/lib/game/save";
 import { tickDayNight } from "@/lib/game/runtime/dayNight";
 import { bindGameInput } from "@/lib/game/runtime/input";
@@ -213,7 +213,7 @@ export function useMinecraftGame() {
     const loadedSave: SaveDataV1 | null = readSave(SAVE_KEY);
 
     const worldSeed = loadedSave?.seed ?? Math.floor(Math.random() * 2147483647);
-    const world = new VoxelWorld(undefined, undefined, undefined, worldSeed);
+    const world = new VoxelWorld(WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z, worldSeed);
     world.generate();
 
     const changedBlocks = new Map<number, number>();
@@ -266,8 +266,10 @@ export function useMinecraftGame() {
       keys: new Set<string>()
     };
 
+    const spawnX = Math.floor(world.sizeX / 2);
+    const spawnZ = Math.floor(world.sizeZ / 2);
     const player = {
-      position: new THREE.Vector3(world.sizeX / 2, 14, world.sizeZ / 2),
+      position: new THREE.Vector3(world.sizeX / 2, world.highestSolidY(spawnX, spawnZ) + 2, world.sizeZ / 2),
       velocity: new THREE.Vector3(),
       onGround: false
     };

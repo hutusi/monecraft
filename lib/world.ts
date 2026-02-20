@@ -162,13 +162,13 @@ export class VoxelWorld {
 
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
-        // Extra-flat terrain profile with only subtle hills.
-        const plain = Math.sin(x * 0.008) * 0.6 + Math.cos(z * 0.009) * 0.55 + (seededHash(x, z) - 0.5) * 0.8;
-        const hillMask = Math.max(0, seededHash(x * 0.03 + 137, z * 0.03 - 61) - 0.7);
+        // True flat plains at high altitude so the world has meaningful vertical depth.
+        const baseHeight = 52;
+        const hillMask = Math.max(0, seededHash(x * 0.03 + 137, z * 0.03 - 61) - 0.76);
         const hills = hillMask * 7;
         const mountainMask = Math.max(0, seededHash(x * 0.006 - 29, z * 0.006 + 17) - 0.94);
         const mountains = mountainMask * mountainMask * 22;
-        const height = Math.max(10, Math.min(this.sizeY - 8, Math.floor(16 + plain + hills + mountains)));
+        const height = Math.max(14, Math.min(this.sizeY - 8, Math.floor(baseHeight + hills + mountains)));
 
         const sandy = seededHash(x * 0.12, z * 0.12) > 0.84;
 
