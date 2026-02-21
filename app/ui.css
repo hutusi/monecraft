@@ -18,7 +18,7 @@
 
 .hotbar-slot {
   width: 68px;
-  height: 68px;
+  height: 78px;
   border: 1px solid #00000080;
   border-radius: 10px;
   background: linear-gradient(180deg, #ece4d2 0%, #cec3aa 100%);
@@ -26,7 +26,7 @@
   cursor: pointer;
   padding: 6px 4px;
   display: grid;
-  grid-template-rows: 12px 1fr 14px;
+  grid-template-rows: 12px 1fr 12px 14px;
   align-items: center;
   justify-items: center;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -48,9 +48,23 @@
 }
 
 .slot-label {
-  font-size: 11px;
+  font-size: 10px;
   text-align: center;
   line-height: 1.05;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot-icon {
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.45));
+}
+
+.slot-icon.empty {
+  opacity: 0.18;
 }
 
 .slot-count {
@@ -251,9 +265,13 @@
 
   .hotbar-slot {
     width: 54px;
-    height: 54px;
-    grid-template-rows: 10px 1fr 12px;
+    height: 64px;
+    grid-template-rows: 10px 1fr 10px 12px;
     padding: 4px 2px;
+  }
+
+  .slot-icon {
+    font-size: 16px;
   }
 
   .inventory-panel {
