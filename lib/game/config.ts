@@ -10,6 +10,7 @@ export const WALK_SPEED = 4.8;
 export const SPRINT_SPEED = 12.8;
 export const CROUCH_SPEED = 2.1;
 export const MAX_HEARTS = 50;
+export const MAX_ENERGY = 100;
 export const HOTBAR_SLOTS = 10;
 export const INVENTORY_SLOTS = 40;
 export const MAX_STACK_SIZE = 99;
@@ -48,6 +49,7 @@ export const ITEM_DEFS: ItemDef[] = [
   { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1 },
   { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2 },
   { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3 },
+  { id: "food", label: "Food", kind: "block" },
   { id: "knife", label: "Knife", kind: "weapon", attack: 9 },
   { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13 },
   { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18 }

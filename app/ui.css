@@ -1,14 +1,56 @@
-.hotbar-bottom {
+.hotbar-wrap {
   position: absolute;
   left: 50%;
   bottom: 14px;
   transform: translateX(-50%);
+  z-index: 4;
+  width: min(96vw, 760px);
+  pointer-events: auto;
+}
+
+.hotbar-status {
+  margin-bottom: 6px;
+  border: 1px solid #00000055;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(62, 53, 42, 0.75), rgba(31, 25, 19, 0.82));
+  padding: 6px 10px;
+}
+
+.hotbar-hearts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+}
+
+.hotbar-stats-line {
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  color: #f2e9d8;
+  font-size: 11px;
+}
+
+.energy-bar {
+  margin-top: 4px;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid #1f1f1f;
+  background: #3a2e24;
+  overflow: hidden;
+}
+
+.energy-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e36d2f 0%, #f2d050 55%, #8bd16a 100%);
+}
+
+.hotbar-bottom {
   display: flex;
   gap: 6px;
-  width: min(96vw, 760px);
+  width: 100%;
   justify-content: center;
-  z-index: 4;
-  pointer-events: auto;
   padding: 8px 10px;
   border: 1px solid #00000055;
   border-radius: 14px;
@@ -256,10 +298,22 @@
 }
 
 @media (max-width: 720px) {
-  .hotbar-bottom {
-    gap: 4px;
+  .hotbar-wrap {
     bottom: 10px;
     width: min(98vw, 680px);
+  }
+
+  .hotbar-status {
+    margin-bottom: 4px;
+    padding: 5px 8px;
+  }
+
+  .hotbar-stats-line {
+    font-size: 10px;
+  }
+
+  .hotbar-bottom {
+    gap: 4px;
     padding: 6px;
   }
 

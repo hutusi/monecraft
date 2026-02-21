@@ -24,9 +24,10 @@ type MoveTickArgs = {
   jumpVelocity: number;
   worldBorderPadding: number;
   voidTimer: number;
+  canSprint: boolean;
 };
 
-export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
+export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number; didSprint: boolean } {
   const {
     dt,
     world,
@@ -42,7 +43,8 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
     crouchSpeed,
     gravity,
     jumpVelocity,
-    worldBorderPadding
+    worldBorderPadding,
+    canSprint
   } = args;
   let { voidTimer } = args;
 
@@ -82,7 +84,7 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
   moveDir.addScaledVector(dirRight, strafeInput);
   if (moveDir.lengthSq() > 0) moveDir.normalize();
 
-  const sprinting = forwardInput > 0 && keys.has("KeyW") && capsActive && !crouching;
+  const sprinting = canSprint && forwardInput > 0 && keys.has("KeyW") && capsActive && !crouching;
   const speed = crouching ? crouchSpeed : sprinting ? sprintSpeed : walkSpeed;
 
   player.velocity.x = moveDir.x * speed;
@@ -129,5 +131,5 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number } {
     voidTimer = 0;
   }
 
-  return { voidTimer };
+  return { voidTimer, didSprint: sprinting && moveDir.lengthSq() > 0.0001 };
 }

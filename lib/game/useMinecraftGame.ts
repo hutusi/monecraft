@@ -24,6 +24,7 @@ import {
   INVENTORY_SLOTS,
   ITEM_DEF_BY_ID,
   JUMP_VELOCITY,
+  MAX_ENERGY,
   MAX_HEARTS,
   MAX_STACK_SIZE,
   PLAYER_HEIGHT,
@@ -45,6 +46,7 @@ export function useMinecraftGame() {
   const inventoryRef = useRef<InventorySlot[]>(initialInventory);
   const inventoryOpenRef = useRef(false);
   const heartsRef = useRef(MAX_HEARTS);
+  const energyRef = useRef(MAX_ENERGY);
   const isDeadRef = useRef(false);
   const respawnTimerRef = useRef(0);
   const respawnShownRef = useRef(0);
@@ -60,6 +62,7 @@ export function useMinecraftGame() {
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [inventory, setInventory] = useState<InventorySlot[]>(initialInventory);
   const [hearts, setHearts] = useState(MAX_HEARTS);
+  const [energy, setEnergy] = useState(MAX_ENERGY);
   const [daylightPercent, setDaylightPercent] = useState(100);
   const [passiveCount, setPassiveCount] = useState(0);
   const [hostileCount, setHostileCount] = useState(0);
@@ -83,6 +86,10 @@ export function useMinecraftGame() {
   useEffect(() => {
     inventoryOpenRef.current = inventoryOpen;
   }, [inventoryOpen]);
+
+  useEffect(() => {
+    energyRef.current = energy;
+  }, [energy]);
 
   const cloneSlot = (slot: InventorySlot): InventorySlot => ({ ...slot });
 
@@ -527,10 +534,19 @@ export function useMinecraftGame() {
       scene.remove(mob.group);
       mobs.splice(index, 1);
       if (mob.hostile) adjustSlotCount("cobble", 1);
-      else adjustSlotCount("wood", 1);
+      else adjustSlotCount("food", 1);
     };
 
     const placeSelectedBlock = () => doPlace(createMiningContext());
+
+    const eatSelectedFood = () => {
+      const slot = inventoryRef.current[selectedSlotRef.current];
+      if (!slot?.id || slot.id !== "food" || slot.count <= 0) return;
+      adjustSlotCount("food", -1, selectedSlotRef.current);
+      const next = Math.min(MAX_ENERGY, energyRef.current + 34);
+      energyRef.current = next;
+      setEnergy(next);
+    };
 
     const unbindInput = bindGameInput({
       mount,
@@ -549,6 +565,7 @@ export function useMinecraftGame() {
       setInventoryOpen,
       setCapsActive,
       placeSelectedBlock,
+      onEatFood: eatSelectedFood,
       tryAttackAction: () =>
         tryAttackMob(mobs, camera, player.position, weaponDamage(inventoryRef, selectedSlotRef), (idx) => {
           removeMobAt(idx);
@@ -610,7 +627,10 @@ export function useMinecraftGame() {
         return;
       }
 
-      ({ voidTimer } = tickPlayerMovement({
+      const energyRatio = Math.max(0, Math.min(1, energyRef.current / MAX_ENERGY));
+      const speedScale = 0.62 + energyRatio * 0.38 + (energyRatio >= 0.99 ? 0.08 : 0);
+
+      const moveTick = tickPlayerMovement({
         dt,
         world,
         camera,
@@ -620,14 +640,24 @@ export function useMinecraftGame() {
         applyDamage,
         playerHeight: PLAYER_HEIGHT,
         playerHalfWidth: PLAYER_HALF_WIDTH,
-        walkSpeed: WALK_SPEED,
-        sprintSpeed: SPRINT_SPEED,
+        walkSpeed: WALK_SPEED * speedScale,
+        sprintSpeed: SPRINT_SPEED * speedScale,
         crouchSpeed: CROUCH_SPEED,
         gravity: GRAVITY,
         jumpVelocity: JUMP_VELOCITY,
         worldBorderPadding: 1.2,
-        voidTimer
-      }));
+        voidTimer,
+        canSprint: energyRef.current > 0.5
+      });
+      voidTimer = moveTick.voidTimer;
+
+      if (moveTick.didSprint) {
+        const next = Math.max(0, energyRef.current - dt * 11.5);
+        if (Math.abs(next - energyRef.current) > 1e-6) {
+          energyRef.current = next;
+          setEnergy(next);
+        }
+      }
 
       if (!isDeadRef.current && heartsRef.current < MAX_HEARTS) {
         regenTimer += dt;
@@ -700,6 +730,7 @@ export function useMinecraftGame() {
     inventoryOpen,
     inventory,
     hearts,
+    energy,
     daylightPercent,
     passiveCount,
     hostileCount,
@@ -710,6 +741,7 @@ export function useMinecraftGame() {
     hotbarSlots: HOTBAR_SLOTS,
     recipes: RECIPES,
     maxHearts: MAX_HEARTS,
+    maxEnergy: MAX_ENERGY,
     canCraft,
     craft,
     swapInventorySlots,

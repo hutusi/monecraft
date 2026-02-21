@@ -6,9 +6,6 @@ type HudProps = {
   hostileCount: number;
   daylightPercent: number;
   selectedSlotData?: InventorySlot;
-  hearts: number;
-  maxHearts: number;
-  heartDisplay: boolean[];
   saveMessage: string;
   onSave: () => void;
   onLoad: () => void;
@@ -21,9 +18,6 @@ export default function Hud(props: HudProps) {
     hostileCount,
     daylightPercent,
     selectedSlotData,
-    hearts,
-    maxHearts,
-    heartDisplay,
     saveMessage,
     onSave,
     onLoad
@@ -35,7 +29,8 @@ export default function Hud(props: HudProps) {
       <div className="help">
         <span>{locked ? "Mouse: Look" : "Click to lock mouse"}</span>
         <span>Move: W/S forward-back, A/D strafe</span>
-        <span>Sprint: W + CapsLock | Crouch: C</span>
+        <span>Sprint: W + CapsLock | Crouch: C | Eat: F</span>
+        <span>Energy drains while sprinting. Eat food to recover energy.</span>
         <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
         <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
         <span>Inventory/Crafting: I (swap slots by clicking two slots) | Hotbar: 1..0 | Max Stack: 99</span>
@@ -53,16 +48,6 @@ export default function Hud(props: HudProps) {
         {saveMessage ? <span className="save-msg">{saveMessage}</span> : null}
       </div>
 
-      <div className="health-wrap">
-        <div className="health-label">Health: {hearts} / {maxHearts} hearts</div>
-        <div className="health-bar">
-          {heartDisplay.map((filled, idx) => (
-            <span key={idx} className={filled ? "heart filled" : "heart"}>
-              ♥
-            </span>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

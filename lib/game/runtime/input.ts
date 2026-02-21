@@ -23,6 +23,7 @@ type BindGameInputArgs = {
   setInventoryOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
   setCapsActive: (active: boolean) => void;
   placeSelectedBlock: () => void;
+  onEatFood: () => void;
   tryAttackAction: () => boolean;
 };
 
@@ -44,6 +45,7 @@ export function bindGameInput(args: BindGameInputArgs): () => void {
     setInventoryOpen,
     setCapsActive,
     placeSelectedBlock,
+    onEatFood,
     tryAttackAction
   } = args;
 
@@ -82,6 +84,10 @@ export function bindGameInput(args: BindGameInputArgs): () => void {
     if (evt.code === "KeyE") {
       evt.preventDefault();
       placeSelectedBlock();
+    }
+    if (evt.code === "KeyF") {
+      evt.preventDefault();
+      onEatFood();
     }
 
     controls.keys.add(evt.code);

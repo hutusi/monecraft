@@ -19,15 +19,22 @@ export default function MinecraftGame() {
         hostileCount={game.hostileCount}
         daylightPercent={game.daylightPercent}
         selectedSlotData={game.selectedSlotData}
-        hearts={game.hearts}
-        maxHearts={game.maxHearts}
-        heartDisplay={game.heartDisplay}
         saveMessage={game.saveMessage}
         onSave={game.saveNow}
         onLoad={game.loadNow}
       />
 
-      <Hotbar inventory={game.inventory} selectedSlot={game.selectedSlot} hotbarSlots={game.hotbarSlots} onSelectSlot={game.setSelectedSlot} />
+      <Hotbar
+        inventory={game.inventory}
+        selectedSlot={game.selectedSlot}
+        hotbarSlots={game.hotbarSlots}
+        hearts={game.hearts}
+        maxHearts={game.maxHearts}
+        heartDisplay={game.heartDisplay}
+        energy={game.energy}
+        maxEnergy={game.maxEnergy}
+        onSelectSlot={game.setSelectedSlot}
+      />
 
       {game.inventoryOpen ? (
         <InventoryPanel

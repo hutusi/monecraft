@@ -4,10 +4,15 @@ type HotbarProps = {
   inventory: InventorySlot[];
   selectedSlot: number;
   hotbarSlots: number;
+  hearts: number;
+  maxHearts: number;
+  heartDisplay: boolean[];
+  energy: number;
+  maxEnergy: number;
   onSelectSlot: (index: number) => void;
 };
 
-export default function Hotbar({ inventory, selectedSlot, hotbarSlots, onSelectSlot }: HotbarProps) {
+export default function Hotbar({ inventory, selectedSlot, hotbarSlots, hearts, maxHearts, heartDisplay, energy, maxEnergy, onSelectSlot }: HotbarProps) {
   const iconForSlot = (slot: InventorySlot): string => {
     if (!slot.id || slot.count <= 0) return "";
     const byId: Record<string, string> = {
@@ -25,6 +30,7 @@ export default function Hotbar({ inventory, selectedSlot, hotbarSlots, onSelectS
       wood_pickaxe: "⛏️",
       stone_pickaxe: "⛏️",
       sliver_pickaxe: "⛏️",
+      food: "🍖",
       knife: "🔪",
       wood_sword: "⚔️",
       stone_sword: "⚔️"
@@ -34,15 +40,33 @@ export default function Hotbar({ inventory, selectedSlot, hotbarSlots, onSelectS
 
   const visible = inventory.slice(0, hotbarSlots);
   return (
-    <div className="hotbar-bottom">
-      {visible.map((slot, idx) => (
-        <button key={`hotbar-${idx}`} className={idx === selectedSlot ? "hotbar-slot active" : "hotbar-slot"} onClick={() => onSelectSlot(idx)}>
-          <span className="slot-index">{idx === 9 ? 0 : idx + 1}</span>
-          <span className={slot.id ? "slot-icon" : "slot-icon empty"}>{iconForSlot(slot)}</span>
-          <span className="slot-label">{slot.id ? slot.label : "Empty"}</span>
-          <span className="slot-count">{slot.count > 0 ? slot.count : ""}</span>
-        </button>
-      ))}
+    <div className="hotbar-wrap">
+      <div className="hotbar-status">
+        <div className="hotbar-hearts">
+          {heartDisplay.map((filled, idx) => (
+            <span key={idx} className={filled ? "heart filled" : "heart"}>
+              ♥
+            </span>
+          ))}
+        </div>
+        <div className="hotbar-stats-line">
+          <span>Health: {hearts}/{maxHearts}</span>
+          <span>Energy: {Math.round(energy)}/{maxEnergy}</span>
+        </div>
+        <div className="energy-bar">
+          <div className="energy-fill" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
+        </div>
+      </div>
+      <div className="hotbar-bottom">
+        {visible.map((slot, idx) => (
+          <button key={`hotbar-${idx}`} className={idx === selectedSlot ? "hotbar-slot active" : "hotbar-slot"} onClick={() => onSelectSlot(idx)}>
+            <span className="slot-index">{idx === 9 ? 0 : idx + 1}</span>
+            <span className={slot.id ? "slot-icon" : "slot-icon empty"}>{iconForSlot(slot)}</span>
+            <span className="slot-label">{slot.id ? slot.label : "Empty"}</span>
+            <span className="slot-count">{slot.count > 0 ? slot.count : ""}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
