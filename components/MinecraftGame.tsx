@@ -30,7 +30,6 @@ export default function MinecraftGame() {
         hotbarSlots={game.hotbarSlots}
         hearts={game.hearts}
         maxHearts={game.maxHearts}
-        heartDisplay={game.heartDisplay}
         energy={game.energy}
         maxEnergy={game.maxEnergy}
         onSelectSlot={game.setSelectedSlot}
