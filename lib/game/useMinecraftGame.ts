@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { BlockId, VoxelWorld, WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z } from "@/lib/world";
+import { BlockId, createBlockAtlasTexture, VoxelWorld, WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z } from "@/lib/world";
 import { readSave } from "@/lib/game/save";
 import { tickDayNight } from "@/lib/game/runtime/dayNight";
 import { bindGameInput } from "@/lib/game/runtime/input";
@@ -259,7 +259,12 @@ export function useMinecraftGame() {
     sun.position.set(40, 95, 24);
     scene.add(sun);
 
-    const worldMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.02 });
+    const worldMaterial = new THREE.MeshStandardMaterial({
+      map: createBlockAtlasTexture(),
+      vertexColors: true,
+      roughness: 0.88,
+      metalness: 0.02
+    });
     let worldMesh = new THREE.Mesh(new THREE.BufferGeometry(), worldMaterial);
     scene.add(worldMesh);
     scene.add(camera);

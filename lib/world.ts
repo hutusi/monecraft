@@ -37,6 +37,91 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.RubyOre]: [0.54, 0.56, 0.58]
 };
 
+const ATLAS_TILE_SIZE = 16;
+const ATLAS_FACE_VARIANTS = 3; // top, side, bottom
+const ATLAS_COLUMNS = 16;
+let atlasTextureCache: THREE.CanvasTexture | null = null;
+
+function clamp01(v: number): number {
+  return Math.max(0, Math.min(1, v));
+}
+
+function tone(c: [number, number, number], mul: number, add = 0): [number, number, number] {
+  return [clamp01(c[0] * mul + add), clamp01(c[1] * mul + add), clamp01(c[2] * mul + add)];
+}
+
+function rgb(c: [number, number, number]): string {
+  return `rgb(${Math.floor(clamp01(c[0]) * 255)}, ${Math.floor(clamp01(c[1]) * 255)}, ${Math.floor(clamp01(c[2]) * 255)})`;
+}
+
+function tileIndexFor(block: number, face: "top" | "side" | "bottom"): number {
+  const faceId = face === "top" ? 0 : face === "side" ? 1 : 2;
+  return block * ATLAS_FACE_VARIANTS + faceId;
+}
+
+export function createBlockAtlasTexture(): THREE.CanvasTexture {
+  if (atlasTextureCache) return atlasTextureCache;
+
+  const totalTiles = (BlockId.RubyOre + 1) * ATLAS_FACE_VARIANTS;
+  const rows = Math.ceil(totalTiles / ATLAS_COLUMNS);
+  const width = ATLAS_COLUMNS * ATLAS_TILE_SIZE;
+  const height = rows * ATLAS_TILE_SIZE;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to create atlas context");
+  ctx.imageSmoothingEnabled = false;
+
+  const drawTile = (block: number, face: "top" | "side" | "bottom") => {
+    const tile = tileIndexFor(block, face);
+    const col = tile % ATLAS_COLUMNS;
+    const row = Math.floor(tile / ATLAS_COLUMNS);
+    const ox = col * ATLAS_TILE_SIZE;
+    const oy = row * ATLAS_TILE_SIZE;
+
+    const baseBlockColor = BLOCK_COLORS[block] ?? [1, 0, 1];
+    let base = baseBlockColor;
+    if (face === "top") base = tone(base, 1.08);
+    if (face === "bottom") base = tone(base, 0.78);
+    if (block === BlockId.Grass && face === "bottom") base = BLOCK_COLORS[BlockId.Dirt];
+
+    for (let y = 0; y < ATLAS_TILE_SIZE; y += 1) {
+      for (let x = 0; x < ATLAS_TILE_SIZE; x += 1) {
+        const h = Math.sin((x + block * 13 + (face === "top" ? 7 : face === "side" ? 17 : 29)) * 12.1 + (y + block * 19) * 7.7) * 43758.5453;
+        const n = h - Math.floor(h);
+        let c = tone(base, 0.92 + n * 0.22);
+
+        if (block === BlockId.Grass && face === "side" && y < 4) c = tone(BLOCK_COLORS[BlockId.Grass], 0.95 + n * 0.15);
+        if ((block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Bedrock) && n > 0.8) c = tone(base, 1.18);
+        if ((block === BlockId.Wood || block === BlockId.Planks) && ((x + y) % 4 === 0)) c = tone(base, 0.82);
+        if (block === BlockId.SliverOre && n > 0.86) c = tone([0.93, 0.93, 0.95], 1);
+        if (block === BlockId.RubyOre && n > 0.88) c = tone([0.86, 0.24, 0.24], 1);
+        if (block === BlockId.Sand && n > 0.84) c = tone(base, 1.12);
+
+        ctx.fillStyle = rgb(c);
+        ctx.fillRect(ox + x, oy + y, 1, 1);
+      }
+    }
+  };
+
+  for (let block = BlockId.Grass; block <= BlockId.RubyOre; block += 1) {
+    drawTile(block, "top");
+    drawTile(block, "side");
+    drawTile(block, "bottom");
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.NearestMipMapNearestFilter;
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.flipY = false;
+  texture.needsUpdate = true;
+  atlasTextureCache = texture;
+  return texture;
+}
+
 const FACE_DEFS: {
   dir: [number, number, number];
   corners: [number, number, number][];
@@ -312,6 +397,7 @@ export class VoxelWorld {
     const positions: number[] = [];
     const normals: number[] = [];
     const colors: number[] = [];
+    const uvs: number[] = [];
 
     const clampedMinX = Math.max(0, minX);
     const clampedMaxX = Math.min(this.sizeX - 1, maxX);
@@ -320,131 +406,29 @@ export class VoxelWorld {
     const clampedMinY = Math.max(0, minY);
     const clampedMaxY = Math.min(this.sizeY - 1, maxY);
 
-    const pushVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number, color: [number, number, number]) => {
+    const pushVertex = (x: number, y: number, z: number, nx: number, ny: number, nz: number, color: [number, number, number], u: number, v: number) => {
       positions.push(x, y, z);
       normals.push(nx, ny, nz);
       colors.push(color[0], color[1], color[2]);
+      uvs.push(u, v);
+    };
+    const materialTint = (ny: number): [number, number, number] => {
+      const shade = ny > 0 ? 1 : ny < 0 ? 0.74 : 0.86;
+      return [shade, shade, shade];
     };
 
-    const texJitter = (x: number, y: number, z: number): number => {
-      const n = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
-      return (n - Math.floor(n)) * 0.22 - 0.11;
-    };
-
-    const layeredNoise = (x: number, y: number, z: number): number => {
-      const a = Math.sin(x * 0.27 + z * 0.19 + y * 0.11);
-      const b = Math.cos(x * 0.51 - z * 0.43 + y * 0.09);
-      const c = Math.sin(x * 1.31 + y * 0.71 + z * 1.09) * 0.33;
-      return (a * 0.44 + b * 0.36 + c) * 0.5;
-    };
-
-    const microNoise = (x: number, y: number, z: number): number => {
-      const n = Math.sin(x * 8.9 + y * 11.3 + z * 9.7) * 0.5 + Math.cos(x * 13.1 - y * 7.4 + z * 12.8) * 0.5;
-      return n * 0.04;
-    };
-
-    const pixelPatch = (x: number, y: number, z: number): number => {
-      const px = Math.floor((x + 2048) * 8);
-      const py = Math.floor((y + 2048) * 8);
-      const pz = Math.floor((z + 2048) * 8);
-      const h = Math.sin(px * 0.91 + py * 1.13 + pz * 0.77) * 43758.5453;
-      const v = h - Math.floor(h);
-      return (Math.floor(v * 7) - 3) * 0.024;
-    };
-
-    const pixelPatchFine = (x: number, y: number, z: number): number => {
-      const px = Math.floor((x + 2048) * 13);
-      const py = Math.floor((y + 2048) * 13);
-      const pz = Math.floor((z + 2048) * 13);
-      const h = Math.sin(px * 1.37 + py * 0.83 + pz * 1.19) * 24634.6345;
-      const v = h - Math.floor(h);
-      return (Math.floor(v * 9) - 4) * 0.012;
-    };
-
-    const macroNoise = (x: number, y: number, z: number): number => {
-      const a = Math.sin(x * 0.06 + z * 0.05 + y * 0.03);
-      const b = Math.cos(x * 0.04 - z * 0.08 + y * 0.02);
-      return (a * 0.55 + b * 0.45) * 0.08;
-    };
-
-    const veinNoise = (x: number, y: number, z: number): number => {
-      const v = Math.sin(x * 2.9 + z * 2.1 + y * 0.7) + Math.cos(x * 1.7 - z * 3.3 + y * 0.5);
-      return v * 0.018;
-    };
-
-    const materialTint = (block: number, x: number, y: number, z: number, ny: number): [number, number, number] => {
-      const n = layeredNoise(x, y, z);
-      const micro = microNoise(x, y, z);
-      const macro = macroNoise(x, y, z);
-      const vein = veinNoise(x, y, z);
-      const patch = pixelPatch(x, y, z) + pixelPatchFine(x, y, z);
-      const jitter = texJitter(x, y, z);
-      const shade = ny > 0 ? 1.07 : ny < 0 ? 0.78 : 0.9;
-      const weather = ny > 0 ? 0.03 : ny < 0 ? -0.02 : 0;
-      const c = BLOCK_COLORS[block] ?? [1, 0, 1];
-
-      if (block === BlockId.Grass) {
-        const topBoost = ny > 0 ? 0.16 : 0;
-        return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.06 + micro * 0.7 + topBoost * 0.3) * (shade + jitter * 0.5))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.1 + micro + patch + macro * 0.7 + topBoost) * (shade + 0.02))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.05 + micro * 0.65 + patch * 0.75 + macro * 0.4) * (shade + jitter * 0.45)))
-        ];
-      }
-
-      if (block === BlockId.Dirt || block === BlockId.Sand) {
-        const band = Math.sin((y + x * 0.06 + z * 0.06) * 1.1) * 0.04 + vein;
-        return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.05 + macro * 0.6 + micro * 0.55 + patch + band + weather) * (shade + jitter * 0.35))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + macro * 0.4 + micro * 0.42 + patch * 0.8 + band * 0.5 + weather * 0.8) * (shade + jitter * 0.25))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.03 + macro * 0.25 + micro * 0.35 + patch * 0.7 + weather * 0.5) * (shade + jitter * 0.2)))
-        ];
-      }
-
-      if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Bedrock) {
-        const speckle = Math.sin(x * 3.1 + y * 2.7 + z * 3.9) * 0.03 + vein + macro * 0.45 + micro * 0.75 + patch * 0.9;
-        return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.045 + speckle + weather) * (shade + jitter * 0.22))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.05 + speckle + weather) * (shade + jitter * 0.24))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.045 + speckle + weather) * (shade + jitter * 0.22)))
-        ];
-      }
-
-      if (block === BlockId.Wood || block === BlockId.Planks) {
-        const grain = Math.sin((x + z) * 0.35 + y * 1.7) * 0.08 + vein * 0.5;
-        return [
-          Math.min(1, Math.max(0, (c[0] + grain + n * 0.04 + macro * 0.35 + micro * 0.3 + patch * 0.55 + weather * 0.7) * (shade + jitter * 0.2))),
-          Math.min(1, Math.max(0, (c[1] + grain * 0.7 + n * 0.03 + macro * 0.25 + micro * 0.2 + patch * 0.45 + weather * 0.6) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[2] + grain * 0.45 + n * 0.02 + macro * 0.15 + micro * 0.14 + patch * 0.35 + weather * 0.5) * (shade + jitter * 0.15)))
-        ];
-      }
-
-      if (block === BlockId.Leaves) {
-        return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.07 + macro * 0.25 + micro * 0.3 + patch * 0.45) * (shade + jitter * 0.3))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.12 + macro * 0.35 + micro * 0.45 + patch * 0.6 + weather * 0.6) * (shade + 0.03))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.06 + macro * 0.2 + micro * 0.2 + patch * 0.35) * (shade + jitter * 0.2)))
-        ];
-      }
-
-      if (block === BlockId.SliverOre || block === BlockId.RubyOre) {
-        const oreNoise = Math.sin(x * 11.7 + y * 9.3 + z * 10.1) + Math.cos(x * 7.4 - y * 8.8 + z * 6.6);
-        const fleckMask = oreNoise > 1.05 ? 1 : oreNoise > 0.7 ? 0.55 : 0.15;
-        const chip = Math.sin(x * 19.7 + y * 13.4 + z * 17.9) > 0.92 ? 1 : 0;
-        const fleck = fleckMask * 0.12 + chip * 0.08;
-        const oreTint = block === BlockId.SliverOre ? [0.26, 0.26, 0.27] : [0.3, -0.2, -0.18];
-        return [
-          Math.min(1, Math.max(0, (c[0] + n * 0.04 + macro * 0.4 + micro * 0.45 + patch * 0.75 + fleck * oreTint[0]) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[1] + n * 0.04 + macro * 0.35 + micro * 0.45 + patch * 0.75 + fleck * oreTint[1]) * (shade + jitter * 0.18))),
-          Math.min(1, Math.max(0, (c[2] + n * 0.04 + macro * 0.3 + micro * 0.45 + patch * 0.75 + fleck * oreTint[2]) * (shade + jitter * 0.18)))
-        ];
-      }
-
-      return [
-        Math.min(1, Math.max(0, (c[0] + n * 0.03 + macro * 0.25 + micro * 0.35 + patch * 0.6 + weather * 0.3) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[1] + n * 0.03 + macro * 0.25 + micro * 0.35 + patch * 0.6 + weather * 0.3) * (shade + jitter * 0.2))),
-        Math.min(1, Math.max(0, (c[2] + n * 0.03 + macro * 0.25 + micro * 0.35 + patch * 0.6 + weather * 0.3) * (shade + jitter * 0.2)))
-      ];
+    const tileUV = (block: number, ny: number): [number, number, number, number] => {
+      const face = ny > 0 ? "top" : ny < 0 ? "bottom" : "side";
+      const tile = tileIndexFor(block, face);
+      const col = tile % ATLAS_COLUMNS;
+      const row = Math.floor(tile / ATLAS_COLUMNS);
+      const rows = Math.ceil(((BlockId.RubyOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
+      const pad = 0.0008;
+      const u0 = col / ATLAS_COLUMNS + pad;
+      const v0 = row / rows + pad;
+      const u1 = (col + 1) / ATLAS_COLUMNS - pad;
+      const v1 = (row + 1) / rows - pad;
+      return [u0, v0, u1, v1];
     };
 
     const faceOcclusion = (x: number, y: number, z: number, nx: number, ny: number, nz: number): number => {
@@ -478,21 +462,22 @@ export class VoxelWorld {
             const nz = face.dir[2];
             if (this.isSolid(x + nx, y + ny, z + nz)) continue;
 
-            const base = materialTint(block, x + nx * 0.5, y + ny * 0.5, z + nz * 0.5, ny);
+            const base = materialTint(ny);
             const ao = faceOcclusion(x, y, z, nx, ny, nz);
             const color: [number, number, number] = [base[0] * ao, base[1] * ao, base[2] * ao];
+            const [u0, v0, u1, v1] = tileUV(block, ny);
 
             const a = face.corners[0];
             const b = face.corners[1];
             const c = face.corners[2];
             const d = face.corners[3];
 
-            pushVertex(x + a[0], y + a[1], z + a[2], nx, ny, nz, color);
-            pushVertex(x + b[0], y + b[1], z + b[2], nx, ny, nz, color);
-            pushVertex(x + c[0], y + c[1], z + c[2], nx, ny, nz, color);
-            pushVertex(x + a[0], y + a[1], z + a[2], nx, ny, nz, color);
-            pushVertex(x + c[0], y + c[1], z + c[2], nx, ny, nz, color);
-            pushVertex(x + d[0], y + d[1], z + d[2], nx, ny, nz, color);
+            pushVertex(x + a[0], y + a[1], z + a[2], nx, ny, nz, color, u0, v1);
+            pushVertex(x + b[0], y + b[1], z + b[2], nx, ny, nz, color, u0, v0);
+            pushVertex(x + c[0], y + c[1], z + c[2], nx, ny, nz, color, u1, v0);
+            pushVertex(x + a[0], y + a[1], z + a[2], nx, ny, nz, color, u0, v1);
+            pushVertex(x + c[0], y + c[1], z + c[2], nx, ny, nz, color, u1, v0);
+            pushVertex(x + d[0], y + d[1], z + d[2], nx, ny, nz, color, u1, v1);
           }
         }
       }
@@ -502,6 +487,7 @@ export class VoxelWorld {
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
     geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
     geometry.computeBoundingSphere();
     return geometry;
   }
