@@ -319,6 +319,45 @@
   font-weight: 700;
 }
 
+.inventory-slot.equipped {
+  background: linear-gradient(180deg, #d8f7d1 0%, #a9e3a1 100%);
+  border-color: #3e8f4d;
+}
+
+.armor-grid {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.armor-slot {
+  border: 1px solid #00000033;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f5f0e3 0%, #ddd2bf 100%);
+  padding: 6px 8px;
+  min-height: 52px;
+  display: grid;
+  gap: 4px;
+}
+
+.armor-slot.filled {
+  border-color: #3f8b4d;
+  background: linear-gradient(180deg, #daf6d4 0%, #b9e7b2 100%);
+}
+
+.armor-slot-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2f2418;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.armor-slot-item {
+  font-size: 11px;
+  color: #1f1f1f;
+}
+
 .crafting-title {
   margin-top: 16px;
   margin-bottom: 8px;

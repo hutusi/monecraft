@@ -1,18 +1,19 @@
 import { SAVE_KEY } from "@/lib/game/config";
 import { inventorySlotsSnapshot, readSave, writeSave } from "@/lib/game/save";
-import type { InventorySlot, SaveDataV1 } from "@/lib/game/types";
+import type { EquippedArmor, InventorySlot, SaveDataV1 } from "@/lib/game/types";
 
 type CreatePersistenceHandlersArgs = {
   worldSeed: number;
   changedBlocks: Map<number, number>;
   inventoryRef: { current: InventorySlot[] };
+  equippedArmorRef: { current: EquippedArmor };
   selectedSlotRef: { current: number };
   playerPosition: { x: number; y: number; z: number };
   setSaveMessage: (text: string) => void;
 };
 
 export function createPersistenceHandlers(args: CreatePersistenceHandlersArgs) {
-  const { worldSeed, changedBlocks, inventoryRef, selectedSlotRef, playerPosition, setSaveMessage } = args;
+  const { worldSeed, changedBlocks, inventoryRef, equippedArmorRef, selectedSlotRef, playerPosition, setSaveMessage } = args;
 
   const persistSave = () => {
     try {
@@ -24,6 +25,7 @@ export function createPersistenceHandlers(args: CreatePersistenceHandlersArgs) {
         seed: worldSeed,
         changes,
         inventorySlots: inventorySlotsSnapshot(inventoryRef.current),
+        equippedArmor: { ...equippedArmorRef.current },
         selectedSlot: selectedSlotRef.current,
         player: {
           x: playerPosition.x,

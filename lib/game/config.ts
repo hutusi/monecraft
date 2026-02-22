@@ -1,5 +1,5 @@
 import { BlockId } from "@/lib/world";
-import type { InventorySlot, ItemDef, Recipe } from "@/lib/game/types";
+import type { ArmorSlot, EquippedArmor, InventorySlot, ItemDef, Recipe } from "@/lib/game/types";
 
 export const PLAYER_HEIGHT = 1.8;
 export const PLAYER_HALF_WIDTH = 0.3;
@@ -18,6 +18,26 @@ export const RENDER_RADIUS = 90;
 export const RENDER_GRID = 20;
 
 export const SAVE_KEY = "minecraft_save_v1";
+export const ARMOR_SLOTS: ArmorSlot[] = ["helmet", "face_mask", "neck_protection", "chestplate", "leggings", "boots"];
+export const ARMOR_SLOT_LABELS: Record<ArmorSlot, string> = {
+  helmet: "Helmet",
+  face_mask: "Face Mask",
+  neck_protection: "Neck Protection",
+  chestplate: "Chestplate",
+  leggings: "Leggings",
+  boots: "Boots"
+};
+
+export function createEmptyArmorEquipment(): EquippedArmor {
+  return {
+    helmet: null,
+    face_mask: null,
+    neck_protection: null,
+    chestplate: null,
+    leggings: null,
+    boots: null
+  };
+}
 
 export const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
   [BlockId.Grass]: 2,

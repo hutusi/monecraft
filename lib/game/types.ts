@@ -3,6 +3,7 @@ import { BlockId } from "@/lib/world";
 
 export type ItemKind = "block" | "weapon" | "tool" | "armor";
 export type ArmorSlot = "helmet" | "face_mask" | "neck_protection" | "chestplate" | "leggings" | "boots";
+export type EquippedArmor = Record<ArmorSlot, string | null>;
 
 export type ItemDef = {
   id: string;
@@ -69,6 +70,7 @@ export type SaveDataV1 = {
   changes: Array<[number, number]>;
   inventoryCounts?: Record<string, number>;
   inventorySlots?: Array<{ id: string | null; count: number }>;
+  equippedArmor?: Partial<EquippedArmor>;
   selectedSlot: number;
   player: { x: number; y: number; z: number };
 };

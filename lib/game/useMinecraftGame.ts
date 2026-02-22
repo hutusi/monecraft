@@ -13,8 +13,10 @@ import { createApplyDamage, tickDeathAndRespawn } from "@/lib/game/runtime/playe
 import { tickPlayerMovement } from "@/lib/game/runtime/playerMotion";
 import { createSurfaceYAt, randomLandPointNear as pickRandomLandPointNear } from "@/lib/game/runtime/spawn";
 import {
+  ARMOR_SLOTS,
   BLOCK_TO_SLOT,
   CROUCH_SPEED,
+  createEmptyArmorEquipment,
   createEmptySlot,
   createInitialInventory,
   createSlot,
@@ -36,7 +38,7 @@ import {
   SPRINT_SPEED,
   WALK_SPEED
 } from "@/lib/game/config";
-import type { InventorySlot, MobEntity, Recipe, SaveDataV1 } from "@/lib/game/types";
+import type { EquippedArmor, InventorySlot, MobEntity, Recipe, SaveDataV1 } from "@/lib/game/types";
 
 export function useMinecraftGame() {
   const initialInventory = useMemo(() => createInitialInventory(), []);
@@ -44,6 +46,7 @@ export function useMinecraftGame() {
   const selectedSlotRef = useRef(0);
   const capsActiveRef = useRef(false);
   const inventoryRef = useRef<InventorySlot[]>(initialInventory);
+  const equippedArmorRef = useRef<EquippedArmor>(createEmptyArmorEquipment());
   const inventoryOpenRef = useRef(false);
   const heartsRef = useRef(MAX_HEARTS);
   const energyRef = useRef(MAX_ENERGY);
@@ -61,6 +64,7 @@ export function useMinecraftGame() {
   const [capsActive, setCapsActive] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [inventory, setInventory] = useState<InventorySlot[]>(initialInventory);
+  const [equippedArmor, setEquippedArmor] = useState<EquippedArmor>(createEmptyArmorEquipment());
   const [hearts, setHearts] = useState(MAX_HEARTS);
   const [energy, setEnergy] = useState(MAX_ENERGY);
   const [daylightPercent, setDaylightPercent] = useState(100);
@@ -84,6 +88,10 @@ export function useMinecraftGame() {
   }, [inventory]);
 
   useEffect(() => {
+    equippedArmorRef.current = equippedArmor;
+  }, [equippedArmor]);
+
+  useEffect(() => {
     inventoryOpenRef.current = inventoryOpen;
   }, [inventoryOpen]);
 
@@ -91,18 +99,49 @@ export function useMinecraftGame() {
     energyRef.current = energy;
   }, [energy]);
 
+  useEffect(() => {
+    setEquippedArmor((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const armorSlot of ARMOR_SLOTS) {
+        const equippedId = next[armorSlot];
+        if (!equippedId) continue;
+        const stillOwned = inventory.some((slot) => slot.id === equippedId && slot.count > 0);
+        if (stillOwned) continue;
+        next[armorSlot] = null;
+        changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [inventory]);
+
   const cloneSlot = (slot: InventorySlot): InventorySlot => ({ ...slot });
 
-  const armorReductionFromInventory = (slots: InventorySlot[]): number => {
+  const armorReductionFromInventory = (slots: InventorySlot[], equipped: EquippedArmor): number => {
     let defense = 0;
-    const equipped = new Set<string>();
-    for (const slot of slots) {
-      if (slot.kind !== "armor" || !slot.armorSlot || slot.count <= 0) continue;
-      if (equipped.has(slot.armorSlot)) continue;
-      equipped.add(slot.armorSlot);
-      defense += slot.defense ?? 0;
+    for (const armorSlot of ARMOR_SLOTS) {
+      const equippedId = equipped[armorSlot];
+      if (!equippedId) continue;
+      const def = ITEM_DEF_BY_ID[equippedId];
+      if (!def || def.kind !== "armor" || def.armorSlot !== armorSlot) continue;
+      const hasOwnedPiece = slots.some((slot) => slot.id === equippedId && slot.count > 0);
+      if (!hasOwnedPiece) continue;
+      defense += def.defense ?? 0;
     }
     return Math.min(0.75, defense * 0.05);
+  };
+
+  const toggleEquipArmor = (inventoryIndex: number) => {
+    if (inventoryIndex < 0 || inventoryIndex >= INVENTORY_SLOTS) return;
+    const slot = inventoryRef.current[inventoryIndex];
+    if (slot.kind !== "armor" || !slot.id || !slot.armorSlot || slot.count <= 0) return;
+    const slotId = slot.id;
+    const armorSlot = slot.armorSlot;
+    setEquippedArmor((prev) => {
+      const next = { ...prev };
+      next[armorSlot] = prev[armorSlot] === slotId ? null : slotId;
+      return next;
+    });
   };
 
   const countsById = (slots: InventorySlot[]): Map<string, number> => {
@@ -327,6 +366,18 @@ export function useMinecraftGame() {
       setSelectedSlot(idx);
       selectedSlotRef.current = idx;
     }
+    if (loadedSave?.equippedArmor) {
+      const nextArmor = createEmptyArmorEquipment();
+      for (const armorSlot of ARMOR_SLOTS) {
+        const equippedId = loadedSave.equippedArmor[armorSlot];
+        if (!equippedId) continue;
+        const def = ITEM_DEF_BY_ID[equippedId];
+        if (def?.kind !== "armor" || def.armorSlot !== armorSlot) continue;
+        nextArmor[armorSlot] = equippedId;
+      }
+      setEquippedArmor(nextArmor);
+      equippedArmorRef.current = nextArmor;
+    }
     if (loadedSave?.player) {
       player.position.set(loadedSave.player.x, loadedSave.player.y, loadedSave.player.z);
     }
@@ -480,7 +531,7 @@ export function useMinecraftGame() {
       }
     });
     const applyDamageWithArmor = (amount: number) => {
-      const reduction = armorReductionFromInventory(inventoryRef.current);
+      const reduction = armorReductionFromInventory(inventoryRef.current, equippedArmorRef.current);
       const mitigated = Math.max(1, Math.floor(amount * (1 - reduction)));
       applyDamage(mitigated);
     };
@@ -509,6 +560,7 @@ export function useMinecraftGame() {
       worldSeed: world.seed,
       changedBlocks,
       inventoryRef,
+      equippedArmorRef,
       selectedSlotRef,
       playerPosition: player.position,
       setSaveMessage
@@ -781,6 +833,7 @@ export function useMinecraftGame() {
     capsActive,
     inventoryOpen,
     inventory,
+    equippedArmor,
     hearts,
     energy,
     daylightPercent,
@@ -797,6 +850,7 @@ export function useMinecraftGame() {
     canCraft,
     craft,
     swapInventorySlots,
+    toggleEquipArmor,
     saveNow: () => saveNowRef.current?.(),
     loadNow: () => loadNowRef.current?.()
   };

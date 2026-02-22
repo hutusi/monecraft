@@ -1,20 +1,30 @@
+import { ARMOR_SLOT_LABELS, ARMOR_SLOTS } from "@/lib/game/config";
 import { useState } from "react";
-import type { InventorySlot, Recipe } from "@/lib/game/types";
+import type { EquippedArmor, InventorySlot, Recipe } from "@/lib/game/types";
 
 type InventoryPanelProps = {
   inventory: InventorySlot[];
+  equippedArmor: EquippedArmor;
   selectedHotbarSlot: number;
   hotbarSlots: number;
   recipes: Recipe[];
   canCraft: (recipe: Recipe) => boolean;
   onSwapSlots: (fromIndex: number, toIndex: number) => void;
+  onToggleEquipArmor: (index: number) => void;
   onCraft: (recipe: Recipe) => void;
 };
 
-export default function InventoryPanel({ inventory, selectedHotbarSlot, hotbarSlots, recipes, canCraft, onSwapSlots, onCraft }: InventoryPanelProps) {
+export default function InventoryPanel({ inventory, equippedArmor, selectedHotbarSlot, hotbarSlots, recipes, canCraft, onSwapSlots, onToggleEquipArmor, onCraft }: InventoryPanelProps) {
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
 
   const onSlotClick = (index: number) => {
+    const slot = inventory[index];
+    if (slot.kind === "armor" && slot.count > 0) {
+      onToggleEquipArmor(index);
+      setPendingIndex(null);
+      return;
+    }
+
     if (pendingIndex === null) {
       setPendingIndex(index);
       return;
@@ -39,7 +49,14 @@ export default function InventoryPanel({ inventory, selectedHotbarSlot, hotbarSl
         {hotbar.map((slot, idx) => (
           <button
             key={`inv-hotbar-${idx}`}
-            className={idx === selectedHotbarSlot ? "inventory-slot active" : pendingIndex === idx ? "inventory-slot pending" : "inventory-slot"}
+            className={[
+              "inventory-slot",
+              idx === selectedHotbarSlot ? "active" : "",
+              pendingIndex === idx ? "pending" : "",
+              slot.kind === "armor" && slot.id && equippedArmor[slot.armorSlot ?? "helmet"] === slot.id ? "equipped" : ""
+            ]
+              .filter(Boolean)
+              .join(" ")}
             onClick={() => onSlotClick(idx)}
           >
             <span>{slot.id ? slot.label : "Empty"}</span>
@@ -51,11 +68,35 @@ export default function InventoryPanel({ inventory, selectedHotbarSlot, hotbarSl
       <div className="inventory-grid inventory-grid-storage">
         {storage.map((slot, offset) => {
           const idx = offset + hotbarSlots;
+          const isEquippedArmor = slot.kind === "armor" && !!slot.id && equippedArmor[slot.armorSlot ?? "helmet"] === slot.id;
           return (
-            <button key={`inv-storage-${idx}`} className={pendingIndex === idx ? "inventory-slot pending" : "inventory-slot"} onClick={() => onSlotClick(idx)}>
+            <button
+              key={`inv-storage-${idx}`}
+              className={[
+                "inventory-slot",
+                pendingIndex === idx ? "pending" : "",
+                isEquippedArmor ? "equipped" : ""
+              ]
+              .filter(Boolean)
+                .join(" ")}
+              onClick={() => onSlotClick(idx)}
+            >
               <span>{slot.id ? slot.label : "Empty"}</span>
               <span>{slot.count > 0 ? `x${slot.count}` : ""}</span>
             </button>
+          );
+        })}
+      </div>
+      <div className="inventory-section-title">Armor (click armor item to equip/unequip)</div>
+      <div className="armor-grid">
+        {ARMOR_SLOTS.map((armorSlot) => {
+          const equippedId = equippedArmor[armorSlot];
+          const equippedItem = equippedId ? inventory.find((slot) => slot.id === equippedId && slot.count > 0) : undefined;
+          return (
+            <div key={`armor-${armorSlot}`} className={equippedItem ? "armor-slot filled" : "armor-slot"}>
+              <span className="armor-slot-name">{ARMOR_SLOT_LABELS[armorSlot]}</span>
+              <span className="armor-slot-item">{equippedItem?.label ?? "Empty"}</span>
+            </div>
           );
         })}
       </div>
