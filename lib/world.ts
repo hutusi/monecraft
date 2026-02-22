@@ -354,8 +354,8 @@ export class VoxelWorld {
       }
     };
 
-    // Sliver ore in caves (mid depth) - more common.
-    for (let i = 0; i < 220000; i += 1) {
+    // Sliver ore in caves (mid depth) - very common.
+    for (let i = 0; i < 320000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 3 + Math.floor(rand() * Math.max(4, this.sizeY - 10));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -364,8 +364,8 @@ export class VoxelWorld {
       placeOreVein(x, y, z, BlockId.SliverOre, 2, 8);
     }
 
-    // Ruby ore deeper and a bit rarer.
-    for (let i = 0; i < 44000; i += 1) {
+    // Ruby ore deeper and still rarer than sliver, but more frequent than before.
+    for (let i = 0; i < 70000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 16));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
