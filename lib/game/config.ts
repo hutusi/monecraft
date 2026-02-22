@@ -31,7 +31,8 @@ export const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
   [BlockId.Brick]: 5,
   [BlockId.Glass]: 2,
   [BlockId.SliverOre]: 7,
-  [BlockId.RubyOre]: 9
+  [BlockId.RubyOre]: 9,
+  [BlockId.GoldOre]: 11
 };
 
 export const ITEM_DEFS: ItemDef[] = [
@@ -46,13 +47,19 @@ export const ITEM_DEFS: ItemDef[] = [
   { id: "glass", label: "Glass", kind: "block", blockId: BlockId.Glass },
   { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre },
   { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre },
+  { id: "gold_ore", label: "Gold Ore", kind: "block", blockId: BlockId.GoldOre },
   { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1 },
   { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2 },
   { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3 },
+  { id: "ruby_pickaxe", label: "Ruby Pickaxe", kind: "tool", minePower: 2.8, mineTier: 4 },
+  { id: "gold_pickaxe", label: "Gold Pickaxe", kind: "tool", minePower: 3.5, mineTier: 5 },
   { id: "food", label: "Food", kind: "block" },
   { id: "knife", label: "Knife", kind: "weapon", attack: 9 },
   { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13 },
-  { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18 }
+  { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18 },
+  { id: "sliver_sword", label: "Sliver Sword", kind: "weapon", attack: 24 },
+  { id: "ruby_sword", label: "Ruby Sword", kind: "weapon", attack: 31 },
+  { id: "gold_sword", label: "Gold Sword", kind: "weapon", attack: 38 }
 ];
 
 export const ITEM_DEF_BY_ID: Record<string, ItemDef> = Object.fromEntries(ITEM_DEFS.map((item) => [item.id, item]));
@@ -96,7 +103,8 @@ export const BLOCK_TO_SLOT: Partial<Record<BlockId, string>> = {
   [BlockId.Brick]: "brick",
   [BlockId.Glass]: "glass",
   [BlockId.SliverOre]: "sliver_ore",
-  [BlockId.RubyOre]: "ruby_ore"
+  [BlockId.RubyOre]: "ruby_ore",
+  [BlockId.GoldOre]: "gold_ore"
 };
 
 export const RECIPES: Recipe[] = [
@@ -139,6 +147,24 @@ export const RECIPES: Recipe[] = [
     result: { slotId: "sliver_pickaxe", count: 1 }
   },
   {
+    id: "ruby_pickaxe",
+    label: "2 Ruby Ore + 1 Wood -> Ruby Pickaxe",
+    cost: [
+      { slotId: "ruby_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "ruby_pickaxe", count: 1 }
+  },
+  {
+    id: "gold_pickaxe",
+    label: "2 Gold Ore + 1 Wood -> Gold Pickaxe",
+    cost: [
+      { slotId: "gold_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "gold_pickaxe", count: 1 }
+  },
+  {
     id: "knife",
     label: "1 Stone + 1 Wood -> Knife",
     cost: [
@@ -164,5 +190,32 @@ export const RECIPES: Recipe[] = [
       { slotId: "wood", count: 1 }
     ],
     result: { slotId: "stone_sword", count: 1 }
+  },
+  {
+    id: "sliver_sword",
+    label: "2 Sliver Ore + 1 Wood -> Sliver Sword",
+    cost: [
+      { slotId: "sliver_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "sliver_sword", count: 1 }
+  },
+  {
+    id: "ruby_sword",
+    label: "2 Ruby Ore + 1 Wood -> Ruby Sword",
+    cost: [
+      { slotId: "ruby_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "ruby_sword", count: 1 }
+  },
+  {
+    id: "gold_sword",
+    label: "2 Gold Ore + 1 Wood -> Gold Sword",
+    cost: [
+      { slotId: "gold_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "gold_sword", count: 1 }
   }
 ];

@@ -385,6 +385,8 @@ export function useMinecraftGame() {
           return 0x9fa3aa;
         case BlockId.RubyOre:
           return 0xa26464;
+        case BlockId.GoldOre:
+          return 0xd9b33b;
         default:
           return 0xbababa;
       }

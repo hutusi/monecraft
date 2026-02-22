@@ -18,7 +18,8 @@ export const enum BlockId {
   Brick = 10,
   Glass = 11,
   SliverOre = 12,
-  RubyOre = 13
+  RubyOre = 13,
+  GoldOre = 14
 }
 
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
@@ -34,7 +35,8 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Brick]: [0.68, 0.28, 0.2],
   [BlockId.Glass]: [0.73, 0.9, 0.95],
   [BlockId.SliverOre]: [0.54, 0.56, 0.58],
-  [BlockId.RubyOre]: [0.54, 0.56, 0.58]
+  [BlockId.RubyOre]: [0.54, 0.56, 0.58],
+  [BlockId.GoldOre]: [0.54, 0.56, 0.58]
 };
 
 const ATLAS_TILE_SIZE = 16;
@@ -62,7 +64,7 @@ function tileIndexFor(block: number, face: "top" | "side" | "bottom"): number {
 export function createBlockAtlasTexture(): THREE.CanvasTexture {
   if (atlasTextureCache) return atlasTextureCache;
 
-  const totalTiles = (BlockId.RubyOre + 1) * ATLAS_FACE_VARIANTS;
+  const totalTiles = (BlockId.GoldOre + 1) * ATLAS_FACE_VARIANTS;
   const rows = Math.ceil(totalTiles / ATLAS_COLUMNS);
   const width = ATLAS_COLUMNS * ATLAS_TILE_SIZE;
   const height = rows * ATLAS_TILE_SIZE;
@@ -97,6 +99,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
         if ((block === BlockId.Wood || block === BlockId.Planks) && ((x + y) % 4 === 0)) c = tone(base, 0.82);
         if (block === BlockId.SliverOre && n > 0.86) c = tone([0.93, 0.93, 0.95], 1);
         if (block === BlockId.RubyOre && n > 0.88) c = tone([0.86, 0.24, 0.24], 1);
+        if (block === BlockId.GoldOre && n > 0.84) c = tone([0.96, 0.8, 0.25], 1);
         if (block === BlockId.Sand && n > 0.84) c = tone(base, 1.12);
 
         ctx.fillStyle = rgb(c);
@@ -105,7 +108,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
     }
   };
 
-  for (let block = BlockId.Grass; block <= BlockId.RubyOre; block += 1) {
+  for (let block = BlockId.Grass; block <= BlockId.GoldOre; block += 1) {
     drawTile(block, "top");
     drawTile(block, "side");
     drawTile(block, "bottom");
@@ -374,6 +377,16 @@ export class VoxelWorld {
       placeOreVein(x, y, z, BlockId.RubyOre, 2, 8);
     }
 
+    // Gold ore, best tier, deep and a bit rarer than ruby.
+    for (let i = 0; i < 52000; i += 1) {
+      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 22));
+      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+      const block = this.get(x, y, z);
+      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+      placeOreVein(x, y, z, BlockId.GoldOre, 2, 8);
+    }
+
     const treeCount = 3800;
     for (let i = 0; i < treeCount; i += 1) {
       const x = 4 + Math.floor(rand() * (this.sizeX - 8));
@@ -432,7 +445,7 @@ export class VoxelWorld {
       const tile = tileIndexFor(block, face);
       const col = tile % ATLAS_COLUMNS;
       const row = Math.floor(tile / ATLAS_COLUMNS);
-      const rows = Math.ceil(((BlockId.RubyOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
+      const rows = Math.ceil(((BlockId.GoldOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
       const pad = 0.0008;
       const u0 = col / ATLAS_COLUMNS + pad;
       const v0 = row / rows + pad;

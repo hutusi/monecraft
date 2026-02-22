@@ -32,7 +32,7 @@ export default function Hud(props: HudProps) {
         <span>Sprint: W + CapsLock | Crouch: C | Eat: F</span>
         <span>Energy drains while sprinting. Eat food to recover energy.</span>
         <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
-        <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby needs Sliver Pickaxe</span>
+        <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby/Gold need Sliver Pickaxe or higher</span>
         <span>Inventory/Crafting: I (swap slots by clicking two slots) | Hotbar: 1..0 | Max Stack: 99</span>
       </div>
       <div className="stats-line">Passive Mobs: {passiveCount} | Hostile Mobs: {hostileCount}</div>

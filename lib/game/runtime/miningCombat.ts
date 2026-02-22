@@ -34,6 +34,7 @@ export function canMineBlock(block: BlockId, toolTier: number): boolean {
   if (block === BlockId.Stone || block === BlockId.Cobblestone || block === BlockId.Brick) return toolTier >= 1;
   if (block === BlockId.SliverOre) return toolTier >= 2;
   if (block === BlockId.RubyOre) return toolTier >= 3;
+  if (block === BlockId.GoldOre) return toolTier >= 3;
   return true;
 }
 
