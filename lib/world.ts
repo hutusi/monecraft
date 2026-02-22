@@ -301,17 +301,18 @@ export class VoxelWorld {
     };
 
     // Cave tunnels.
-    const caveCount = 420;
+    const caveCount = 780;
     for (let i = 0; i < caveCount; i += 1) {
       let x = 12 + rand() * (this.sizeX - 24);
       let y = 3 + rand() * (this.sizeY - 9);
       let z = 12 + rand() * (this.sizeZ - 24);
       let yaw = rand() * Math.PI * 2;
       let pitch = (rand() - 0.5) * 0.26;
-      const length = 55 + Math.floor(rand() * 55);
+      const length = 70 + Math.floor(rand() * 95);
       for (let step = 0; step < length; step += 1) {
-        const r = 1.3 + rand() * 1.3;
+        const r = 1.2 + rand() * 1.7;
         carveSphere(x, y, z, r);
+        if (rand() > 0.985) carveSphere(x, y, z, 3 + rand() * 2.8);
         yaw += (rand() - 0.5) * 0.28;
         pitch = Math.max(-0.55, Math.min(0.55, pitch + (rand() - 0.5) * 0.16));
         x += Math.cos(yaw);
@@ -319,6 +320,15 @@ export class VoxelWorld {
         y += Math.sin(pitch) * 0.8;
         if (x < 8 || x > this.sizeX - 8 || z < 8 || z > this.sizeZ - 8 || y < 2 || y > this.sizeY - 4) break;
       }
+    }
+
+    // Extra cave chambers for wider underground spaces.
+    const chamberCount = 260;
+    for (let i = 0; i < chamberCount; i += 1) {
+      const cx = 12 + rand() * (this.sizeX - 24);
+      const cy = 5 + rand() * (this.sizeY - 14);
+      const cz = 12 + rand() * (this.sizeZ - 24);
+      carveSphere(cx, cy, cz, 3 + rand() * 4.2);
     }
 
     const hasNearbyAir = (x: number, y: number, z: number): boolean => {
