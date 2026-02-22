@@ -27,7 +27,7 @@ type MoveTickArgs = {
   canSprint: boolean;
 };
 
-export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number; didSprint: boolean } {
+export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number; didSprint: boolean; didWalk: boolean; didJump: boolean; horizontalDistance: number } {
   const {
     dt,
     world,
@@ -92,12 +92,16 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number; did
 
   const wasGrounded = player.onGround;
   player.velocity.y -= gravity * dt;
+  let didJump = false;
   if (wantsJump && player.onGround && !crouching) {
     player.velocity.y = jumpVelocity;
     player.onGround = false;
+    didJump = true;
   }
 
   const vyBeforeMove = player.velocity.y;
+  const startX = player.position.x;
+  const startZ = player.position.z;
   const prevX = player.position.x;
   const prevZ = player.position.z;
 
@@ -131,5 +135,9 @@ export function tickPlayerMovement(args: MoveTickArgs): { voidTimer: number; did
     voidTimer = 0;
   }
 
-  return { voidTimer, didSprint: sprinting && moveDir.lengthSq() > 0.0001 };
+  const horizontalDistance = Math.hypot(player.position.x - startX, player.position.z - startZ);
+  const moving = horizontalDistance > 1e-4;
+  const didSprint = sprinting && moving;
+  const didWalk = !didSprint && moving;
+  return { voidTimer, didSprint, didWalk, didJump, horizontalDistance };
 }

@@ -122,7 +122,7 @@ export function tickMobs(args: TickMobsArgs): void {
       mob.legs[3].rotation.x = gait;
     }
 
-    if (mob.hostile && distanceToPlayer < 1.5 && mob.attackTimer <= 0) {
+    if (mob.hostile && distanceToPlayer < 4 && mob.attackTimer <= 0) {
       applyDamage(mob.attackDamage);
       if (!isDead && distanceToPlayer > 0.001) {
         const knock = toPlayer.normalize().multiplyScalar(4.2);

@@ -584,6 +584,9 @@ export function useMinecraftGame() {
     let dayHudTimer = 0;
     let voidTimer = 0;
     let regenTimer = 0;
+    let sprintDistanceBudget = 0;
+    let walkDistanceBudget = 0;
+    let jumpBudget = 0;
 
     const tickMobsRuntime = (dt: number, time: number) =>
       tickMobs({
@@ -652,13 +655,34 @@ export function useMinecraftGame() {
         jumpVelocity: JUMP_VELOCITY,
         worldBorderPadding: 1.2,
         voidTimer,
-        canSprint: energyRef.current > 0.5
+        canSprint: energyRef.current > 0
       });
       voidTimer = moveTick.voidTimer;
 
+      let drain = 0;
       if (moveTick.didSprint) {
-        const next = Math.max(0, energyRef.current - dt * 11.5);
-        if (Math.abs(next - energyRef.current) > 1e-6) {
+        sprintDistanceBudget += moveTick.horizontalDistance;
+        while (sprintDistanceBudget >= 10) {
+          sprintDistanceBudget -= 10;
+          drain += 1;
+        }
+      } else if (moveTick.didWalk) {
+        walkDistanceBudget += moveTick.horizontalDistance;
+        while (walkDistanceBudget >= 25) {
+          walkDistanceBudget -= 25;
+          drain += 1;
+        }
+      }
+      if (moveTick.didJump) {
+        jumpBudget += 1;
+        while (jumpBudget >= 2) {
+          jumpBudget -= 2;
+          drain += 1;
+        }
+      }
+      if (drain > 0) {
+        const next = Math.max(0, energyRef.current - drain);
+        if (next !== energyRef.current) {
           energyRef.current = next;
           setEnergy(next);
         }
