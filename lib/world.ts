@@ -344,18 +344,27 @@ export class VoxelWorld {
     };
 
     const pixelPatch = (x: number, y: number, z: number): number => {
-      const px = Math.floor((x + 2048) * 4);
-      const py = Math.floor((y + 2048) * 4);
-      const pz = Math.floor((z + 2048) * 4);
+      const px = Math.floor((x + 2048) * 8);
+      const py = Math.floor((y + 2048) * 8);
+      const pz = Math.floor((z + 2048) * 8);
       const h = Math.sin(px * 0.91 + py * 1.13 + pz * 0.77) * 43758.5453;
       const v = h - Math.floor(h);
-      return (Math.floor(v * 5) - 2) * 0.02;
+      return (Math.floor(v * 7) - 3) * 0.024;
+    };
+
+    const pixelPatchFine = (x: number, y: number, z: number): number => {
+      const px = Math.floor((x + 2048) * 13);
+      const py = Math.floor((y + 2048) * 13);
+      const pz = Math.floor((z + 2048) * 13);
+      const h = Math.sin(px * 1.37 + py * 0.83 + pz * 1.19) * 24634.6345;
+      const v = h - Math.floor(h);
+      return (Math.floor(v * 9) - 4) * 0.012;
     };
 
     const materialTint = (block: number, x: number, y: number, z: number, ny: number): [number, number, number] => {
       const n = layeredNoise(x, y, z);
       const micro = microNoise(x, y, z);
-      const patch = pixelPatch(x, y, z);
+      const patch = pixelPatch(x, y, z) + pixelPatchFine(x, y, z);
       const jitter = texJitter(x, y, z);
       const shade = ny > 0 ? 1.07 : ny < 0 ? 0.78 : 0.9;
       const c = BLOCK_COLORS[block] ?? [1, 0, 1];
