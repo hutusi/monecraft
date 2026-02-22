@@ -330,6 +330,9 @@
 .crafting-list {
   display: grid;
   gap: 8px;
+  max-height: min(34vh, 280px);
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .craft-btn {
@@ -417,6 +420,8 @@
   .inventory-panel {
     width: min(97vw, 760px);
     padding: 12px;
+    max-height: 92vh;
+    overflow-y: auto;
   }
 
   .hud-menu-panel {
@@ -430,5 +435,9 @@
   .inventory-slot {
     min-height: 52px;
     font-size: 10px;
+  }
+
+  .crafting-list {
+    max-height: min(30vh, 220px);
   }
 }
