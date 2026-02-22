@@ -93,6 +93,18 @@ export function useMinecraftGame() {
 
   const cloneSlot = (slot: InventorySlot): InventorySlot => ({ ...slot });
 
+  const armorReductionFromInventory = (slots: InventorySlot[]): number => {
+    let defense = 0;
+    const equipped = new Set<string>();
+    for (const slot of slots) {
+      if (slot.kind !== "armor" || !slot.armorSlot || slot.count <= 0) continue;
+      if (equipped.has(slot.armorSlot)) continue;
+      equipped.add(slot.armorSlot);
+      defense += slot.defense ?? 0;
+    }
+    return Math.min(0.75, defense * 0.05);
+  };
+
   const countsById = (slots: InventorySlot[]): Map<string, number> => {
     const byId = new Map<string, number>();
     for (const slot of slots) {
@@ -387,6 +399,10 @@ export function useMinecraftGame() {
           return 0xa26464;
         case BlockId.GoldOre:
           return 0xd9b33b;
+        case BlockId.SapphireOre:
+          return 0x3f92d6;
+        case BlockId.DiamondOre:
+          return 0x85e9f4;
         default:
           return 0xbababa;
       }
@@ -463,6 +479,11 @@ export function useMinecraftGame() {
         if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
       }
     });
+    const applyDamageWithArmor = (amount: number) => {
+      const reduction = armorReductionFromInventory(inventoryRef.current);
+      const mitigated = Math.max(1, Math.floor(amount * (1 - reduction)));
+      applyDamage(mitigated);
+    };
 
     let currentRegionX = Number.NaN;
     let currentRegionZ = Number.NaN;
@@ -601,7 +622,7 @@ export function useMinecraftGame() {
         isDead: isDeadRef.current,
         surfaceYAt,
         mobs,
-        applyDamage,
+        applyDamage: applyDamageWithArmor,
         removeMobAt,
         onCountsChanged: () => {
           setPassiveCount(mobs.filter((mob) => !mob.hostile).length);
@@ -647,7 +668,6 @@ export function useMinecraftGame() {
         keys: controls.keys,
         capsActive: capsActiveRef.current,
         player,
-        applyDamage,
         playerHeight: PLAYER_HEIGHT,
         playerHalfWidth: PLAYER_HALF_WIDTH,
         walkSpeed: WALK_SPEED * speedScale,
@@ -657,7 +677,8 @@ export function useMinecraftGame() {
         jumpVelocity: JUMP_VELOCITY,
         worldBorderPadding: 1.2,
         voidTimer,
-        canSprint: energyRef.current > 0
+        canSprint: energyRef.current > 0,
+        applyDamage: applyDamageWithArmor
       });
       voidTimer = moveTick.voidTimer;
 

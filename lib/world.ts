@@ -19,7 +19,9 @@ export const enum BlockId {
   Glass = 11,
   SliverOre = 12,
   RubyOre = 13,
-  GoldOre = 14
+  GoldOre = 14,
+  SapphireOre = 15,
+  DiamondOre = 16
 }
 
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
@@ -36,7 +38,9 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Glass]: [0.73, 0.9, 0.95],
   [BlockId.SliverOre]: [0.54, 0.56, 0.58],
   [BlockId.RubyOre]: [0.54, 0.56, 0.58],
-  [BlockId.GoldOre]: [0.54, 0.56, 0.58]
+  [BlockId.GoldOre]: [0.54, 0.56, 0.58],
+  [BlockId.SapphireOre]: [0.54, 0.56, 0.58],
+  [BlockId.DiamondOre]: [0.54, 0.56, 0.58]
 };
 
 const ATLAS_TILE_SIZE = 16;
@@ -64,7 +68,7 @@ function tileIndexFor(block: number, face: "top" | "side" | "bottom"): number {
 export function createBlockAtlasTexture(): THREE.CanvasTexture {
   if (atlasTextureCache) return atlasTextureCache;
 
-  const totalTiles = (BlockId.GoldOre + 1) * ATLAS_FACE_VARIANTS;
+  const totalTiles = (BlockId.DiamondOre + 1) * ATLAS_FACE_VARIANTS;
   const rows = Math.ceil(totalTiles / ATLAS_COLUMNS);
   const width = ATLAS_COLUMNS * ATLAS_TILE_SIZE;
   const height = rows * ATLAS_TILE_SIZE;
@@ -100,6 +104,8 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
         if (block === BlockId.SliverOre && n > 0.86) c = tone([0.93, 0.93, 0.95], 1);
         if (block === BlockId.RubyOre && n > 0.88) c = tone([0.86, 0.24, 0.24], 1);
         if (block === BlockId.GoldOre && n > 0.84) c = tone([0.96, 0.8, 0.25], 1);
+        if (block === BlockId.SapphireOre && n > 0.86) c = tone([0.2, 0.62, 0.9], 1);
+        if (block === BlockId.DiamondOre && n > 0.9) c = tone([0.7, 0.94, 0.98], 1);
         if (block === BlockId.Sand && n > 0.84) c = tone(base, 1.12);
 
         ctx.fillStyle = rgb(c);
@@ -108,7 +114,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
     }
   };
 
-  for (let block = BlockId.Grass; block <= BlockId.GoldOre; block += 1) {
+  for (let block = BlockId.Grass; block <= BlockId.DiamondOre; block += 1) {
     drawTile(block, "top");
     drawTile(block, "side");
     drawTile(block, "bottom");
@@ -377,7 +383,7 @@ export class VoxelWorld {
       placeOreVein(x, y, z, BlockId.RubyOre, 3, 10);
     }
 
-    // Gold ore, best tier, deep and a bit rarer than ruby.
+    // Gold ore, high tier, deep and a bit rarer than ruby.
     for (let i = 0; i < 230000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 22));
@@ -385,6 +391,26 @@ export class VoxelWorld {
       const block = this.get(x, y, z);
       if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
       placeOreVein(x, y, z, BlockId.GoldOre, 3, 10);
+    }
+
+    // Sapphire ore, rarer than gold and mostly in deeper cave systems.
+    for (let i = 0; i < 180000; i += 1) {
+      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 28));
+      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+      const block = this.get(x, y, z);
+      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+      placeOreVein(x, y, z, BlockId.SapphireOre, 2, 7);
+    }
+
+    // Diamond ore, best tier and deep, cave-adjacent.
+    for (let i = 0; i < 120000; i += 1) {
+      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 36));
+      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+      const block = this.get(x, y, z);
+      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+      placeOreVein(x, y, z, BlockId.DiamondOre, 2, 6);
     }
 
     const treeCount = 3800;
@@ -445,7 +471,7 @@ export class VoxelWorld {
       const tile = tileIndexFor(block, face);
       const col = tile % ATLAS_COLUMNS;
       const row = Math.floor(tile / ATLAS_COLUMNS);
-      const rows = Math.ceil(((BlockId.GoldOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
+      const rows = Math.ceil(((BlockId.DiamondOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
       const pad = 0.0008;
       const u0 = col / ATLAS_COLUMNS + pad;
       const v0 = row / rows + pad;

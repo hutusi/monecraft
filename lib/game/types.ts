@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { BlockId } from "@/lib/world";
 
-export type ItemKind = "block" | "weapon" | "tool";
+export type ItemKind = "block" | "weapon" | "tool" | "armor";
+export type ArmorSlot = "helmet" | "face_mask" | "neck_protection" | "chestplate" | "leggings" | "boots";
 
 export type ItemDef = {
   id: string;
@@ -11,6 +12,8 @@ export type ItemDef = {
   attack?: number;
   minePower?: number;
   mineTier?: number;
+  armorSlot?: ArmorSlot;
+  defense?: number;
 };
 
 export type InventorySlot = {
@@ -22,6 +25,8 @@ export type InventorySlot = {
   attack?: number;
   minePower?: number;
   mineTier?: number;
+  armorSlot?: ArmorSlot;
+  defense?: number;
 };
 
 export type Recipe = {

@@ -27,18 +27,30 @@ export default function Hotbar({ inventory, selectedSlot, hotbarSlots, hearts, m
       sliver_ore: "⚪",
       ruby_ore: "🔴",
       gold_ore: "🟡",
+      sapphire_ore: "🔷",
+      diamond_ore: "💎",
       wood_pickaxe: "⛏️",
       stone_pickaxe: "⛏️",
       sliver_pickaxe: "⛏️",
       ruby_pickaxe: "⛏️",
+      sapphire_pickaxe: "⛏️",
       gold_pickaxe: "⛏️",
+      diamond_pickaxe: "⛏️",
       food: "🍖",
       knife: "🔪",
       wood_sword: "⚔️",
       stone_sword: "⚔️",
       sliver_sword: "⚔️",
       ruby_sword: "⚔️",
-      gold_sword: "⚔️"
+      sapphire_sword: "⚔️",
+      gold_sword: "⚔️",
+      diamond_sword: "⚔️",
+      helmet: "⛑️",
+      face_mask: "🎭",
+      neck_protection: "🧣",
+      chestplate: "🛡️",
+      leggings: "🥋",
+      boots: "🥾"
     };
     return byId[slot.id] ?? "📦";
   };

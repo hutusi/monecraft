@@ -32,7 +32,9 @@ export const BREAK_HARDNESS: Partial<Record<BlockId, number>> = {
   [BlockId.Glass]: 2,
   [BlockId.SliverOre]: 7,
   [BlockId.RubyOre]: 9,
-  [BlockId.GoldOre]: 11
+  [BlockId.GoldOre]: 11,
+  [BlockId.SapphireOre]: 12,
+  [BlockId.DiamondOre]: 14
 };
 
 export const ITEM_DEFS: ItemDef[] = [
@@ -48,18 +50,30 @@ export const ITEM_DEFS: ItemDef[] = [
   { id: "sliver_ore", label: "Sliver Ore", kind: "block", blockId: BlockId.SliverOre },
   { id: "ruby_ore", label: "Ruby Ore", kind: "block", blockId: BlockId.RubyOre },
   { id: "gold_ore", label: "Gold Ore", kind: "block", blockId: BlockId.GoldOre },
+  { id: "sapphire_ore", label: "Sapphire Ore", kind: "block", blockId: BlockId.SapphireOre },
+  { id: "diamond_ore", label: "Diamond Ore", kind: "block", blockId: BlockId.DiamondOre },
   { id: "wood_pickaxe", label: "Wood Pickaxe", kind: "tool", minePower: 1.05, mineTier: 1 },
   { id: "stone_pickaxe", label: "Stone Pickaxe", kind: "tool", minePower: 1.55, mineTier: 2 },
   { id: "sliver_pickaxe", label: "Sliver Pickaxe", kind: "tool", minePower: 2.2, mineTier: 3 },
   { id: "ruby_pickaxe", label: "Ruby Pickaxe", kind: "tool", minePower: 2.8, mineTier: 4 },
-  { id: "gold_pickaxe", label: "Gold Pickaxe", kind: "tool", minePower: 3.5, mineTier: 5 },
+  { id: "sapphire_pickaxe", label: "Sapphire Pickaxe", kind: "tool", minePower: 3.3, mineTier: 5 },
+  { id: "gold_pickaxe", label: "Gold Pickaxe", kind: "tool", minePower: 3.8, mineTier: 6 },
+  { id: "diamond_pickaxe", label: "Diamond Pickaxe", kind: "tool", minePower: 4.4, mineTier: 7 },
   { id: "food", label: "Food", kind: "block" },
   { id: "knife", label: "Knife", kind: "weapon", attack: 9 },
   { id: "wood_sword", label: "Wood Sword", kind: "weapon", attack: 13 },
   { id: "stone_sword", label: "Stone Sword", kind: "weapon", attack: 18 },
   { id: "sliver_sword", label: "Sliver Sword", kind: "weapon", attack: 24 },
   { id: "ruby_sword", label: "Ruby Sword", kind: "weapon", attack: 31 },
-  { id: "gold_sword", label: "Gold Sword", kind: "weapon", attack: 38 }
+  { id: "sapphire_sword", label: "Sapphire Sword", kind: "weapon", attack: 35 },
+  { id: "gold_sword", label: "Gold Sword", kind: "weapon", attack: 40 },
+  { id: "diamond_sword", label: "Diamond Sword", kind: "weapon", attack: 47 },
+  { id: "helmet", label: "Helmet", kind: "armor", armorSlot: "helmet", defense: 2 },
+  { id: "face_mask", label: "Face Mask", kind: "armor", armorSlot: "face_mask", defense: 2 },
+  { id: "neck_protection", label: "Neck Protection", kind: "armor", armorSlot: "neck_protection", defense: 2 },
+  { id: "chestplate", label: "Chestplate", kind: "armor", armorSlot: "chestplate", defense: 4 },
+  { id: "leggings", label: "Leggings", kind: "armor", armorSlot: "leggings", defense: 3 },
+  { id: "boots", label: "Boots", kind: "armor", armorSlot: "boots", defense: 2 }
 ];
 
 export const ITEM_DEF_BY_ID: Record<string, ItemDef> = Object.fromEntries(ITEM_DEFS.map((item) => [item.id, item]));
@@ -104,7 +118,9 @@ export const BLOCK_TO_SLOT: Partial<Record<BlockId, string>> = {
   [BlockId.Glass]: "glass",
   [BlockId.SliverOre]: "sliver_ore",
   [BlockId.RubyOre]: "ruby_ore",
-  [BlockId.GoldOre]: "gold_ore"
+  [BlockId.GoldOre]: "gold_ore",
+  [BlockId.SapphireOre]: "sapphire_ore",
+  [BlockId.DiamondOre]: "diamond_ore"
 };
 
 export const RECIPES: Recipe[] = [
@@ -165,6 +181,24 @@ export const RECIPES: Recipe[] = [
     result: { slotId: "gold_pickaxe", count: 1 }
   },
   {
+    id: "sapphire_pickaxe",
+    label: "2 Sapphire Ore + 1 Wood -> Sapphire Pickaxe",
+    cost: [
+      { slotId: "sapphire_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "sapphire_pickaxe", count: 1 }
+  },
+  {
+    id: "diamond_pickaxe",
+    label: "2 Diamond Ore + 1 Wood -> Diamond Pickaxe",
+    cost: [
+      { slotId: "diamond_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "diamond_pickaxe", count: 1 }
+  },
+  {
     id: "knife",
     label: "1 Stone + 1 Wood -> Knife",
     cost: [
@@ -217,5 +251,77 @@ export const RECIPES: Recipe[] = [
       { slotId: "wood", count: 1 }
     ],
     result: { slotId: "gold_sword", count: 1 }
+  },
+  {
+    id: "sapphire_sword",
+    label: "2 Sapphire Ore + 1 Wood -> Sapphire Sword",
+    cost: [
+      { slotId: "sapphire_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "sapphire_sword", count: 1 }
+  },
+  {
+    id: "diamond_sword",
+    label: "2 Diamond Ore + 1 Wood -> Diamond Sword",
+    cost: [
+      { slotId: "diamond_ore", count: 2 },
+      { slotId: "wood", count: 1 }
+    ],
+    result: { slotId: "diamond_sword", count: 1 }
+  },
+  {
+    id: "helmet",
+    label: "4 Sapphire Ore + 1 Ruby Ore -> Helmet",
+    cost: [
+      { slotId: "sapphire_ore", count: 4 },
+      { slotId: "ruby_ore", count: 1 }
+    ],
+    result: { slotId: "helmet", count: 1 }
+  },
+  {
+    id: "face_mask",
+    label: "2 Ruby Ore + 2 Sapphire Ore -> Face Mask",
+    cost: [
+      { slotId: "ruby_ore", count: 2 },
+      { slotId: "sapphire_ore", count: 2 }
+    ],
+    result: { slotId: "face_mask", count: 1 }
+  },
+  {
+    id: "neck_protection",
+    label: "2 Gold Ore + 1 Sapphire Ore -> Neck Protection",
+    cost: [
+      { slotId: "gold_ore", count: 2 },
+      { slotId: "sapphire_ore", count: 1 }
+    ],
+    result: { slotId: "neck_protection", count: 1 }
+  },
+  {
+    id: "chestplate",
+    label: "5 Gold Ore + 2 Sapphire Ore -> Chestplate",
+    cost: [
+      { slotId: "gold_ore", count: 5 },
+      { slotId: "sapphire_ore", count: 2 }
+    ],
+    result: { slotId: "chestplate", count: 1 }
+  },
+  {
+    id: "leggings",
+    label: "4 Gold Ore + 2 Ruby Ore -> Leggings",
+    cost: [
+      { slotId: "gold_ore", count: 4 },
+      { slotId: "ruby_ore", count: 2 }
+    ],
+    result: { slotId: "leggings", count: 1 }
+  },
+  {
+    id: "boots",
+    label: "2 Sapphire Ore + 2 Gold Ore -> Boots",
+    cost: [
+      { slotId: "sapphire_ore", count: 2 },
+      { slotId: "gold_ore", count: 2 }
+    ],
+    result: { slotId: "boots", count: 1 }
   }
 ];
