@@ -436,7 +436,7 @@ export class VoxelWorld {
       uvs.push(u, v);
     };
     const materialTint = (ny: number): [number, number, number] => {
-      const shade = ny > 0 ? 1 : ny < 0 ? 0.74 : 0.86;
+      const shade = ny > 0 ? 1 : ny < 0 ? 0.95 : 0.9;
       return [shade, shade, shade];
     };
 
@@ -471,7 +471,7 @@ export class VoxelWorld {
       if (this.isSolid(sx - ax, sy - ay, sz - az)) occ += 1;
       if (this.isSolid(sx + bx, sy + by, sz + bz)) occ += 1;
       if (this.isSolid(sx - bx, sy - by, sz - bz)) occ += 1;
-      return Math.max(0.66, 1 - occ * 0.07);
+      return Math.max(0.8, 1 - occ * 0.06);
     };
 
     for (let y = clampedMinY; y <= clampedMaxY; y += 1) {
