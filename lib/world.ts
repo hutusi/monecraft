@@ -21,7 +21,8 @@ export const enum BlockId {
   RubyOre = 13,
   GoldOre = 14,
   SapphireOre = 15,
-  DiamondOre = 16
+  DiamondOre = 16,
+  Water = 17
 }
 
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
@@ -40,7 +41,8 @@ const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.RubyOre]: [0.54, 0.56, 0.58],
   [BlockId.GoldOre]: [0.54, 0.56, 0.58],
   [BlockId.SapphireOre]: [0.54, 0.56, 0.58],
-  [BlockId.DiamondOre]: [0.54, 0.56, 0.58]
+  [BlockId.DiamondOre]: [0.54, 0.56, 0.58],
+  [BlockId.Water]: [0.26, 0.45, 0.78]
 };
 
 const ATLAS_TILE_SIZE = 16;
@@ -68,7 +70,7 @@ function tileIndexFor(block: number, face: "top" | "side" | "bottom"): number {
 export function createBlockAtlasTexture(): THREE.CanvasTexture {
   if (atlasTextureCache) return atlasTextureCache;
 
-  const totalTiles = (BlockId.DiamondOre + 1) * ATLAS_FACE_VARIANTS;
+  const totalTiles = (BlockId.Water + 1) * ATLAS_FACE_VARIANTS;
   const rows = Math.ceil(totalTiles / ATLAS_COLUMNS);
   const width = ATLAS_COLUMNS * ATLAS_TILE_SIZE;
   const height = rows * ATLAS_TILE_SIZE;
@@ -106,6 +108,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
         if (block === BlockId.GoldOre && n > 0.84) c = tone([0.96, 0.8, 0.25], 1);
         if (block === BlockId.SapphireOre && n > 0.86) c = tone([0.2, 0.62, 0.9], 1);
         if (block === BlockId.DiamondOre && n > 0.9) c = tone([0.7, 0.94, 0.98], 1);
+        if (block === BlockId.Water) c = tone([0.22, 0.48, 0.85], 0.95 + n * 0.12, face === "top" ? 0.02 : 0);
         if (block === BlockId.Sand && n > 0.84) c = tone(base, 1.12);
 
         ctx.fillStyle = rgb(c);
@@ -114,7 +117,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
     }
   };
 
-  for (let block = BlockId.Grass; block <= BlockId.DiamondOre; block += 1) {
+  for (let block = BlockId.Grass; block <= BlockId.Water; block += 1) {
     drawTile(block, "top");
     drawTile(block, "side");
     drawTile(block, "bottom");
@@ -182,7 +185,8 @@ export class VoxelWorld {
   }
 
   isSolid(x: number, y: number, z: number): boolean {
-    return this.get(x, y, z) !== BlockId.Air;
+    const block = this.get(x, y, z);
+    return block !== BlockId.Air && block !== BlockId.Water;
   }
 
   highestSolidY(x: number, z: number): number {
@@ -254,22 +258,51 @@ export class VoxelWorld {
       for (let z = 0; z < this.sizeZ; z += 1) this.set(x, 0, z, BlockId.Bedrock);
     }
 
+    const enum BiomeId {
+      Plains = 0,
+      Desert = 1,
+      Ocean = 2,
+      Forest = 3,
+      Mountains = 4
+    }
+    const biomeMap = new Uint8Array(this.sizeX * this.sizeZ);
+    const seaLevel = 43;
+    const biomeAt = (x: number, z: number): BiomeId => biomeMap[x + z * this.sizeX] as BiomeId;
+
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
-        // True flat plains at high altitude so the world has meaningful vertical depth.
-        const baseHeight = 52;
-        const hillMask = Math.max(0, seededHash(x * 0.03 + 137, z * 0.03 - 61) - 0.76);
-        const hills = hillMask * 7;
-        const mountainMask = Math.max(0, seededHash(x * 0.006 - 29, z * 0.006 + 17) - 0.94);
-        const mountains = mountainMask * mountainMask * 22;
-        const height = Math.max(14, Math.min(this.sizeY - 8, Math.floor(baseHeight + hills + mountains)));
+        const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
+        const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
+        const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
+        const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
 
-        const sandy = seededHash(x * 0.12, z * 0.12) > 0.84;
+        let biome = BiomeId.Plains;
+        if (continental < 0.24) biome = BiomeId.Ocean;
+        else if (continental > 0.82 || ridge > 0.86) biome = BiomeId.Mountains;
+        else if (temp > 0.63 && moisture < 0.4) biome = BiomeId.Desert;
+        else if (moisture > 0.58) biome = BiomeId.Forest;
+        biomeMap[x + z * this.sizeX] = biome;
 
-        for (let y = 1; y <= height; y += 1) {
-          if (y === height) this.set(x, y, z, sandy ? BlockId.Sand : BlockId.Grass);
-          else if (y > height - 3) this.set(x, y, z, BlockId.Dirt);
-          else if (y > height - 6 && seededHash(x * 0.33 + y, z * 0.29) > 0.9) this.set(x, y, z, BlockId.Cobblestone);
+        const micro = seededHash(x * 0.09 + 91, z * 0.09 - 37) * 2 - 1;
+        const rolling = seededHash(x * 0.022 + 163, z * 0.022 - 89) * 2 - 1;
+        const broad = seededHash(x * 0.006 - 29, z * 0.006 + 17) * 2 - 1;
+
+        let height = 50;
+        if (biome === BiomeId.Plains) height = 49 + micro * 0.8 + Math.max(0, rolling) * 1.8;
+        else if (biome === BiomeId.Desert) height = 48 + micro * 0.9 + rolling * 2.1;
+        else if (biome === BiomeId.Ocean) height = 34 + micro * 1.2 + rolling * 1.4;
+        else if (biome === BiomeId.Forest) height = 51 + micro * 1.6 + rolling * 3.2;
+        else height = 56 + Math.max(0, rolling) * 10 + Math.max(0, broad) * 18;
+
+        const maxTop = this.sizeY - 8;
+        const topY = Math.max(10, Math.min(maxTop, Math.floor(height)));
+        const topBlock =
+          biome === BiomeId.Desert || biome === BiomeId.Ocean ? BlockId.Sand : biome === BiomeId.Mountains && topY > 66 ? BlockId.Stone : BlockId.Grass;
+
+        for (let y = 1; y <= topY; y += 1) {
+          if (y === topY) this.set(x, y, z, topBlock);
+          else if (y > topY - 3) this.set(x, y, z, topBlock === BlockId.Sand ? BlockId.Sand : BlockId.Dirt);
+          else if (y > topY - 7 && seededHash(x * 0.33 + y, z * 0.29) > 0.91) this.set(x, y, z, BlockId.Cobblestone);
           else this.set(x, y, z, BlockId.Stone);
         }
       }
@@ -340,6 +373,18 @@ export class VoxelWorld {
       carveSphere(cx, cy, cz, 3.5 + rand() * 5.4);
     }
 
+    // Fill oceans and deep lowlands with water after caves are carved.
+    for (let x = 1; x < this.sizeX - 1; x += 1) {
+      for (let z = 1; z < this.sizeZ - 1; z += 1) {
+        const biome = biomeAt(x, z);
+        if (biome !== BiomeId.Ocean && biome !== BiomeId.Plains) continue;
+        const waterTop = biome === BiomeId.Ocean ? seaLevel : seaLevel - 2;
+        for (let y = 1; y <= waterTop; y += 1) {
+          if (this.get(x, y, z) === BlockId.Air) this.set(x, y, z, BlockId.Water);
+        }
+      }
+    }
+
     const hasNearbyAir = (x: number, y: number, z: number): boolean => {
       return (
         this.get(x + 1, y, z) === BlockId.Air ||
@@ -347,7 +392,13 @@ export class VoxelWorld {
         this.get(x, y + 1, z) === BlockId.Air ||
         this.get(x, y - 1, z) === BlockId.Air ||
         this.get(x, y, z + 1) === BlockId.Air ||
-        this.get(x, y, z - 1) === BlockId.Air
+        this.get(x, y, z - 1) === BlockId.Air ||
+        this.get(x + 1, y, z) === BlockId.Water ||
+        this.get(x - 1, y, z) === BlockId.Water ||
+        this.get(x, y + 1, z) === BlockId.Water ||
+        this.get(x, y - 1, z) === BlockId.Water ||
+        this.get(x, y, z + 1) === BlockId.Water ||
+        this.get(x, y, z - 1) === BlockId.Water
       );
     };
 
@@ -413,14 +464,19 @@ export class VoxelWorld {
       placeOreVein(x, y, z, BlockId.DiamondOre, 2, 6);
     }
 
-    const treeCount = 3800;
-    for (let i = 0; i < treeCount; i += 1) {
+    const treeAttempts = 15000;
+    for (let i = 0; i < treeAttempts; i += 1) {
       const x = 4 + Math.floor(rand() * (this.sizeX - 8));
       const z = 4 + Math.floor(rand() * (this.sizeZ - 8));
+      const biome = biomeAt(x, z);
+      const spawnChance =
+        biome === BiomeId.Forest ? 0.62 : biome === BiomeId.Plains ? 0.18 : biome === BiomeId.Mountains ? 0.05 : biome === BiomeId.Desert ? 0.01 : 0;
+      if (rand() > spawnChance) continue;
+
       const topY = this.highestSolidY(x, z);
       if (this.get(x, topY, z) !== BlockId.Grass) continue;
 
-      const trunkHeight = 3 + Math.floor(rand() * 3);
+      const trunkHeight = biome === BiomeId.Forest ? 4 + Math.floor(rand() * 3) : 3 + Math.floor(rand() * 3);
       for (let y = 1; y <= trunkHeight; y += 1) this.set(x, topY + y, z, BlockId.Wood);
 
       const leafStart = topY + trunkHeight - 1;
@@ -438,6 +494,8 @@ export class VoxelWorld {
     for (let i = 0; i < 240; i += 1) {
       const cx = 12 + Math.floor(rand() * (this.sizeX - 24));
       const cz = 12 + Math.floor(rand() * (this.sizeZ - 24));
+      const biome = biomeAt(cx, cz);
+      if (biome === BiomeId.Ocean || biome === BiomeId.Mountains) continue;
       this.placeHouse(cx, cz);
     }
   }
@@ -471,7 +529,7 @@ export class VoxelWorld {
       const tile = tileIndexFor(block, face);
       const col = tile % ATLAS_COLUMNS;
       const row = Math.floor(tile / ATLAS_COLUMNS);
-      const rows = Math.ceil(((BlockId.DiamondOre + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
+      const rows = Math.ceil(((BlockId.Water + 1) * ATLAS_FACE_VARIANTS) / ATLAS_COLUMNS);
       const pad = 0.0008;
       const u0 = col / ATLAS_COLUMNS + pad;
       const v0 = row / rows + pad;
@@ -509,7 +567,10 @@ export class VoxelWorld {
             const nx = face.dir[0];
             const ny = face.dir[1];
             const nz = face.dir[2];
-            if (this.isSolid(x + nx, y + ny, z + nz)) continue;
+            const neighbor = this.get(x + nx, y + ny, z + nz);
+            if (block === BlockId.Water) {
+              if (neighbor === BlockId.Water) continue;
+            } else if (this.isSolid(x + nx, y + ny, z + nz)) continue;
 
             const base = materialTint(ny);
             const ao = faceOcclusion(x, y, z, nx, ny, nz);
