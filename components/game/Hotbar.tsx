@@ -38,19 +38,25 @@ export default function Hotbar({ inventory, selectedSlot, hotbarSlots, hearts, m
   };
 
   const visible = inventory.slice(0, hotbarSlots);
+  const selected = visible[selectedSlot];
   return (
     <div className="hotbar-wrap">
       <div className="hotbar-status">
-        <div className="hotbar-stats-line">
-          <span>Health: {hearts}/{maxHearts}</span>
-          <span>Energy: {Math.round(energy)}/{maxEnergy}</span>
+        <div className="hotbar-status-row">
+          <span className="hotbar-status-label">Health</span>
+          <span className="hotbar-status-value">{hearts}/{maxHearts}</span>
         </div>
-        <div className="health-bar">
-          <div className="health-fill" style={{ width: `${Math.max(0, Math.min(100, (hearts / maxHearts) * 100))}%` }} />
+        <div className="status-track health-bar">
+          <div className="status-fill health-fill" style={{ width: `${Math.max(0, Math.min(100, (hearts / maxHearts) * 100))}%` }} />
         </div>
-        <div className="energy-bar">
-          <div className="energy-fill" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
+        <div className="hotbar-status-row">
+          <span className="hotbar-status-label">Energy</span>
+          <span className="hotbar-status-value">{Math.round(energy)}/{maxEnergy}</span>
         </div>
+        <div className="status-track energy-bar">
+          <div className="status-fill energy-fill" style={{ width: `${Math.max(0, Math.min(100, (energy / maxEnergy) * 100))}%` }} />
+        </div>
+        <div className="hotbar-selected-chip">Selected: {selected?.id ? selected.label : "Empty"}</div>
       </div>
       <div className="hotbar-bottom">
         {visible.map((slot, idx) => (

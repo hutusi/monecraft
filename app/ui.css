@@ -1,7 +1,7 @@
 .hotbar-wrap {
   position: absolute;
   left: 50%;
-  bottom: 14px;
+  bottom: 12px;
   transform: translateX(-50%);
   z-index: 4;
   width: min(96vw, 760px);
@@ -9,50 +9,73 @@
 }
 
 .hotbar-status {
-  margin-bottom: 6px;
-  border: 1px solid #00000055;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(62, 53, 42, 0.75), rgba(31, 25, 19, 0.82));
-  padding: 6px 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 13px;
+  background: linear-gradient(180deg, rgba(44, 41, 36, 0.84), rgba(27, 25, 22, 0.9));
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
 }
 
-.hotbar-stats-line {
+.hotbar-status-row {
   display: flex;
   justify-content: space-between;
-  color: #f2e9d8;
+  align-items: center;
+  color: #efe6d5;
   font-size: 11px;
+  margin-top: 2px;
+}
+
+.hotbar-status-label {
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+.hotbar-status-value {
+  font-weight: 700;
+  color: #f8f1e4;
+}
+
+.status-track {
+  margin-top: 4px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 15, 13, 0.85);
+  overflow: hidden;
 }
 
 .health-bar {
-  margin-top: 4px;
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  border: 1px solid #1f1f1f;
   background: #3a2323;
-  overflow: hidden;
 }
 
 .health-fill {
   height: 100%;
-  border-radius: 999px;
   background: linear-gradient(90deg, #8b1a1a 0%, #e14545 55%, #ff8080 100%);
+  box-shadow: inset 0 0 8px rgba(255, 180, 180, 0.35);
 }
 
 .energy-bar {
-  margin-top: 4px;
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  border: 1px solid #1f1f1f;
   background: #3a2e24;
-  overflow: hidden;
 }
 
 .energy-fill {
   height: 100%;
-  border-radius: 999px;
   background: linear-gradient(90deg, #e36d2f 0%, #f2d050 55%, #8bd16a 100%);
+  box-shadow: inset 0 0 8px rgba(255, 240, 180, 0.28);
+}
+
+.hotbar-selected-chip {
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 10px;
+  color: #f5e9d2;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 8px;
 }
 
 .hotbar-bottom {
@@ -60,19 +83,22 @@
   gap: 6px;
   width: 100%;
   justify-content: center;
-  padding: 8px 10px;
-  border: 1px solid #00000055;
+  padding: 8px 10px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(62, 53, 42, 0.75), rgba(31, 25, 19, 0.82));
+  background: linear-gradient(180deg, rgba(44, 41, 36, 0.84), rgba(27, 25, 22, 0.9));
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(1.5px);
 }
 
 .hotbar-slot {
   width: 68px;
   height: 78px;
-  border: 1px solid #00000080;
+  border: 1px solid rgba(0, 0, 0, 0.58);
   border-radius: 10px;
-  background: linear-gradient(180deg, #ece4d2 0%, #cec3aa 100%);
+  background: linear-gradient(180deg, #f0e7d6 0%, #cec2a8 100%);
   color: #1a1a1a;
   cursor: pointer;
   padding: 6px 4px;
@@ -84,18 +110,22 @@
 }
 
 .hotbar-slot.active {
-  border-color: #ffe5a3;
-  background: linear-gradient(180deg, #f7d88f 0%, #e3b95c 100%);
+  border-color: #ffe6ae;
+  background: linear-gradient(180deg, #f9dda1 0%, #deb25b 100%);
   font-weight: 700;
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.01);
   box-shadow:
-    0 5px 14px rgba(0, 0, 0, 0.25),
+    0 8px 18px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.hotbar-slot:hover {
+  border-color: rgba(255, 233, 188, 0.72);
 }
 
 .slot-index {
   font-size: 10px;
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 .slot-label {
@@ -122,6 +152,7 @@
   font-size: 12px;
   font-weight: 700;
   align-self: end;
+  color: #2e2317;
 }
 
 .crosshair {
@@ -308,22 +339,26 @@
 
 @media (max-width: 720px) {
   .hotbar-wrap {
-    bottom: 10px;
+    bottom: 8px;
     width: min(98vw, 680px);
   }
 
   .hotbar-status {
-    margin-bottom: 4px;
-    padding: 5px 8px;
+    margin-bottom: 5px;
+    padding: 6px 8px;
   }
 
-  .hotbar-stats-line {
+  .hotbar-status-row {
     font-size: 10px;
+  }
+
+  .status-track {
+    height: 9px;
   }
 
   .hotbar-bottom {
     gap: 4px;
-    padding: 6px;
+    padding: 6px 6px 7px;
   }
 
   .hotbar-slot {
