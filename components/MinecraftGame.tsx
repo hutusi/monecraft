@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Hud from "@/components/game/Hud";
 import Hotbar from "@/components/game/Hotbar";
 import InventoryPanel from "@/components/game/InventoryPanel";
@@ -8,21 +9,39 @@ import { useMinecraftGame } from "@/lib/game/useMinecraftGame";
 
 export default function MinecraftGame() {
   const game = useMinecraftGame();
+  const [hudMenuOpen, setHudMenuOpen] = useState(false);
+  const [hudHidden, setHudHidden] = useState(false);
 
   return (
     <div className="game-root">
       <div ref={game.mountRef} className="game-canvas-wrap" />
 
-      <Hud
-        locked={game.locked}
-        passiveCount={game.passiveCount}
-        hostileCount={game.hostileCount}
-        daylightPercent={game.daylightPercent}
-        selectedSlotData={game.selectedSlotData}
-        saveMessage={game.saveMessage}
-        onSave={game.saveNow}
-        onLoad={game.loadNow}
-      />
+      {!hudHidden ? (
+        <Hud
+          locked={game.locked}
+          passiveCount={game.passiveCount}
+          hostileCount={game.hostileCount}
+          daylightPercent={game.daylightPercent}
+          selectedSlotData={game.selectedSlotData}
+          saveMessage={game.saveMessage}
+          onSave={game.saveNow}
+          onLoad={game.loadNow}
+        />
+      ) : null}
+
+      <button className="hud-menu-toggle" onClick={() => setHudMenuOpen((v) => !v)}>
+        •••
+      </button>
+      {hudMenuOpen ? (
+        <div className="hud-menu-panel">
+          <button className="hud-menu-btn" onClick={() => setHudHidden((v) => !v)}>
+            {hudHidden ? "Show Top-Left Info" : "Hide Top-Left Info"}
+          </button>
+          <button className="hud-menu-btn" onClick={() => setHudMenuOpen(false)}>
+            Close
+          </button>
+        </div>
+      ) : null}
 
       <Hotbar
         inventory={game.inventory}

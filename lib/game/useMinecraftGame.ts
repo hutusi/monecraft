@@ -664,21 +664,21 @@ export function useMinecraftGame() {
       let drain = 0;
       if (moveTick.didSprint) {
         sprintDistanceBudget += moveTick.horizontalDistance;
-        while (sprintDistanceBudget >= 10) {
-          sprintDistanceBudget -= 10;
+        while (sprintDistanceBudget >= 20) {
+          sprintDistanceBudget -= 20;
           drain += 1;
         }
       } else if (moveTick.didWalk) {
         walkDistanceBudget += moveTick.horizontalDistance;
-        while (walkDistanceBudget >= 25) {
-          walkDistanceBudget -= 25;
+        while (walkDistanceBudget >= 60) {
+          walkDistanceBudget -= 60;
           drain += 1;
         }
       }
       if (moveTick.didJump) {
         jumpBudget += 1;
-        while (jumpBudget >= 2) {
-          jumpBudget -= 2;
+        while (jumpBudget >= 10) {
+          jumpBudget -= 10;
           drain += 1;
         }
       }

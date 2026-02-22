@@ -304,18 +304,18 @@ export class VoxelWorld {
     };
 
     // Cave tunnels.
-    const caveCount = 780;
+    const caveCount = 1200;
     for (let i = 0; i < caveCount; i += 1) {
       let x = 12 + rand() * (this.sizeX - 24);
       let y = 3 + rand() * (this.sizeY - 9);
       let z = 12 + rand() * (this.sizeZ - 24);
       let yaw = rand() * Math.PI * 2;
       let pitch = (rand() - 0.5) * 0.26;
-      const length = 70 + Math.floor(rand() * 95);
+      const length = 100 + Math.floor(rand() * 130);
       for (let step = 0; step < length; step += 1) {
-        const r = 1.2 + rand() * 1.7;
+        const r = 1.3 + rand() * 2.1;
         carveSphere(x, y, z, r);
-        if (rand() > 0.985) carveSphere(x, y, z, 3 + rand() * 2.8);
+        if (rand() > 0.978) carveSphere(x, y, z, 3.4 + rand() * 3.6);
         yaw += (rand() - 0.5) * 0.28;
         pitch = Math.max(-0.55, Math.min(0.55, pitch + (rand() - 0.5) * 0.16));
         x += Math.cos(yaw);
@@ -326,12 +326,12 @@ export class VoxelWorld {
     }
 
     // Extra cave chambers for wider underground spaces.
-    const chamberCount = 260;
+    const chamberCount = 520;
     for (let i = 0; i < chamberCount; i += 1) {
       const cx = 12 + rand() * (this.sizeX - 24);
       const cy = 5 + rand() * (this.sizeY - 14);
       const cz = 12 + rand() * (this.sizeZ - 24);
-      carveSphere(cx, cy, cz, 3 + rand() * 4.2);
+      carveSphere(cx, cy, cz, 3.5 + rand() * 5.4);
     }
 
     const hasNearbyAir = (x: number, y: number, z: number): boolean => {
@@ -357,34 +357,34 @@ export class VoxelWorld {
       }
     };
 
-    // Sliver ore in caves (mid depth) - very common.
-    for (let i = 0; i < 320000; i += 1) {
+    // Sliver ore in caves (mid depth) - extremely common.
+    for (let i = 0; i < 900000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 3 + Math.floor(rand() * Math.max(4, this.sizeY - 10));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
       const block = this.get(x, y, z);
       if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.SliverOre, 2, 8);
+      placeOreVein(x, y, z, BlockId.SliverOre, 3, 10);
     }
 
     // Ruby ore deeper and still rarer than sliver, but more frequent than before.
-    for (let i = 0; i < 70000; i += 1) {
+    for (let i = 0; i < 320000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 16));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
       const block = this.get(x, y, z);
       if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.RubyOre, 2, 8);
+      placeOreVein(x, y, z, BlockId.RubyOre, 3, 10);
     }
 
     // Gold ore, best tier, deep and a bit rarer than ruby.
-    for (let i = 0; i < 52000; i += 1) {
+    for (let i = 0; i < 230000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 22));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
       const block = this.get(x, y, z);
       if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.GoldOre, 2, 8);
+      placeOreVein(x, y, z, BlockId.GoldOre, 3, 10);
     }
 
     const treeCount = 3800;

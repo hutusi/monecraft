@@ -30,7 +30,7 @@ export default function Hud(props: HudProps) {
         <span>{locked ? "Mouse: Look" : "Click to lock mouse"}</span>
         <span>Move: W/S forward-back, A/D strafe</span>
         <span>Sprint: W + CapsLock | Crouch: C | Eat: F</span>
-        <span>Energy drains while sprinting. Eat food to recover energy.</span>
+        <span>Energy: Sprint 20 blocks = -1, Walk 60 blocks = -1, Jump 10 times = -1. Eat food to recover.</span>
         <span>Attack: Left click | Mine: Hold left click | Place: Right click or E</span>
         <span>Stone needs pickaxe, Sliver needs Stone Pickaxe, Ruby/Gold need Sliver Pickaxe or higher</span>
         <span>Inventory/Crafting: I (swap slots by clicking two slots) | Hotbar: 1..0 | Max Stack: 99</span>
