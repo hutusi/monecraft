@@ -85,7 +85,7 @@ export function createBlockAtlasTexture(): THREE.CanvasTexture {
     const baseBlockColor = BLOCK_COLORS[block] ?? [1, 0, 1];
     let base = baseBlockColor;
     if (face === "top") base = tone(base, 1.08);
-    if (face === "bottom") base = tone(base, 0.78);
+    if (face === "bottom") base = tone(base, 0.96);
     if (block === BlockId.Grass && face === "bottom") base = BLOCK_COLORS[BlockId.Dirt];
 
     for (let y = 0; y < ATLAS_TILE_SIZE; y += 1) {

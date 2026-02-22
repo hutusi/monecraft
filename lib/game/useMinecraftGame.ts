@@ -252,7 +252,7 @@ export function useMinecraftGame() {
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
 
-    const hemiLight = new THREE.HemisphereLight(0xd7efff, 0x463c32, 1.15);
+    const hemiLight = new THREE.HemisphereLight(0xd7efff, 0x9a907f, 1.18);
     scene.add(hemiLight);
 
     const sun = new THREE.DirectionalLight(0xfff4da, 1.28);
