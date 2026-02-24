@@ -1,8 +1,8 @@
 import * as THREE from "three";
 
-export const WORLD_SIZE_X = 2000;
+export const WORLD_SIZE_X = 512;
 export const WORLD_SIZE_Y = 100;
-export const WORLD_SIZE_Z = 2000;
+export const WORLD_SIZE_Z = 512;
 
 export const enum BlockId {
   Air = 0,
@@ -343,14 +343,14 @@ export class VoxelWorld {
     };
 
     // Cave tunnels.
-    const caveCount = 1200;
+    const caveCount = 220;
     for (let i = 0; i < caveCount; i += 1) {
       let x = 12 + rand() * (this.sizeX - 24);
       let y = 3 + rand() * (this.sizeY - 9);
       let z = 12 + rand() * (this.sizeZ - 24);
       let yaw = rand() * Math.PI * 2;
       let pitch = (rand() - 0.5) * 0.26;
-      const length = 100 + Math.floor(rand() * 130);
+      const length = 42 + Math.floor(rand() * 48);
       for (let step = 0; step < length; step += 1) {
         const r = 1.3 + rand() * 2.1;
         carveSphere(x, y, z, r);
@@ -365,7 +365,7 @@ export class VoxelWorld {
     }
 
     // Extra cave chambers for wider underground spaces.
-    const chamberCount = 520;
+    const chamberCount = 120;
     for (let i = 0; i < chamberCount; i += 1) {
       const cx = 12 + rand() * (this.sizeX - 24);
       const cy = 5 + rand() * (this.sizeY - 14);
@@ -373,13 +373,14 @@ export class VoxelWorld {
       carveSphere(cx, cy, cz, 3.5 + rand() * 5.4);
     }
 
-    // Fill oceans and deep lowlands with water after caves are carved.
+    // Fill ocean columns with water after caves are carved.
     for (let x = 1; x < this.sizeX - 1; x += 1) {
       for (let z = 1; z < this.sizeZ - 1; z += 1) {
         const biome = biomeAt(x, z);
-        if (biome !== BiomeId.Ocean && biome !== BiomeId.Plains) continue;
-        const waterTop = biome === BiomeId.Ocean ? seaLevel : seaLevel - 2;
-        for (let y = 1; y <= waterTop; y += 1) {
+        if (biome !== BiomeId.Ocean) continue;
+        const topY = this.highestSolidY(x, z);
+        if (topY >= seaLevel) continue;
+        for (let y = topY + 1; y <= seaLevel; y += 1) {
           if (this.get(x, y, z) === BlockId.Air) this.set(x, y, z, BlockId.Water);
         }
       }
@@ -415,7 +416,7 @@ export class VoxelWorld {
     };
 
     // Sliver ore in caves (mid depth) - extremely common.
-    for (let i = 0; i < 900000; i += 1) {
+    for (let i = 0; i < 120000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 3 + Math.floor(rand() * Math.max(4, this.sizeY - 10));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -425,7 +426,7 @@ export class VoxelWorld {
     }
 
     // Ruby ore deeper and still rarer than sliver, but more frequent than before.
-    for (let i = 0; i < 320000; i += 1) {
+    for (let i = 0; i < 52000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 16));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -435,7 +436,7 @@ export class VoxelWorld {
     }
 
     // Gold ore, high tier, deep and a bit rarer than ruby.
-    for (let i = 0; i < 230000; i += 1) {
+    for (let i = 0; i < 36000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 22));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -445,7 +446,7 @@ export class VoxelWorld {
     }
 
     // Sapphire ore, rarer than gold and mostly in deeper cave systems.
-    for (let i = 0; i < 180000; i += 1) {
+    for (let i = 0; i < 28000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 28));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -455,7 +456,7 @@ export class VoxelWorld {
     }
 
     // Diamond ore, best tier and deep, cave-adjacent.
-    for (let i = 0; i < 120000; i += 1) {
+    for (let i = 0; i < 18000; i += 1) {
       const x = 8 + Math.floor(rand() * (this.sizeX - 16));
       const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 36));
       const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
@@ -464,7 +465,7 @@ export class VoxelWorld {
       placeOreVein(x, y, z, BlockId.DiamondOre, 2, 6);
     }
 
-    const treeAttempts = 15000;
+    const treeAttempts = 5200;
     for (let i = 0; i < treeAttempts; i += 1) {
       const x = 4 + Math.floor(rand() * (this.sizeX - 8));
       const z = 4 + Math.floor(rand() * (this.sizeZ - 8));
@@ -491,7 +492,7 @@ export class VoxelWorld {
       }
     }
 
-    for (let i = 0; i < 240; i += 1) {
+    for (let i = 0; i < 120; i += 1) {
       const cx = 12 + Math.floor(rand() * (this.sizeX - 24));
       const cz = 12 + Math.floor(rand() * (this.sizeZ - 24));
       const biome = biomeAt(cx, cz);
