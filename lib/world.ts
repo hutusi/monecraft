@@ -159,6 +159,16 @@ function hash2D(x: number, z: number): number {
   return n - Math.floor(n);
 }
 
+function smoothNoise2D(x: number, z: number, seed: number): number {
+  const s = seed * 0.013;
+  const val =
+    Math.sin(x * 0.015 + s) * 1.2 +
+    Math.cos(z * 0.012 + s * 1.4) * 1.2 +
+    Math.sin(x * 0.005 - z * 0.007 + s * 0.7) * 3.5 +
+    Math.cos(x * 0.031 + z * 0.027 + s * 2.1) * 0.4;
+  return val;
+}
+
 export class VoxelWorld {
   readonly sizeX: number;
   readonly sizeY: number;
@@ -205,16 +215,16 @@ export class VoxelWorld {
   }
 
   getBiome(x: number, z: number): BiomeId {
-    const seededHash = (nx: number, nz: number): number => hash2D(nx + this.seed * 0.013, nz - this.seed * 0.017);
-    const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
-    const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
-    const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
-    const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
+    const s = this.seed * 0.007;
+    const temp = Math.sin(x * 0.0015 + s) * 0.5 + Math.cos(z * 0.0012 + s * 1.2) * 0.5;
+    const moisture = Math.sin(x * 0.0017 - s * 0.8) * 0.5 + Math.cos(z * 0.0019 + s * 1.5) * 0.5;
+    const continental = Math.sin(x * 0.0007 + s * 2.1) * 0.5 + Math.cos(z * 0.0009 - s * 1.7) * 0.5;
+    const ridge = Math.sin(x * 0.006 + z * 0.005 + s) * 0.5 + Math.cos(x * 0.004 - z * 0.006 - s) * 0.5;
 
-    if (continental < 0.24) return BiomeId.Ocean;
-    if (continental > 0.82 || ridge > 0.86) return BiomeId.Mountains;
-    if (temp > 0.63 && moisture < 0.4) return BiomeId.Desert;
-    if (moisture > 0.58) return BiomeId.Forest;
+    if (continental < -0.3) return BiomeId.Ocean;
+    if (continental > 0.6 || ridge > 0.7) return BiomeId.Mountains;
+    if (temp > 0.3 && moisture < -0.2) return BiomeId.Desert;
+    if (moisture > 0.25) return BiomeId.Forest;
     return BiomeId.Plains;
   }
 
@@ -285,34 +295,53 @@ export class VoxelWorld {
     const maxX = this.sizeX - 1;
     const maxZ = this.sizeZ - 1;
 
+    // Fast clear and bedrock
+    this.blocks.fill(BlockId.Air);
     for (let x = 0; x < this.sizeX; x += 1) {
-      for (let z = 0; z < this.sizeZ; z += 1) this.set(x, 0, z, BlockId.Bedrock);
+      for (let z = 0; z < this.sizeZ; z += 1) {
+        this.set(x, 0, z, BlockId.Bedrock);
+      }
     }
 
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
         const biome = this.getBiome(x, z);
-        const micro = seededHash(x * 0.08 + 91, z * 0.08 - 37) * 2 - 1;
-        const rolling = seededHash(x * 0.015 + 163, z * 0.015 - 89) * 2 - 1;
-        const broad = seededHash(x * 0.004 - 29, z * 0.004 + 17) * 2 - 1;
+        const noise = smoothNoise2D(x, z, this.seed);
 
-        let height = 50;
-        if (biome === BiomeId.Plains) height = 48 + micro * 1.2 + Math.max(0, rolling) * 2.5;
-        else if (biome === BiomeId.Desert) height = 46 + micro * 1.5 + rolling * 4.0;
-        else if (biome === BiomeId.Ocean) height = 32 + micro * 1.5 + rolling * 2.0;
-        else if (biome === BiomeId.Forest) height = 52 + micro * 2.0 + rolling * 5.0;
-        else height = 58 + Math.max(0, rolling) * 12 + Math.max(0, broad) * 25;
+        let baseHeight = 48;
+        let noiseScale = 1.0;
 
-        const maxTop = this.sizeY - 8;
-        const topY = Math.max(10, Math.min(maxTop, Math.floor(height)));
+        if (biome === BiomeId.Plains) {
+          baseHeight = 47;
+          noiseScale = 2.0;
+        } else if (biome === BiomeId.Desert) {
+          baseHeight = 46;
+          noiseScale = 3.5;
+        } else if (biome === BiomeId.Ocean) {
+          baseHeight = 30;
+          noiseScale = 2.5;
+        } else if (biome === BiomeId.Forest) {
+          baseHeight = 50;
+          noiseScale = 4.0;
+        } else { // Mountains
+          baseHeight = 55;
+          noiseScale = 18.0;
+        }
+
+        const topY = Math.max(5, Math.min(this.sizeY - 5, Math.floor(baseHeight + noise * noiseScale)));
         const topBlock =
-          biome === BiomeId.Desert || biome === BiomeId.Ocean ? BlockId.Sand : biome === BiomeId.Mountains && topY > 66 ? BlockId.Stone : BlockId.Grass;
+          biome === BiomeId.Desert || biome === BiomeId.Ocean ? BlockId.Sand : biome === BiomeId.Mountains && topY > 65 ? BlockId.Stone : BlockId.Grass;
 
         for (let y = 1; y <= topY; y += 1) {
-          if (y === topY) this.set(x, y, z, topBlock);
-          else if (y > topY - 3) this.set(x, y, z, topBlock === BlockId.Sand ? BlockId.Sand : BlockId.Dirt);
-          else if (y > topY - 7 && seededHash(x * 0.33 + y, z * 0.29) > 0.91) this.set(x, y, z, BlockId.Cobblestone);
-          else this.set(x, y, z, BlockId.Stone);
+          if (y === topY) {
+            this.set(x, y, z, topBlock);
+          } else if (y > topY - 3) {
+            this.set(x, y, z, topBlock === BlockId.Sand ? BlockId.Sand : BlockId.Dirt);
+          } else if (y > topY - 8 && hash2D(x * 0.2 + y * 0.1, z * 0.2) > 0.88) {
+            this.set(x, y, z, BlockId.Cobblestone);
+          } else {
+            this.set(x, y, z, BlockId.Stone);
+          }
         }
       }
     }
