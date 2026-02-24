@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { BlockId, createBlockAtlasTexture, VoxelWorld, WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z } from "@/lib/world";
+import { BlockId, collidesAt, createBlockAtlasTexture, VoxelWorld, WORLD_SIZE_X, WORLD_SIZE_Y, WORLD_SIZE_Z } from "@/lib/world";
 import { readSave } from "@/lib/game/save";
 import { tickDayNight } from "@/lib/game/runtime/dayNight";
 import { bindGameInput } from "@/lib/game/runtime/input";
@@ -331,10 +331,46 @@ export function useMinecraftGame() {
 
     const spawnX = Math.floor(world.sizeX / 2);
     const spawnZ = Math.floor(world.sizeZ / 2);
+    const findSpawnOnLand = (centerX = spawnX, centerZ = spawnZ) => {
+      const isGoodSpawn = (x: number, y: number, z: number): boolean => {
+        const top = world.get(x, y - 2, z);
+        const atFeet = world.get(x, y - 1, z);
+        const atBody = world.get(x, y, z);
+        const atHead = world.get(x, y + 1, z);
+        if (top !== BlockId.Grass) return false;
+        if (atFeet === BlockId.Water || atBody === BlockId.Water || atHead === BlockId.Water) return false;
+        if (atFeet !== BlockId.Air || atBody !== BlockId.Air || atHead !== BlockId.Air) return false;
+        const ny = y - 2;
+        const h0 = world.highestSolidY(x + 1, z);
+        const h1 = world.highestSolidY(x - 1, z);
+        const h2 = world.highestSolidY(x, z + 1);
+        const h3 = world.highestSolidY(x, z - 1);
+        return Math.abs(h0 - ny) <= 1 && Math.abs(h1 - ny) <= 1 && Math.abs(h2 - ny) <= 1 && Math.abs(h3 - ny) <= 1;
+      };
+      const maxRadius = Math.min(260, Math.floor(Math.min(world.sizeX, world.sizeZ) * 0.12));
+      for (let radius = 0; radius <= maxRadius; radius += 4) {
+        for (let i = 0; i < 24; i += 1) {
+          const angle = (Math.PI * 2 * i) / 24;
+          const x = Math.max(2, Math.min(world.sizeX - 3, Math.floor(centerX + Math.cos(angle) * radius)));
+          const z = Math.max(2, Math.min(world.sizeZ - 3, Math.floor(centerZ + Math.sin(angle) * radius)));
+          const topY = world.highestSolidY(x, z);
+          const y = topY + 2;
+          if (isGoodSpawn(x, y, z)) return { x, y, z };
+        }
+      }
+      return { x: spawnX, y: world.highestSolidY(spawnX, spawnZ) + 2, z: spawnZ };
+    };
+    const firstSpawn = findSpawnOnLand();
     const player = {
-      position: new THREE.Vector3(world.sizeX / 2, world.highestSolidY(spawnX, spawnZ) + 2, world.sizeZ / 2),
+      position: new THREE.Vector3(firstSpawn.x, firstSpawn.y, firstSpawn.z),
       velocity: new THREE.Vector3(),
       onGround: false
+    };
+    const forceUnstuck = (centerX = player.position.x, centerZ = player.position.z) => {
+      const safe = findSpawnOnLand(centerX, centerZ);
+      player.position.set(safe.x, safe.y, safe.z);
+      player.velocity.set(0, 0, 0);
+      player.onGround = false;
     };
 
     if (Array.isArray(loadedSave?.inventorySlots)) {
@@ -380,6 +416,13 @@ export function useMinecraftGame() {
     }
     if (loadedSave?.player) {
       player.position.set(loadedSave.player.x, loadedSave.player.y, loadedSave.player.z);
+    }
+    if (
+      collidesAt(world, player.position, PLAYER_HALF_WIDTH, PLAYER_HEIGHT) ||
+      player.position.y < 2 ||
+      world.get(Math.floor(player.position.x), Math.floor(player.position.y), Math.floor(player.position.z)) === BlockId.Water
+    ) {
+      forceUnstuck(player.position.x, player.position.z);
     }
 
     const mobs: MobEntity[] = [];
@@ -556,6 +599,14 @@ export function useMinecraftGame() {
 
     rebuildWorldMesh(true);
 
+    const onEmergencyUnstuck = (event: KeyboardEvent) => {
+      if (event.code !== "KeyU" || isDeadRef.current) return;
+      forceUnstuck(player.position.x, player.position.z);
+      updateCamera();
+      rebuildWorldMesh(true);
+    };
+    window.addEventListener("keydown", onEmergencyUnstuck);
+
     const { persistSave, loadFromSave } = createPersistenceHandlers({
       worldSeed: world.seed,
       changedBlocks,
@@ -688,6 +739,14 @@ export function useMinecraftGame() {
       last = now;
 
       if (
+        collidesAt(world, player.position, PLAYER_HALF_WIDTH, PLAYER_HEIGHT) ||
+        player.position.y < 2 ||
+        world.get(Math.floor(player.position.x), Math.floor(player.position.y), Math.floor(player.position.z)) === BlockId.Water
+      ) {
+        forceUnstuck(player.position.x, player.position.z);
+      }
+
+      if (
         tickDeathAndRespawn({
           dt,
           maxHearts: MAX_HEARTS,
@@ -802,6 +861,7 @@ export function useMinecraftGame() {
       cancelAnimationFrame(animationFrame);
       window.clearInterval(autoSaveId);
       window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("keydown", onEmergencyUnstuck);
       saveNowRef.current = null;
       loadNowRef.current = null;
       unbindInput();

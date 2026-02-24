@@ -35,6 +35,7 @@ export default function Hud(props: HudProps) {
         <span>Stone needs pickaxe, Sliver needs Stone, Ruby/Gold need Sliver, Sapphire/Diamond need Ruby pickaxe or higher</span>
         <span>Armor: click armor items in inventory to equip/unequip (only equipped pieces reduce damage)</span>
         <span>Inventory/Crafting: I (swap slots by clicking two slots) | Hotbar: 1..0 | Max Stack: 99</span>
+        <span>Emergency Unstuck: U</span>
       </div>
       <div className="stats-line">Passive Mobs: {passiveCount} | Hostile Mobs: {hostileCount}</div>
       <div className="stats-line">Daylight: {daylightPercent}%</div>
