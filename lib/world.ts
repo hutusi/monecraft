@@ -458,7 +458,7 @@ export class VoxelWorld {
       if (biome === BiomeId.Ocean) spawnChance = 0; // Ocean
       else if (biome === BiomeId.Mountains) spawnChance = 0.05; // Mountains
       else if (biome === BiomeId.Desert) spawnChance = 0.01; // Desert
-      else if (biome === BiomeId.Forest) spawnChance = 0.62; // Forest
+      else if (biome === BiomeId.Forest) spawnChance = 0.45; // Forest
 
       if (rand() > spawnChance) continue;
 

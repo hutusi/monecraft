@@ -58,6 +58,7 @@ export function useMinecraftGame() {
   const mineTargetRef = useRef<string>("");
   const saveNowRef = useRef<(() => void) | null>(null);
   const loadNowRef = useRef<(() => void) | null>(null);
+  const resetNowRef = useRef<(() => void) | null>(null);
 
   const [locked, setLocked] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(0);
@@ -618,7 +619,7 @@ export function useMinecraftGame() {
     };
     window.addEventListener("keydown", onEmergencyUnstuck);
 
-    const { persistSave, loadFromSave } = createPersistenceHandlers({
+    const { persistSave, loadFromSave, resetWorld } = createPersistenceHandlers({
       worldSeed: world.seed,
       changedBlocks,
       inventoryRef,
@@ -630,6 +631,7 @@ export function useMinecraftGame() {
 
     saveNowRef.current = persistSave;
     loadNowRef.current = loadFromSave;
+    resetNowRef.current = resetWorld;
     const autoSaveId = window.setInterval(persistSave, 15000);
     const onBeforeUnload = () => persistSave();
     window.addEventListener("beforeunload", onBeforeUnload);
@@ -923,6 +925,7 @@ export function useMinecraftGame() {
     swapInventorySlots,
     toggleEquipArmor,
     saveNow: () => saveNowRef.current?.(),
-    loadNow: () => loadNowRef.current?.()
+    loadNow: () => loadNowRef.current?.(),
+    resetNow: () => resetNowRef.current?.()
   };
 }
