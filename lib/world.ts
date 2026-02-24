@@ -25,6 +25,14 @@ export const enum BlockId {
   Water = 17
 }
 
+export enum BiomeId {
+  Plains = 0,
+  Desert = 1,
+  Ocean = 2,
+  Forest = 3,
+  Mountains = 4
+}
+
 const BLOCK_COLORS: Record<number, [number, number, number]> = {
   [BlockId.Grass]: [0.35, 0.68, 0.22],
   [BlockId.Dirt]: [0.46, 0.33, 0.2],
@@ -196,6 +204,20 @@ export class VoxelWorld {
     return 0;
   }
 
+  getBiome(x: number, z: number): BiomeId {
+    const seededHash = (nx: number, nz: number): number => hash2D(nx + this.seed * 0.013, nz - this.seed * 0.017);
+    const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
+    const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
+    const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
+    const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
+
+    if (continental < 0.24) return BiomeId.Ocean;
+    if (continental > 0.82 || ridge > 0.86) return BiomeId.Mountains;
+    if (temp > 0.63 && moisture < 0.4) return BiomeId.Desert;
+    if (moisture > 0.58) return BiomeId.Forest;
+    return BiomeId.Plains;
+  }
+
   private placeHouse(cx: number, cz: number): void {
     const half = 3;
     const floorY = this.highestSolidY(cx, cz) + 1;
@@ -267,27 +289,9 @@ export class VoxelWorld {
       for (let z = 0; z < this.sizeZ; z += 1) this.set(x, 0, z, BlockId.Bedrock);
     }
 
-    const enum BiomeId {
-      Plains = 0,
-      Desert = 1,
-      Ocean = 2,
-      Forest = 3,
-      Mountains = 4
-    }
-
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
-        const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
-        const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
-        const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
-        const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
-
-        let biome = BiomeId.Plains;
-        if (continental < 0.24) biome = BiomeId.Ocean;
-        else if (continental > 0.82 || ridge > 0.86) biome = BiomeId.Mountains;
-        else if (temp > 0.63 && moisture < 0.4) biome = BiomeId.Desert;
-        else if (moisture > 0.58) biome = BiomeId.Forest;
-
+        const biome = this.getBiome(x, z);
         const micro = seededHash(x * 0.08 + 91, z * 0.08 - 37) * 2 - 1;
         const rolling = seededHash(x * 0.015 + 163, z * 0.015 - 89) * 2 - 1;
         const broad = seededHash(x * 0.004 - 29, z * 0.004 + 17) * 2 - 1;
@@ -448,16 +452,13 @@ export class VoxelWorld {
       const x = 4 + Math.floor(rand() * (this.sizeX - 8));
       const z = 4 + Math.floor(rand() * (this.sizeZ - 8));
 
-      const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
-      const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
-      const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
-      const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
+      const biome = this.getBiome(x, z);
 
       let spawnChance = 0.18; // Plains
-      if (continental < 0.24) spawnChance = 0; // Ocean
-      else if (continental > 0.82 || ridge > 0.86) spawnChance = 0.05; // Mountains
-      else if (temp > 0.63 && moisture < 0.4) spawnChance = 0.01; // Desert
-      else if (moisture > 0.58) spawnChance = 0.62; // Forest
+      if (biome === BiomeId.Ocean) spawnChance = 0; // Ocean
+      else if (biome === BiomeId.Mountains) spawnChance = 0.05; // Mountains
+      else if (biome === BiomeId.Desert) spawnChance = 0.01; // Desert
+      else if (biome === BiomeId.Forest) spawnChance = 0.62; // Forest
 
       if (rand() > spawnChance) continue;
 
