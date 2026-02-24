@@ -333,32 +333,32 @@ export function useMinecraftGame() {
     const spawnZ = Math.floor(world.sizeZ / 2);
     const findSpawnOnLand = (centerX = spawnX, centerZ = spawnZ) => {
       const isGoodSpawn = (x: number, y: number, z: number): boolean => {
-        const top = world.get(x, y - 2, z);
-        const atFeet = world.get(x, y - 1, z);
+        const top = world.get(x, y - 1, z);
         const atBody = world.get(x, y, z);
         const atHead = world.get(x, y + 1, z);
-        if (top !== BlockId.Grass) return false;
-        if (atFeet === BlockId.Water || atBody === BlockId.Water || atHead === BlockId.Water) return false;
-        if (atFeet !== BlockId.Air || atBody !== BlockId.Air || atHead !== BlockId.Air) return false;
-        const ny = y - 2;
+        if (!world.isSolid(x, y - 1, z)) return false;
+        if (atBody === BlockId.Water || atHead === BlockId.Water || top === BlockId.Water) return false;
+        if (atBody !== BlockId.Air || atHead !== BlockId.Air) return false;
         const h0 = world.highestSolidY(x + 1, z);
         const h1 = world.highestSolidY(x - 1, z);
         const h2 = world.highestSolidY(x, z + 1);
         const h3 = world.highestSolidY(x, z - 1);
-        return Math.abs(h0 - ny) <= 1 && Math.abs(h1 - ny) <= 1 && Math.abs(h2 - ny) <= 1 && Math.abs(h3 - ny) <= 1;
+        const ny = y - 1;
+        return Math.abs(h0 - ny) <= 2 && Math.abs(h1 - ny) <= 2 && Math.abs(h2 - ny) <= 2 && Math.abs(h3 - ny) <= 2;
       };
-      const maxRadius = Math.min(260, Math.floor(Math.min(world.sizeX, world.sizeZ) * 0.12));
-      for (let radius = 0; radius <= maxRadius; radius += 4) {
-        for (let i = 0; i < 24; i += 1) {
-          const angle = (Math.PI * 2 * i) / 24;
-          const x = Math.max(2, Math.min(world.sizeX - 3, Math.floor(centerX + Math.cos(angle) * radius)));
-          const z = Math.max(2, Math.min(world.sizeZ - 3, Math.floor(centerZ + Math.sin(angle) * radius)));
+      const maxRadius = Math.min(300, Math.floor(Math.min(world.sizeX, world.sizeZ) * 0.4));
+      for (let radius = 0; radius <= maxRadius; radius += 2) {
+        for (let i = 0; i < 32; i += 1) {
+          const angle = (Math.PI * 2 * i) / 32;
+          const x = Math.max(5, Math.min(world.sizeX - 6, Math.floor(centerX + Math.cos(angle) * radius)));
+          const z = Math.max(5, Math.min(world.sizeZ - 6, Math.floor(centerZ + Math.sin(angle) * radius)));
           const topY = world.highestSolidY(x, z);
-          const y = topY + 2;
+          const y = topY + 1;
           if (isGoodSpawn(x, y, z)) return { x, y, z };
         }
       }
-      return { x: spawnX, y: world.highestSolidY(spawnX, spawnZ) + 2, z: spawnZ };
+      const topY = world.highestSolidY(centerX, centerZ);
+      return { x: centerX, y: topY + 1, z: centerZ };
     };
     const firstSpawn = findSpawnOnLand();
     const player = {

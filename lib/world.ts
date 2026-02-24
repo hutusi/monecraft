@@ -251,6 +251,15 @@ export class VoxelWorld {
       };
     })();
 
+    this.generateTerrain(seededHash);
+    this.carveCaves(rand);
+    this.placeWater();
+    this.placeOres(rand);
+    this.placeTrees(rand, seededHash);
+    this.placeStructures(rand);
+  }
+
+  private generateTerrain(seededHash: (x: number, z: number) => number): void {
     const maxX = this.sizeX - 1;
     const maxZ = this.sizeZ - 1;
 
@@ -265,9 +274,6 @@ export class VoxelWorld {
       Forest = 3,
       Mountains = 4
     }
-    const biomeMap = new Uint8Array(this.sizeX * this.sizeZ);
-    const seaLevel = 43;
-    const biomeAt = (x: number, z: number): BiomeId => biomeMap[x + z * this.sizeX] as BiomeId;
 
     for (let x = 0; x < this.sizeX; x += 1) {
       for (let z = 0; z < this.sizeZ; z += 1) {
@@ -281,18 +287,17 @@ export class VoxelWorld {
         else if (continental > 0.82 || ridge > 0.86) biome = BiomeId.Mountains;
         else if (temp > 0.63 && moisture < 0.4) biome = BiomeId.Desert;
         else if (moisture > 0.58) biome = BiomeId.Forest;
-        biomeMap[x + z * this.sizeX] = biome;
 
-        const micro = seededHash(x * 0.09 + 91, z * 0.09 - 37) * 2 - 1;
-        const rolling = seededHash(x * 0.022 + 163, z * 0.022 - 89) * 2 - 1;
-        const broad = seededHash(x * 0.006 - 29, z * 0.006 + 17) * 2 - 1;
+        const micro = seededHash(x * 0.08 + 91, z * 0.08 - 37) * 2 - 1;
+        const rolling = seededHash(x * 0.015 + 163, z * 0.015 - 89) * 2 - 1;
+        const broad = seededHash(x * 0.004 - 29, z * 0.004 + 17) * 2 - 1;
 
         let height = 50;
-        if (biome === BiomeId.Plains) height = 49 + micro * 0.8 + Math.max(0, rolling) * 1.8;
-        else if (biome === BiomeId.Desert) height = 48 + micro * 0.9 + rolling * 2.1;
-        else if (biome === BiomeId.Ocean) height = 34 + micro * 1.2 + rolling * 1.4;
-        else if (biome === BiomeId.Forest) height = 51 + micro * 1.6 + rolling * 3.2;
-        else height = 56 + Math.max(0, rolling) * 10 + Math.max(0, broad) * 18;
+        if (biome === BiomeId.Plains) height = 48 + micro * 1.2 + Math.max(0, rolling) * 2.5;
+        else if (biome === BiomeId.Desert) height = 46 + micro * 1.5 + rolling * 4.0;
+        else if (biome === BiomeId.Ocean) height = 32 + micro * 1.5 + rolling * 2.0;
+        else if (biome === BiomeId.Forest) height = 52 + micro * 2.0 + rolling * 5.0;
+        else height = 58 + Math.max(0, rolling) * 12 + Math.max(0, broad) * 25;
 
         const maxTop = this.sizeY - 8;
         const topY = Math.max(10, Math.min(maxTop, Math.floor(height)));
@@ -319,7 +324,9 @@ export class VoxelWorld {
         this.set(maxX, y, z, BlockId.Bedrock);
       }
     }
+  }
 
+  private carveCaves(rand: () => number): void {
     const carveSphere = (cx: number, cy: number, cz: number, radius: number) => {
       const r2 = radius * radius;
       const minX = Math.max(1, Math.floor(cx - radius));
@@ -342,19 +349,18 @@ export class VoxelWorld {
       }
     };
 
-    // Cave tunnels.
-    const caveCount = 220;
+    const caveCount = 180;
     for (let i = 0; i < caveCount; i += 1) {
       let x = 12 + rand() * (this.sizeX - 24);
       let y = 3 + rand() * (this.sizeY - 9);
       let z = 12 + rand() * (this.sizeZ - 24);
       let yaw = rand() * Math.PI * 2;
       let pitch = (rand() - 0.5) * 0.26;
-      const length = 42 + Math.floor(rand() * 48);
+      const length = 38 + Math.floor(rand() * 42);
       for (let step = 0; step < length; step += 1) {
-        const r = 1.3 + rand() * 2.1;
+        const r = 1.2 + rand() * 1.9;
         carveSphere(x, y, z, r);
-        if (rand() > 0.978) carveSphere(x, y, z, 3.4 + rand() * 3.6);
+        if (rand() > 0.982) carveSphere(x, y, z, 3.2 + rand() * 3.4);
         yaw += (rand() - 0.5) * 0.28;
         pitch = Math.max(-0.55, Math.min(0.55, pitch + (rand() - 0.5) * 0.16));
         x += Math.cos(yaw);
@@ -364,20 +370,19 @@ export class VoxelWorld {
       }
     }
 
-    // Extra cave chambers for wider underground spaces.
-    const chamberCount = 120;
+    const chamberCount = 90;
     for (let i = 0; i < chamberCount; i += 1) {
       const cx = 12 + rand() * (this.sizeX - 24);
       const cy = 5 + rand() * (this.sizeY - 14);
       const cz = 12 + rand() * (this.sizeZ - 24);
-      carveSphere(cx, cy, cz, 3.5 + rand() * 5.4);
+      carveSphere(cx, cy, cz, 3.2 + rand() * 4.8);
     }
+  }
 
-    // Fill ocean columns with water after caves are carved.
+  private placeWater(): void {
+    const seaLevel = 43;
     for (let x = 1; x < this.sizeX - 1; x += 1) {
       for (let z = 1; z < this.sizeZ - 1; z += 1) {
-        const biome = biomeAt(x, z);
-        if (biome !== BiomeId.Ocean) continue;
         const topY = this.highestSolidY(x, z);
         if (topY >= seaLevel) continue;
         for (let y = topY + 1; y <= seaLevel; y += 1) {
@@ -385,7 +390,9 @@ export class VoxelWorld {
         }
       }
     }
+  }
 
+  private placeOres(rand: () => number): void {
     const hasNearbyAir = (x: number, y: number, z: number): boolean => {
       return (
         this.get(x + 1, y, z) === BlockId.Air ||
@@ -415,69 +422,49 @@ export class VoxelWorld {
       }
     };
 
-    // Sliver ore in caves (mid depth) - extremely common.
-    for (let i = 0; i < 120000; i += 1) {
-      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
-      const y = 3 + Math.floor(rand() * Math.max(4, this.sizeY - 10));
-      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
-      const block = this.get(x, y, z);
-      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.SliverOre, 3, 10);
-    }
+    const oreConfigs = [
+      { id: BlockId.SliverOre, attempts: 120000, minY: 3, maxYOffset: 10, minSize: 3, maxSize: 10 },
+      { id: BlockId.RubyOre, attempts: 52000, minY: 2, maxYOffset: 16, minSize: 3, maxSize: 10 },
+      { id: BlockId.GoldOre, attempts: 36000, minY: 2, maxYOffset: 22, minSize: 3, maxSize: 10 },
+      { id: BlockId.SapphireOre, attempts: 28000, minY: 2, maxYOffset: 28, minSize: 2, maxSize: 7 },
+      { id: BlockId.DiamondOre, attempts: 18000, minY: 2, maxYOffset: 36, minSize: 2, maxSize: 6 }
+    ];
 
-    // Ruby ore deeper and still rarer than sliver, but more frequent than before.
-    for (let i = 0; i < 52000; i += 1) {
-      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
-      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 16));
-      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
-      const block = this.get(x, y, z);
-      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.RubyOre, 3, 10);
+    for (const config of oreConfigs) {
+      for (let i = 0; i < config.attempts; i += 1) {
+        const x = 8 + Math.floor(rand() * (this.sizeX - 16));
+        const y = config.minY + Math.floor(rand() * Math.max(2, this.sizeY - config.maxYOffset));
+        const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
+        const block = this.get(x, y, z);
+        if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
+        placeOreVein(x, y, z, config.id, config.minSize, config.maxSize);
+      }
     }
+  }
 
-    // Gold ore, high tier, deep and a bit rarer than ruby.
-    for (let i = 0; i < 36000; i += 1) {
-      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
-      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 22));
-      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
-      const block = this.get(x, y, z);
-      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.GoldOre, 3, 10);
-    }
-
-    // Sapphire ore, rarer than gold and mostly in deeper cave systems.
-    for (let i = 0; i < 28000; i += 1) {
-      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
-      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 28));
-      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
-      const block = this.get(x, y, z);
-      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.SapphireOre, 2, 7);
-    }
-
-    // Diamond ore, best tier and deep, cave-adjacent.
-    for (let i = 0; i < 18000; i += 1) {
-      const x = 8 + Math.floor(rand() * (this.sizeX - 16));
-      const y = 2 + Math.floor(rand() * Math.max(2, this.sizeY - 36));
-      const z = 8 + Math.floor(rand() * (this.sizeZ - 16));
-      const block = this.get(x, y, z);
-      if ((block !== BlockId.Stone && block !== BlockId.Cobblestone) || !hasNearbyAir(x, y, z)) continue;
-      placeOreVein(x, y, z, BlockId.DiamondOre, 2, 6);
-    }
-
+  private placeTrees(rand: () => number, seededHash: (x: number, z: number) => number): void {
     const treeAttempts = 5200;
     for (let i = 0; i < treeAttempts; i += 1) {
       const x = 4 + Math.floor(rand() * (this.sizeX - 8));
       const z = 4 + Math.floor(rand() * (this.sizeZ - 8));
-      const biome = biomeAt(x, z);
-      const spawnChance =
-        biome === BiomeId.Forest ? 0.62 : biome === BiomeId.Plains ? 0.18 : biome === BiomeId.Mountains ? 0.05 : biome === BiomeId.Desert ? 0.01 : 0;
+
+      const temp = seededHash(x * 0.0019 + 71, z * 0.0019 - 23);
+      const moisture = seededHash(x * 0.0021 - 119, z * 0.0021 + 177);
+      const continental = seededHash(x * 0.0011 + 401, z * 0.0011 - 353);
+      const ridge = seededHash(x * 0.009 + 97, z * 0.009 - 143);
+
+      let spawnChance = 0.18; // Plains
+      if (continental < 0.24) spawnChance = 0; // Ocean
+      else if (continental > 0.82 || ridge > 0.86) spawnChance = 0.05; // Mountains
+      else if (temp > 0.63 && moisture < 0.4) spawnChance = 0.01; // Desert
+      else if (moisture > 0.58) spawnChance = 0.62; // Forest
+
       if (rand() > spawnChance) continue;
 
       const topY = this.highestSolidY(x, z);
       if (this.get(x, topY, z) !== BlockId.Grass) continue;
 
-      const trunkHeight = biome === BiomeId.Forest ? 4 + Math.floor(rand() * 3) : 3 + Math.floor(rand() * 3);
+      const trunkHeight = spawnChance > 0.5 ? 4 + Math.floor(rand() * 3) : 3 + Math.floor(rand() * 3);
       for (let y = 1; y <= trunkHeight; y += 1) this.set(x, topY + y, z, BlockId.Wood);
 
       const leafStart = topY + trunkHeight - 1;
@@ -491,12 +478,12 @@ export class VoxelWorld {
         }
       }
     }
+  }
 
+  private placeStructures(rand: () => number): void {
     for (let i = 0; i < 120; i += 1) {
       const cx = 12 + Math.floor(rand() * (this.sizeX - 24));
       const cz = 12 + Math.floor(rand() * (this.sizeZ - 24));
-      const biome = biomeAt(cx, cz);
-      if (biome === BiomeId.Ocean || biome === BiomeId.Mountains) continue;
       this.placeHouse(cx, cz);
     }
   }
@@ -669,12 +656,13 @@ export function voxelRaycast(
 }
 
 export function collidesAt(world: VoxelWorld, position: THREE.Vector3, halfWidth: number, height: number): boolean {
-  const minX = Math.floor(position.x - halfWidth);
-  const maxX = Math.floor(position.x + halfWidth);
-  const minZ = Math.floor(position.z - halfWidth);
-  const maxZ = Math.floor(position.z + halfWidth);
-  const minY = Math.floor(position.y);
-  const maxY = Math.floor(position.y + height);
+  const eps = 0.001;
+  const minX = Math.floor(position.x - halfWidth + eps);
+  const maxX = Math.floor(position.x + halfWidth - eps);
+  const minZ = Math.floor(position.z - halfWidth + eps);
+  const maxZ = Math.floor(position.z + halfWidth - eps);
+  const minY = Math.floor(position.y + eps);
+  const maxY = Math.floor(position.y + height - eps);
 
   for (let y = minY; y <= maxY; y += 1) {
     for (let z = minZ; z <= maxZ; z += 1) {
