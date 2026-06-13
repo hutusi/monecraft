@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "db6d6a6eec90",
+  "session_id": "45c0676c-8bbd-45fe-8f73-64d454b67cd0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T22:05:02.576486Z",
+  "branch": "feat/dungeons",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/blocks.ts",
+    "lib/game/items.ts",
+    "lib/game/audio/materials.ts",
+    "lib/world/atlas.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "eea8439d21ff",
+  "token_usage": {
+    "input_tokens": 17800,
+    "cache_creation_tokens": 260768,
+    "cache_read_tokens": 4667649,
+    "output_tokens": 32311,
+    "api_call_count": 35
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T22:05:02.558461Z",
+    "agent_lines": 28,
+    "agent_removed": 5,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 28,
+    "total_lines_changed": 33,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "db6d6a6eec90",
+  "strategy": "manual-commit",
+  "branch": "feat/dungeons",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/items.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/db/6d6a6eec90/0/metadata.json",
+      "transcript": "/db/6d6a6eec90/0/full.jsonl",
+      "content_hash": "/db/6d6a6eec90/0/content_hash.txt",
+      "prompt": "/db/6d6a6eec90/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 17800,
+    "cache_creation_tokens": 260768,
+    "cache_read_tokens": 4667649,
+    "output_tokens": 32311,
+    "api_call_count": 35
+  }
+}
