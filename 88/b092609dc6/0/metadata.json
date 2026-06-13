@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "88b092609dc6",
+  "session_id": "e2fc6b63-8357-4ed9-b4cc-94b55fc71192",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T07:43:19.117428Z",
+  "branch": "feat/mc-ui-polish",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/game/ItemTooltip.tsx",
+    "app/base.css",
+    "app/ui.css",
+    "components/game/Hotbar.tsx",
+    "components/game/InventoryPanel.tsx",
+    "components/game/InventoryPanel.test.tsx",
+    "components/game/ItemTooltip.test.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "5fbcf000da89",
+  "checkpoint_transcript_start": 247,
+  "transcript_lines_at_start": 247,
+  "token_usage": {
+    "input_tokens": 635,
+    "cache_creation_tokens": 17117,
+    "cache_read_tokens": 2903718,
+    "output_tokens": 15255,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T07:43:19.10297Z",
+    "agent_lines": 151,
+    "agent_removed": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 151,
+    "total_lines_changed": 161,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
