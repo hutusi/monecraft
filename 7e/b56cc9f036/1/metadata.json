@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7eb56cc9f036",
+  "session_id": "eaf2abbd-6ba1-43d1-988b-aacb9f025ce4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T06:32:54.13299Z",
+  "branch": "docs/player-manual-and-dev-guides",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/architecture.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "1ba6d2e03e5c",
+  "token_usage": {
+    "input_tokens": 27581,
+    "cache_creation_tokens": 659738,
+    "cache_read_tokens": 106627711,
+    "output_tokens": 281580,
+    "api_call_count": 327
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T06:32:53.997068Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 8,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 8,
+    "total_lines_changed": 12,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
