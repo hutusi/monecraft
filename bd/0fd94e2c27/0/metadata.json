@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "bd0fd94e2c27",
+  "session_id": "e2fc6b63-8357-4ed9-b4cc-94b55fc71192",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T11:07:17.764734Z",
+  "branch": "feat/juice-atmosphere",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "0210d6b6d333",
+  "token_usage": {
+    "input_tokens": 19757,
+    "cache_creation_tokens": 646475,
+    "cache_read_tokens": 46241943,
+    "output_tokens": 216937,
+    "api_call_count": 202
+  },
+  "session_metrics": {
+    "turn_count": 6
+  }
+}
