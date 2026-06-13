@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "496a956e3f77",
+  "session_id": "e2fc6b63-8357-4ed9-b4cc-94b55fc71192",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T11:14:16.905681Z",
+  "branch": "feat/juice-atmosphere",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "34b455466829",
+  "token_usage": {
+    "input_tokens": 22146,
+    "cache_creation_tokens": 685162,
+    "cache_read_tokens": 56011667,
+    "output_tokens": 238800,
+    "api_call_count": 225
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 37,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "docs/manual.md": 6,
+        "docs/testing.md": 3,
+        "docs/tuning.md": 12,
+        "lib/game/render/particleSystem.test.ts": 16
+      },
+      "user_removed_per_file": {
+        "docs/testing.md": 1
+      }
+    }
+  ]
+}
