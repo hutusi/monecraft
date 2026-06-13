@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "82416fd35323",
+  "strategy": "manual-commit",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/commands.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/82/416fd35323/0/metadata.json",
+      "transcript": "/82/416fd35323/0/full.jsonl",
+      "content_hash": "/82/416fd35323/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8953,
+    "cache_creation_tokens": 48338,
+    "cache_read_tokens": 8191984,
+    "output_tokens": 28190,
+    "api_call_count": 36
+  }
+}

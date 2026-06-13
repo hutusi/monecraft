@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "82416fd35323",
+  "session_id": "1d7019e5-88ed-4642-88a7-d0dfd2a7885d",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T12:15:44.389324Z",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/commands.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "a5dbdf87b311",
+  "checkpoint_transcript_start": 413,
+  "transcript_lines_at_start": 413,
+  "token_usage": {
+    "input_tokens": 8953,
+    "cache_creation_tokens": 48338,
+    "cache_read_tokens": 8191984,
+    "output_tokens": 28190,
+    "api_call_count": 36
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T12:15:44.363381Z",
+    "agent_lines": 318,
+    "agent_removed": 14,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 318,
+    "total_lines_changed": 332,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
