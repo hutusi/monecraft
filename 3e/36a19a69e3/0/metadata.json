@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3e36a19a69e3",
+  "session_id": "e2fc6b63-8357-4ed9-b4cc-94b55fc71192",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T07:44:55.234927Z",
+  "branch": "feat/mc-ui-polish",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/MinecraftGame.tsx",
+    "app/base.css",
+    "app/hud.css"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "5fbcf000da89",
+  "checkpoint_transcript_start": 343,
+  "transcript_lines_at_start": 343,
+  "token_usage": {
+    "input_tokens": 570,
+    "cache_creation_tokens": 5894,
+    "cache_read_tokens": 1192730,
+    "output_tokens": 4547,
+    "api_call_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T07:44:55.2199Z",
+    "agent_lines": 35,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 35,
+    "total_lines_changed": 36,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

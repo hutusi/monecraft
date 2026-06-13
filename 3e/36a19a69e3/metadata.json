@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3e36a19a69e3",
+  "strategy": "manual-commit",
+  "branch": "feat/mc-ui-polish",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/base.css",
+    "app/hud.css",
+    "components/MinecraftGame.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3e/36a19a69e3/0/metadata.json",
+      "transcript": "/3e/36a19a69e3/0/full.jsonl",
+      "content_hash": "/3e/36a19a69e3/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 570,
+    "cache_creation_tokens": 5894,
+    "cache_read_tokens": 1192730,
+    "output_tokens": 4547,
+    "api_call_count": 8
+  }
+}
