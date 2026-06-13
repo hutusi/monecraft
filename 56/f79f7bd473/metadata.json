@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "56f79f7bd473",
+  "strategy": "manual-commit",
+  "branch": "docs/player-manual-and-dev-guides",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/reference.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/56/f79f7bd473/0/metadata.json",
+      "transcript": "/56/f79f7bd473/0/full.jsonl",
+      "content_hash": "/56/f79f7bd473/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 5558,
+    "cache_read_tokens": 684794,
+    "output_tokens": 5237,
+    "api_call_count": 5
+  }
+}
