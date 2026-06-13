@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "da2358f188ce",
+  "session_id": "1d7019e5-88ed-4642-88a7-d0dfd2a7885d",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T12:02:30.303186Z",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/inventory.ts",
+    "lib/game/inventory.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "a5dbdf87b311",
+  "checkpoint_transcript_start": 253,
+  "transcript_lines_at_start": 253,
+  "token_usage": {
+    "input_tokens": 4135,
+    "cache_creation_tokens": 13373,
+    "cache_read_tokens": 1664120,
+    "output_tokens": 7900,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T12:02:30.285957Z",
+    "agent_lines": 134,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 134,
+    "total_lines_changed": 134,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "da2358f188ce",
+  "strategy": "manual-commit",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/inventory.test.ts",
+    "lib/game/inventory.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/da/2358f188ce/0/metadata.json",
+      "transcript": "/da/2358f188ce/0/full.jsonl",
+      "content_hash": "/da/2358f188ce/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4135,
+    "cache_creation_tokens": 13373,
+    "cache_read_tokens": 1664120,
+    "output_tokens": 7900,
+    "api_call_count": 10
+  }
+}
