@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ce7a266eb818",
+  "session_id": "1d7019e5-88ed-4642-88a7-d0dfd2a7885d",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T12:28:27.596775Z",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "e2e/smoke.e2e.ts",
+    "docs/reference.md",
+    "docs/manual.md",
+    "docs/save-format.md",
+    "docs/architecture.md",
+    "docs/adding-content.md",
+    "docs/tuning.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "a5dbdf87b311",
+  "checkpoint_transcript_start": 726,
+  "transcript_lines_at_start": 726,
+  "token_usage": {
+    "input_tokens": 7876,
+    "cache_creation_tokens": 41705,
+    "cache_read_tokens": 9750250,
+    "output_tokens": 16261,
+    "api_call_count": 31
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T12:28:27.560235Z",
+    "agent_lines": 134,
+    "agent_removed": 54,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 134,
+    "total_lines_changed": 188,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
