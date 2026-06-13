@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cefcc751b131",
+  "session_id": "372ccbdb-b975-4213-a529-7681d70a1fc7",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T06:36:34.876746Z",
+  "branch": "docs/player-manual-and-dev-guides",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "README.md",
+    "docs/manual.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "dc810690f1d5",
+  "checkpoint_transcript_start": 187,
+  "transcript_lines_at_start": 187,
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 10740,
+    "cache_read_tokens": 1296239,
+    "output_tokens": 9664,
+    "api_call_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T06:36:34.825818Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 208,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 208,
+    "total_lines_changed": 209,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
