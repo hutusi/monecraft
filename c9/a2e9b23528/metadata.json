@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c9a2e9b23528",
+  "strategy": "manual-commit",
+  "branch": "feature/player-skins",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/render/playerModel.test.ts",
+    "lib/game/render/playerModel.ts",
+    "lib/game/render/playerVisuals.test.ts",
+    "lib/game/render/playerVisuals.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c9/a2e9b23528/0/metadata.json",
+      "transcript": "/c9/a2e9b23528/0/full.jsonl",
+      "content_hash": "/c9/a2e9b23528/0/content_hash.txt",
+      "prompt": "/c9/a2e9b23528/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23114,
+    "cache_creation_tokens": 446183,
+    "cache_read_tokens": 18518662,
+    "output_tokens": 95388,
+    "api_call_count": 133
+  }
+}
