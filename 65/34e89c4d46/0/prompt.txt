@@ -1,0 +1,183 @@
+push and open pr
+
+---
+
+there are some warnings on console when "bun run dev": [browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="layout.tsx">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[browser] ./lib/game/items.ts:2:1
+Export GRASS_SEED_DROP_CHANCE doesn't exist in target module
+  1 | import { BlockId } from "@/lib/world";
+> 2 | import { GRASS_SEED_DROP_CHANCE, INVENTORY_SLOTS } from "@/lib/game/config";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import type { ArmorSlot, EquippedArmor, InventorySlot, ItemDef } from "@/lib/game/types";
+  4 |
+  5 | export const ARMOR_SLOTS: ArmorSlot[] = ["helmet", "face_mask", "neck_protection", "chestplate", "leggings", "b...
+
+The export GRASS_SEED_DROP_CHANCE was not found in module [project]/lib/game/config.ts [app-client] (ecmascript).
+Did you mean to import RESPAWN_SECONDS?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./lib/game/items.ts [Client Component Browser]
+    ./components/game/InventoryPanel.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/game/items.ts [Client Component SSR]
+    ./components/game/InventoryPanel.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+[browser] ./lib/game/items.ts:2:1
+Export GRASS_SEED_DROP_CHANCE doesn't exist in target module
+  1 | import { BlockId } from "@/lib/world";
+> 2 | import { GRASS_SEED_DROP_CHANCE, INVENTORY_SLOTS } from "@/lib/game/config";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import type { ArmorSlot, EquippedArmor, InventorySlot, ItemDef } from "@/lib/game/types";
+  4 |
+  5 | export const ARMOR_SLOTS: ArmorSlot[] = ["helmet", "face_mask", "neck_protection", "chestplate", "leggings", "b...
+
+The export GRASS_SEED_DROP_CHANCE was not found in module [project]/lib/game/config.ts [app-ssr] (ecmascript).
+Did you mean to import RESPAWN_SECONDS?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./lib/game/items.ts [Client Component Browser]
+    ./components/game/InventoryPanel.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/game/items.ts [Client Component SSR]
+    ./components/game/InventoryPanel.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+[browser] ./lib/game/items.ts:2:1
+Export GRASS_SEED_DROP_CHANCE doesn't exist in target module
+  1 | import { BlockId } from "@/lib/world";
+> 2 | import { GRASS_SEED_DROP_CHANCE, INVENTORY_SLOTS } from "@/lib/game/config";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import type { ArmorSlot, EquippedArmor, InventorySlot, ItemDef } from "@/lib/game/types";
+  4 |
+  5 | export const ARMOR_SLOTS: ArmorSlot[] = ["helmet", "face_mask", "neck_protection", "chestplate", "leggings", "b...
+
+The export GRASS_SEED_DROP_CHANCE was not found in module [project]/lib/game/config.ts [app-client] (ecmascript).
+Did you mean to import RESPAWN_SECONDS?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./lib/game/items.ts [Client Component Browser]
+    ./components/game/InventoryPanel.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/game/items.ts [Client Component SSR]
+    ./components/game/InventoryPanel.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+[browser] ./lib/game/items.ts:2:1
+Export GRASS_SEED_DROP_CHANCE doesn't exist in target module
+  1 | import { BlockId } from "@/lib/world";
+> 2 | import { GRASS_SEED_DROP_CHANCE, INVENTORY_SLOTS } from "@/lib/game/config";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 | import type { ArmorSlot, EquippedArmor, InventorySlot, ItemDef } from "@/lib/game/types";
+  4 |
+  5 | export const ARMOR_SLOTS: ArmorSlot[] = ["helmet", "face_mask", "neck_protection", "chestplate", "leggings", "b...
+
+The export GRASS_SEED_DROP_CHANCE was not found in module [project]/lib/game/config.ts [app-ssr] (ecmascript).
+Did you mean to import RESPAWN_SECONDS?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+Import traces:
+  Client Component Browser:
+    ./lib/game/items.ts [Client Component Browser]
+    ./components/game/InventoryPanel.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/game/items.ts [Client Component SSR]
+    ./components/game/InventoryPanel.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+[browser] ./components/game/InventoryPanel.tsx:156:14
+Expected '</', got ')'
+  154 |                 <ItemIcon slot={createSlot(recipe.result.slotId, recipe.result.count)} size={24} />
+  155 |               </button>
+> 156 |             ))}
+      |              ^
+  157 |           </div>
+  158 |         </div>
+  159 |       </div>
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./components/game/InventoryPanel.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Client Component Browser]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/game/InventoryPanel.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Client Component SSR]
+    ./components/MinecraftGame.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+---
+
+ok, when I test it, I kill a mob, there seems has no food droped, what do you think?
+
+---
+
+ok, go ahead
+
+---
+
+commit, no push
