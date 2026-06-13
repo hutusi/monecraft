@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "dfec1e66b875",
+  "strategy": "manual-commit",
+  "branch": "feature/player-skins",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/architecture.md",
+    "docs/testing.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/df/ec1e66b875/0/metadata.json",
+      "transcript": "/df/ec1e66b875/0/full.jsonl",
+      "content_hash": "/df/ec1e66b875/0/content_hash.txt",
+      "prompt": "/df/ec1e66b875/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 26177,
+    "cache_creation_tokens": 480274,
+    "cache_read_tokens": 25946995,
+    "output_tokens": 112366,
+    "api_call_count": 162
+  }
+}
