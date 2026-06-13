@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "622105099bfe",
+  "strategy": "manual-commit",
+  "branch": "feat/dungeons",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/architecture.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "docs/tuning.md",
+    "package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/62/2105099bfe/0/metadata.json",
+      "transcript": "/62/2105099bfe/0/full.jsonl",
+      "content_hash": "/62/2105099bfe/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8183,
+    "cache_creation_tokens": 37597,
+    "cache_read_tokens": 10303396,
+    "output_tokens": 16931,
+    "api_call_count": 35
+  }
+}
