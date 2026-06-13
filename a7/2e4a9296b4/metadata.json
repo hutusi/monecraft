@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a72e4a9296b4",
+  "strategy": "manual-commit",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a7/2e4a9296b4/0/metadata.json",
+      "transcript": "/a7/2e4a9296b4/0/full.jsonl",
+      "content_hash": "/a7/2e4a9296b4/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4751,
+    "cache_creation_tokens": 29436,
+    "cache_read_tokens": 4210539,
+    "output_tokens": 18230,
+    "api_call_count": 22
+  }
+}
