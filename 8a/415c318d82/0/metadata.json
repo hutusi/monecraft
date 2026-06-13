@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8a415c318d82",
+  "session_id": "45c0676c-8bbd-45fe-8f73-64d454b67cd0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T22:33:39.655372Z",
+  "branch": "feat/dungeons",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "eea8439d21ff",
+  "checkpoint_transcript_start": 768,
+  "transcript_lines_at_start": 768,
+  "token_usage": {
+    "input_tokens": 141,
+    "cache_creation_tokens": 4561,
+    "cache_read_tokens": 1924588,
+    "output_tokens": 1860,
+    "api_call_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T22:33:39.623172Z",
+    "agent_lines": 1,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
