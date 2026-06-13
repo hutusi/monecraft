@@ -1,0 +1,53 @@
+ok, go ahead
+
+---
+
+the pr is clean, let's merge it
+
+---
+
+what's next? what features do we need to add? what do you think?
+
+---
+
+do we need to add or update some tests and docs?
+
+---
+
+commit, no push
+
+---
+
+do we need to add this to AGENTS.md as a rule ?
+
+---
+
+I think docs in docs/ folder is better than list the file names, because the file names may be renamed or added new? what do you think? and what about tests?
+
+---
+
+ok, go ahead, but make "update docs/" more obviously, now may be agent will ignore it. what do you think?
+
+---
+
+go ahead
+
+---
+
+push main and switch to the feature branch
+
+---
+
+continue
+
+---
+
+continue, then check about the code reviews on the pr
+
+---
+
+continue
+
+---
+
+apply all three, commit, no push

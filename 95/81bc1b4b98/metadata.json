@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9581bc1b4b98",
+  "strategy": "manual-commit",
+  "branch": "feat/juice-atmosphere",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/95/81bc1b4b98/0/metadata.json",
+      "transcript": "/95/81bc1b4b98/0/full.jsonl",
+      "content_hash": "/95/81bc1b4b98/0/content_hash.txt",
+      "prompt": "/95/81bc1b4b98/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 36443,
+    "cache_creation_tokens": 719208,
+    "cache_read_tokens": 68398655,
+    "output_tokens": 269791,
+    "api_call_count": 251
+  }
+}
