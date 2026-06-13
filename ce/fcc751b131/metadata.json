@@ -5,9 +5,6 @@
   "branch": "docs/player-manual-and-dev-guides",
   "checkpoints_count": 0,
   "files_touched": [
-    "AGENTS.md",
-    "CHANGELOG.md",
-    "README.md",
     "docs/manual.md"
   ],
   "sessions": [
@@ -19,10 +16,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 22,
-    "cache_creation_tokens": 10740,
-    "cache_read_tokens": 1296239,
-    "output_tokens": 9664,
-    "api_call_count": 11
+    "input_tokens": 3456,
+    "cache_creation_tokens": 12506,
+    "cache_read_tokens": 381610,
+    "output_tokens": 8535,
+    "api_call_count": 3
   }
 }
