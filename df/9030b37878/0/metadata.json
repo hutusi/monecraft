@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "df9030b37878",
+  "session_id": "1d7019e5-88ed-4642-88a7-d0dfd2a7885d",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T13:11:19.804673Z",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "docs/tuning.md",
+    "docs/reference.md",
+    "e2e/smoke.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "25f62cfccbc7",
+  "checkpoint_transcript_start": 922,
+  "transcript_lines_at_start": 922,
+  "token_usage": {
+    "input_tokens": 3386,
+    "cache_creation_tokens": 42942,
+    "cache_read_tokens": 7984673,
+    "output_tokens": 32510,
+    "api_call_count": 22
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T13:11:19.758381Z",
+    "agent_lines": 78,
+    "agent_removed": 45,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 78,
+    "total_lines_changed": 123,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
