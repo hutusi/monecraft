@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "bfdd664dd5b3",
+  "session_id": "d616a1b8-efd2-4bf3-a6a1-668f3e8c24c0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T00:24:50.052161Z",
+  "branch": "feature/player-skins",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "426d714da80e",
+  "token_usage": {
+    "input_tokens": 22788,
+    "cache_creation_tokens": 436507,
+    "cache_read_tokens": 16881379,
+    "output_tokens": 87743,
+    "api_call_count": 126
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
