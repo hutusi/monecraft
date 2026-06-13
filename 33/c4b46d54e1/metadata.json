@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "33c4b46d54e1",
+  "strategy": "manual-commit",
+  "branch": "feat/mc-ui-polish",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/MinecraftGame.tsx",
+    "components/game/Hotbar.tsx",
+    "components/game/InventoryPanel.tsx",
+    "components/game/ItemTooltip.tsx",
+    "e2e/smoke.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/33/c4b46d54e1/0/metadata.json",
+      "transcript": "/33/c4b46d54e1/0/full.jsonl",
+      "content_hash": "/33/c4b46d54e1/0/content_hash.txt",
+      "prompt": "/33/c4b46d54e1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 562,
+    "cache_creation_tokens": 29474,
+    "cache_read_tokens": 4965170,
+    "output_tokens": 19137,
+    "api_call_count": 23
+  }
+}
