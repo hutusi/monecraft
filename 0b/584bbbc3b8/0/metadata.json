@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0b584bbbc3b8",
+  "session_id": "eaf2abbd-6ba1-43d1-988b-aacb9f025ce4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T03:05:45.711803Z",
+  "branch": "feature/survival-loop",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/systems/breeding.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/render/mobVisuals.test.ts",
+    "lib/game/render/mobVisuals.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "067117f14b9b",
+  "checkpoint_transcript_start": 657,
+  "transcript_lines_at_start": 657,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T03:05:45.680508Z",
+    "agent_lines": 374,
+    "agent_removed": 15,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 374,
+    "total_lines_changed": 389,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
