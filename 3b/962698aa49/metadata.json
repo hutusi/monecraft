@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3b962698aa49",
+  "strategy": "manual-commit",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/config.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3b/962698aa49/0/metadata.json",
+      "transcript": "/3b/962698aa49/0/full.jsonl",
+      "content_hash": "/3b/962698aa49/0/content_hash.txt",
+      "prompt": "/3b/962698aa49/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28113,
+    "cache_creation_tokens": 260639,
+    "cache_read_tokens": 3569534,
+    "output_tokens": 39480,
+    "api_call_count": 31
+  }
+}

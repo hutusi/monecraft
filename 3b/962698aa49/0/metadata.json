@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3b962698aa49",
+  "session_id": "1d7019e5-88ed-4642-88a7-d0dfd2a7885d",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T12:00:01.756775Z",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/config.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "a5dbdf87b311",
+  "token_usage": {
+    "input_tokens": 28113,
+    "cache_creation_tokens": 260639,
+    "cache_read_tokens": 3569534,
+    "output_tokens": 39480,
+    "api_call_count": 31
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T12:00:01.740998Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 16,
+    "human_modified": 5,
+    "human_removed": 0,
+    "total_committed": 16,
+    "total_lines_changed": 21,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
