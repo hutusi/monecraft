@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "fa7e2ae4fcb2",
+  "strategy": "manual-commit",
+  "branch": "feat/mc-ui-polish",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/base.css",
+    "app/fonts.ts",
+    "app/hud.css",
+    "app/layout.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fa/7e2ae4fcb2/0/metadata.json",
+      "transcript": "/fa/7e2ae4fcb2/0/full.jsonl",
+      "content_hash": "/fa/7e2ae4fcb2/0/content_hash.txt",
+      "prompt": "/fa/7e2ae4fcb2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 9917,
+    "cache_creation_tokens": 189853,
+    "cache_read_tokens": 1957196,
+    "output_tokens": 37840,
+    "api_call_count": 22
+  }
+}
