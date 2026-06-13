@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8ab3fc35e113",
+  "session_id": "eaf2abbd-6ba1-43d1-988b-aacb9f025ce4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T03:26:34.808039Z",
+  "branch": "feature/survival-loop",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/save.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "714b23c5fb62",
+  "token_usage": {
+    "input_tokens": 27291,
+    "cache_creation_tokens": 644711,
+    "cache_read_tokens": 98414428,
+    "output_tokens": 264981,
+    "api_call_count": 311
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T03:26:34.749891Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 37,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 37,
+    "total_lines_changed": 44,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
