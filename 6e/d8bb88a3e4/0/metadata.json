@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6ed8bb88a3e4",
+  "session_id": "575d903c-fef2-439c-aad2-b56323eb6ddd",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T23:54:37.228652Z",
+  "branch": "feat/endgame-ranged",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/projectiles.ts",
+    "lib/game/engine/systems/projectileAI.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/projectiles.test.ts",
+    "lib/game/engine/systems/projectileAI.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "14d2a983ffde",
+  "token_usage": {
+    "input_tokens": 15358,
+    "cache_creation_tokens": 256271,
+    "cache_read_tokens": 5236529,
+    "output_tokens": 68072,
+    "api_call_count": 40
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T23:54:37.212027Z",
+    "agent_lines": 448,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 448,
+    "total_lines_changed": 449,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
