@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "25fb6b8f54e8",
+  "strategy": "manual-commit",
+  "branch": "feat/chests-storage",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/ui.css",
+    "components/MinecraftGame.tsx",
+    "components/game/InventoryPanel.test.tsx",
+    "components/game/InventoryPanel.tsx",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/25/fb6b8f54e8/0/metadata.json",
+      "transcript": "/25/fb6b8f54e8/0/full.jsonl",
+      "content_hash": "/25/fb6b8f54e8/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5251,
+    "cache_creation_tokens": 37378,
+    "cache_read_tokens": 9235988,
+    "output_tokens": 18114,
+    "api_call_count": 34
+  }
+}
