@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6b417600c230",
+  "session_id": "d616a1b8-efd2-4bf3-a6a1-668f3e8c24c0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T02:18:08.861183Z",
+  "branch": "feature/survival-loop",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "c013e85b73ea",
+  "token_usage": {
+    "input_tokens": 28329,
+    "cache_creation_tokens": 498508,
+    "cache_read_tokens": 33572789,
+    "output_tokens": 125269,
+    "api_call_count": 189
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T02:18:08.828714Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 330,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 330,
+    "total_lines_changed": 346,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6b417600c230",
+  "strategy": "manual-commit",
+  "branch": "feature/survival-loop",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6b/417600c230/0/metadata.json",
+      "transcript": "/6b/417600c230/0/full.jsonl",
+      "content_hash": "/6b/417600c230/0/content_hash.txt",
+      "prompt": "/6b/417600c230/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28329,
+    "cache_creation_tokens": 498508,
+    "cache_read_tokens": 33572789,
+    "output_tokens": 125269,
+    "api_call_count": 189
+  }
+}
