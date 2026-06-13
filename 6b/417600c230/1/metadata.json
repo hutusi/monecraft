@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6b417600c230",
+  "session_id": "eaf2abbd-6ba1-43d1-988b-aacb9f025ce4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-13T02:18:18.669023Z",
+  "branch": "feature/survival-loop",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/types.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/playerStats.ts",
+    "lib/game/config.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/mobLoot.test.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "CHANGELOG.md",
+    "docs/adding-content.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "067117f14b9b",
+  "token_usage": {
+    "input_tokens": 15252,
+    "cache_creation_tokens": 340322,
+    "cache_read_tokens": 7354696,
+    "output_tokens": 57564,
+    "api_call_count": 56
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-13T02:18:18.648083Z",
+    "agent_lines": 336,
+    "agent_removed": 16,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 336,
+    "total_lines_changed": 352,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

@@ -5,10 +5,21 @@
   "branch": "feature/survival-loop",
   "checkpoints_count": 1,
   "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts",
     "lib/game/config.ts",
     "lib/game/engine/GameEngine.test.ts",
     "lib/game/engine/GameEngine.ts",
-    "lib/game/engine/state.ts"
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/playerStats.ts",
+    "lib/game/items.ts",
+    "lib/game/mobLoot.test.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/recipes.ts",
+    "lib/game/types.ts",
+    "lib/ui/spritePixels.ts"
   ],
   "sessions": [
     {
@@ -16,13 +27,19 @@
       "transcript": "/6b/417600c230/0/full.jsonl",
       "content_hash": "/6b/417600c230/0/content_hash.txt",
       "prompt": "/6b/417600c230/0/prompt.txt"
+    },
+    {
+      "metadata": "/6b/417600c230/1/metadata.json",
+      "transcript": "/6b/417600c230/1/full.jsonl",
+      "content_hash": "/6b/417600c230/1/content_hash.txt",
+      "prompt": "/6b/417600c230/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 28329,
-    "cache_creation_tokens": 498508,
-    "cache_read_tokens": 33572789,
-    "output_tokens": 125269,
-    "api_call_count": 189
+    "input_tokens": 43581,
+    "cache_creation_tokens": 838830,
+    "cache_read_tokens": 40927485,
+    "output_tokens": 182833,
+    "api_call_count": 245
   }
 }
