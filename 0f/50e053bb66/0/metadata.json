@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0f50e053bb66",
+  "session_id": "42c92057-1586-458a-aafa-4421814e2de6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T04:34:44.100454Z",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/game/StatusBars.tsx",
+    "components/game/StatusBars.test.tsx",
+    "docs/manual.md"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "a6a78bb299d3",
+  "token_usage": {
+    "input_tokens": 42430,
+    "cache_creation_tokens": 684968,
+    "cache_read_tokens": 103615177,
+    "output_tokens": 301030,
+    "api_call_count": 300
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T04:34:44.053245Z",
+    "agent_lines": 9,
+    "agent_removed": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 9,
+    "total_lines_changed": 12,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

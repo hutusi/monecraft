@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0f50e053bb66",
+  "strategy": "manual-commit",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/game/StatusBars.test.tsx",
+    "components/game/StatusBars.tsx",
+    "docs/manual.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0f/50e053bb66/0/metadata.json",
+      "transcript": "/0f/50e053bb66/0/full.jsonl",
+      "content_hash": "/0f/50e053bb66/0/content_hash.txt",
+      "prompt": "/0f/50e053bb66/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42430,
+    "cache_creation_tokens": 684968,
+    "cache_read_tokens": 103615177,
+    "output_tokens": 301030,
+    "api_call_count": 300
+  }
+}
