@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f22d9c1dc2ac",
+  "session_id": "6ba5df66-45b4-4fbd-9326-96c489f36921",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T12:41:05.601307Z",
+  "branch": "feat/recipe-book-categories",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/recipes.ts",
+    "lib/game/recipes.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "5d023aec864f",
+  "token_usage": {
+    "input_tokens": 14216,
+    "cache_creation_tokens": 150580,
+    "cache_read_tokens": 1357819,
+    "output_tokens": 29706,
+    "api_call_count": 19
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T12:41:05.591461Z",
+    "agent_lines": 102,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 102,
+    "total_lines_changed": 104,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
