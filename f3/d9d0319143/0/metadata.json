@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f3d9d0319143",
+  "session_id": "15d11480-b111-40ed-afcb-55b50a1977a3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T07:09:55.994015Z",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/useMinecraftGame.ts",
+    "components/game/PauseMenu.tsx",
+    "components/MinecraftGame.tsx",
+    "app/page.tsx",
+    "components/game/PauseMenu.test.tsx",
+    "e2e/smoke.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "303822edb9dd",
+  "checkpoint_transcript_start": 205,
+  "transcript_lines_at_start": 205,
+  "token_usage": {
+    "input_tokens": 1475,
+    "cache_creation_tokens": 48324,
+    "cache_read_tokens": 6646128,
+    "output_tokens": 30536,
+    "api_call_count": 39
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T07:09:55.976183Z",
+    "agent_lines": 133,
+    "agent_removed": 40,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 133,
+    "total_lines_changed": 173,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

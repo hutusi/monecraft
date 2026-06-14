@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f3d9d0319143",
+  "strategy": "manual-commit",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/page.tsx",
+    "components/MinecraftGame.tsx",
+    "components/game/PauseMenu.test.tsx",
+    "components/game/PauseMenu.tsx",
+    "e2e/smoke.e2e.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f3/d9d0319143/0/metadata.json",
+      "transcript": "/f3/d9d0319143/0/full.jsonl",
+      "content_hash": "/f3/d9d0319143/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1475,
+    "cache_creation_tokens": 48324,
+    "cache_read_tokens": 6646128,
+    "output_tokens": 30536,
+    "api_call_count": 39
+  }
+}
