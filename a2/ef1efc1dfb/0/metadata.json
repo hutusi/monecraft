@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a2ef1efc1dfb",
+  "session_id": "15d11480-b111-40ed-afcb-55b50a1977a3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T07:23:34.705206Z",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/menu/CreateProfileForm.tsx",
+    "components/menu/CreateWorldForm.tsx",
+    "components/menu/MenuScreen.tsx",
+    "components/menu/ProfileSelect.tsx",
+    "components/menu/WorldSelect.tsx",
+    "components/GameShell.tsx",
+    "app/page.tsx",
+    "app/layout.tsx",
+    "app/menu.css",
+    "components/menu/CreateWorldForm.test.tsx",
+    "components/menu/ProfileSelect.test.tsx",
+    "components/menu/WorldSelect.test.tsx",
+    "e2e/helpers.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "303822edb9dd",
+  "checkpoint_transcript_start": 376,
+  "transcript_lines_at_start": 376,
+  "token_usage": {
+    "input_tokens": 5445,
+    "cache_creation_tokens": 54416,
+    "cache_read_tokens": 8218126,
+    "output_tokens": 41143,
+    "api_call_count": 37
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T07:23:34.682537Z",
+    "agent_lines": 921,
+    "agent_removed": 37,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 921,
+    "total_lines_changed": 958,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

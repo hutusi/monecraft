@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a2ef1efc1dfb",
+  "strategy": "manual-commit",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/layout.tsx",
+    "app/menu.css",
+    "app/page.tsx",
+    "components/GameShell.tsx",
+    "components/menu/CreateProfileForm.tsx",
+    "components/menu/CreateWorldForm.test.tsx",
+    "components/menu/CreateWorldForm.tsx",
+    "components/menu/MenuScreen.tsx",
+    "components/menu/ProfileSelect.test.tsx",
+    "components/menu/ProfileSelect.tsx",
+    "components/menu/WorldSelect.test.tsx",
+    "components/menu/WorldSelect.tsx",
+    "e2e/helpers.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a2/ef1efc1dfb/0/metadata.json",
+      "transcript": "/a2/ef1efc1dfb/0/full.jsonl",
+      "content_hash": "/a2/ef1efc1dfb/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5445,
+    "cache_creation_tokens": 54416,
+    "cache_read_tokens": 8218126,
+    "output_tokens": 41143,
+    "api_call_count": 37
+  }
+}
