@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6e4802451f7d",
+  "strategy": "manual-commit",
+  "branch": "feat/endgame-ranged",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/mobs.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6e/4802451f7d/0/metadata.json",
+      "transcript": "/6e/4802451f7d/0/full.jsonl",
+      "content_hash": "/6e/4802451f7d/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 283,
+    "cache_creation_tokens": 27030,
+    "cache_read_tokens": 3778383,
+    "output_tokens": 23540,
+    "api_call_count": 15
+  }
+}
