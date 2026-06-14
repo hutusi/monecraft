@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9e6cf43523f1",
+  "session_id": "9335ee3c-e5df-44c0-99be-d4f7cf7ea8c5",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T02:20:40.907132Z",
+  "branch": "fix/unstuck-keybind-and-lint",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/game/Hotbar.tsx",
+    "components/game/StatusBars.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "7cfc34003fa6",
+  "checkpoint_transcript_start": 191,
+  "transcript_lines_at_start": 191,
+  "token_usage": {
+    "input_tokens": 137,
+    "cache_creation_tokens": 7438,
+    "cache_read_tokens": 403806,
+    "output_tokens": 6594,
+    "api_call_count": 4
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T02:20:40.8963Z",
+    "agent_lines": 2,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
