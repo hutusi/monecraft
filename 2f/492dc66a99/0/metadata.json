@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "2f492dc66a99",
+  "session_id": "9335ee3c-e5df-44c0-99be-d4f7cf7ea8c5",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T02:18:22.990561Z",
+  "branch": "fix/unstuck-keybind-and-lint",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/input/inputController.ts",
+    "components/game/PauseMenu.tsx",
+    "docs/manual.md",
+    "README.md",
+    "CHANGELOG.md",
+    "lib/game/input/inputController.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "7cfc34003fa6",
+  "token_usage": {
+    "input_tokens": 11405,
+    "cache_creation_tokens": 157632,
+    "cache_read_tokens": 1945852,
+    "output_tokens": 32445,
+    "api_call_count": 28
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T02:18:22.980758Z",
+    "agent_lines": 61,
+    "agent_removed": 5,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 61,
+    "total_lines_changed": 66,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "2f492dc66a99",
+  "strategy": "manual-commit",
+  "branch": "fix/unstuck-keybind-and-lint",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "README.md",
+    "components/game/PauseMenu.tsx",
+    "docs/manual.md",
+    "lib/game/input/inputController.test.ts",
+    "lib/game/input/inputController.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/2f/492dc66a99/0/metadata.json",
+      "transcript": "/2f/492dc66a99/0/full.jsonl",
+      "content_hash": "/2f/492dc66a99/0/content_hash.txt",
+      "prompt": "/2f/492dc66a99/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11405,
+    "cache_creation_tokens": 157632,
+    "cache_read_tokens": 1945852,
+    "output_tokens": 32445,
+    "api_call_count": 28
+  }
+}

@@ -1,0 +1,5 @@
+let's fix some problems, what do you think?
+
+---
+
+Right now, the 'U' key is the hotkey to get unstuck, but it is very easy to trigger accidentally. Can we change this to a key combination to prevent accidental inputs?
