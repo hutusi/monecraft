@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b7d8550b5749",
+  "strategy": "manual-commit",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b7/d8550b5749/0/metadata.json",
+      "transcript": "/b7/d8550b5749/0/full.jsonl",
+      "content_hash": "/b7/d8550b5749/0/content_hash.txt",
+      "prompt": "/b7/d8550b5749/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60502,
+    "cache_creation_tokens": 675563,
+    "cache_read_tokens": 133571880,
+    "output_tokens": 355685,
+    "api_call_count": 360
+  }
+}

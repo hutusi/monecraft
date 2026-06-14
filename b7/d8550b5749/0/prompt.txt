@@ -1,0 +1,21 @@
+now when I create new world in profile, it only can choose "leave blank for random", is it better to provide some good world presets? let user to choose? what do you think?
+
+---
+
+go ahead
+
+---
+
+push and open the pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+push
+
+---
+
+merge it
