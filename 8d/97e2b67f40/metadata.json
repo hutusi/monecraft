@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8d97e2b67f40",
+  "strategy": "manual-commit",
+  "branch": "feat/endgame-ranged",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/combat.test.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/ui/spritePixels.test.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8d/97e2b67f40/0/metadata.json",
+      "transcript": "/8d/97e2b67f40/0/full.jsonl",
+      "content_hash": "/8d/97e2b67f40/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2842,
+    "cache_creation_tokens": 54340,
+    "cache_read_tokens": 6161345,
+    "output_tokens": 19902,
+    "api_call_count": 28
+  }
+}

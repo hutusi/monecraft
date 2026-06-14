@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8d97e2b67f40",
+  "session_id": "575d903c-fef2-439c-aad2-b56323eb6ddd",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T00:00:09.715265Z",
+  "branch": "feat/endgame-ranged",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/ui/spritePixels.test.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/combat.test.ts",
+    "lib/game/recipes.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "14d2a983ffde",
+  "checkpoint_transcript_start": 265,
+  "transcript_lines_at_start": 265,
+  "token_usage": {
+    "input_tokens": 2842,
+    "cache_creation_tokens": 54340,
+    "cache_read_tokens": 6161345,
+    "output_tokens": 19902,
+    "api_call_count": 28
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T00:00:09.694936Z",
+    "agent_lines": 290,
+    "agent_removed": 7,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 290,
+    "total_lines_changed": 297,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
