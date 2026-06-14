@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7dbc22b30709",
+  "strategy": "manual-commit",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/items.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobs.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/game/types.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7d/bc22b30709/0/metadata.json",
+      "transcript": "/7d/bc22b30709/0/full.jsonl",
+      "content_hash": "/7d/bc22b30709/0/content_hash.txt",
+      "prompt": "/7d/bc22b30709/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}

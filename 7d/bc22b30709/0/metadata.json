@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7dbc22b30709",
+  "session_id": "40fe2413-5cec-4eb1-8df5-963ddd4de2f0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T10:15:48.128905Z",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/items.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobs.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/game/types.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "3f2ba468109f",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T10:15:48.125533Z",
+    "agent_lines": 209,
+    "agent_removed": 29,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 209,
+    "total_lines_changed": 238,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
