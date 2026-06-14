@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3b6cc5977d2d",
+  "strategy": "manual-commit",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/mobAI.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3b/6cc5977d2d/0/metadata.json",
+      "transcript": "/3b/6cc5977d2d/0/full.jsonl",
+      "content_hash": "/3b/6cc5977d2d/0/content_hash.txt",
+      "prompt": "/3b/6cc5977d2d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 58295,
+    "cache_creation_tokens": 612633,
+    "cache_read_tokens": 139377546,
+    "output_tokens": 273692,
+    "api_call_count": 419
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3b6cc5977d2d",
+  "session_id": "40fe2413-5cec-4eb1-8df5-963ddd4de2f0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T12:09:48.715278Z",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/engine/systems/mobAI.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "13ba424480cf",
+  "checkpoint_transcript_start": 79,
+  "transcript_lines_at_start": 79,
+  "token_usage": {
+    "input_tokens": 58295,
+    "cache_creation_tokens": 612633,
+    "cache_read_tokens": 139377546,
+    "output_tokens": 273692,
+    "api_call_count": 419
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T12:09:48.667419Z",
+    "agent_lines": 26,
+    "agent_removed": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 26,
+    "total_lines_changed": 29,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
