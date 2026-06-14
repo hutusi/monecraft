@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9284adb48cc0",
+  "strategy": "manual-commit",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/legacyMigration.test.ts",
+    "lib/game/legacyMigration.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/92/84adb48cc0/0/metadata.json",
+      "transcript": "/92/84adb48cc0/0/full.jsonl",
+      "content_hash": "/92/84adb48cc0/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 12434,
+    "cache_read_tokens": 836350,
+    "output_tokens": 8121,
+    "api_call_count": 6
+  }
+}
