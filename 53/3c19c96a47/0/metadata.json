@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "533c19c96a47",
+  "session_id": "15d11480-b111-40ed-afcb-55b50a1977a3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T07:56:41.551168Z",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/legacyMigration.ts",
+    "components/menu/CreateProfileForm.tsx",
+    "components/menu/ProfileSelect.tsx",
+    "lib/game/legacyMigration.test.ts",
+    "components/menu/ProfileSelect.test.tsx",
+    "e2e/menu.e2e.ts",
+    "docs/save-format.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "631ed11dcbac",
+  "checkpoint_transcript_start": 762,
+  "transcript_lines_at_start": 762,
+  "token_usage": {
+    "input_tokens": 2690,
+    "cache_creation_tokens": 38823,
+    "cache_read_tokens": 10839662,
+    "output_tokens": 28322,
+    "api_call_count": 33
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T07:56:41.5175Z",
+    "agent_lines": 127,
+    "agent_removed": 102,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 127,
+    "total_lines_changed": 229,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

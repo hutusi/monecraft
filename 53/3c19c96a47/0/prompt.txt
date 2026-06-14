@@ -1,0 +1,13 @@
+agree
+
+---
+
+is it better to let the user to choose a profile with name, skin and others? what do you think?
+
+---
+
+I think we can take both, what do you think?
+
+---
+
+push and open a pr first, then let's decide this improvement
