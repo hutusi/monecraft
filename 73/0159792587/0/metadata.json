@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "730159792587",
+  "session_id": "15d11480-b111-40ed-afcb-55b50a1977a3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T09:38:06.990099Z",
+  "branch": "feat/world-types",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "fb4d205bbb3b",
+  "token_usage": {
+    "input_tokens": 60353,
+    "cache_creation_tokens": 670880,
+    "cache_read_tokens": 127489909,
+    "output_tokens": 351513,
+    "api_call_count": 350
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

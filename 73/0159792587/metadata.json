@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "730159792587",
+  "strategy": "manual-commit",
+  "branch": "feat/world-types",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/73/0159792587/0/metadata.json",
+      "transcript": "/73/0159792587/0/full.jsonl",
+      "content_hash": "/73/0159792587/0/content_hash.txt",
+      "prompt": "/73/0159792587/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60353,
+    "cache_creation_tokens": 670880,
+    "cache_read_tokens": 127489909,
+    "output_tokens": 351513,
+    "api_call_count": 350
+  }
+}
