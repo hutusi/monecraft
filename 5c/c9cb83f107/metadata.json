@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "5cc9cb83f107",
+  "strategy": "manual-commit",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/profiles.test.ts",
+    "lib/game/profiles.ts",
+    "lib/game/worlds.test.ts",
+    "lib/game/worlds.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5c/c9cb83f107/0/metadata.json",
+      "transcript": "/5c/c9cb83f107/0/full.jsonl",
+      "content_hash": "/5c/c9cb83f107/0/content_hash.txt",
+      "prompt": "/5c/c9cb83f107/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7435,
+    "cache_creation_tokens": 120245,
+    "cache_read_tokens": 22493733,
+    "output_tokens": 78186,
+    "api_call_count": 52
+  }
+}
