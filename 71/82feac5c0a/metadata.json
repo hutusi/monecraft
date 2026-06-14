@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7182feac5c0a",
+  "strategy": "manual-commit",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/architecture.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "docs/tuning.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/71/82feac5c0a/0/metadata.json",
+      "transcript": "/71/82feac5c0a/0/full.jsonl",
+      "content_hash": "/71/82feac5c0a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8878,
+    "cache_creation_tokens": 45191,
+    "cache_read_tokens": 15807000,
+    "output_tokens": 15722,
+    "api_call_count": 34
+  }
+}
