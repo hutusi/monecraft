@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "011bd528b6a4",
+  "session_id": "6ba5df66-45b4-4fbd-9326-96c489f36921",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T12:43:37.862109Z",
+  "branch": "feat/recipe-book-categories",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/ui.css",
+    "components/game/InventoryPanel.test.tsx",
+    "components/game/InventoryPanel.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "5d023aec864f",
+  "checkpoint_transcript_start": 144,
+  "transcript_lines_at_start": 144,
+  "token_usage": {
+    "input_tokens": 254,
+    "cache_creation_tokens": 10296,
+    "cache_read_tokens": 1091720,
+    "output_tokens": 9577,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T12:43:37.851455Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 54,
+    "human_modified": 24,
+    "human_removed": 0,
+    "total_committed": 54,
+    "total_lines_changed": 78,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
