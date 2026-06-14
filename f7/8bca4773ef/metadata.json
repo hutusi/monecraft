@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f78bca4773ef",
+  "strategy": "manual-commit",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "e2e/menu.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f7/8bca4773ef/0/metadata.json",
+      "transcript": "/f7/8bca4773ef/0/full.jsonl",
+      "content_hash": "/f7/8bca4773ef/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 7499,
+    "cache_read_tokens": 1252025,
+    "output_tokens": 6553,
+    "api_call_count": 5
+  }
+}
