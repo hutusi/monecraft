@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f9c2ef0f5649",
+  "strategy": "manual-commit",
+  "branch": "feat/content-expansion",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/adding-content.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f9/c2ef0f5649/0/metadata.json",
+      "transcript": "/f9/c2ef0f5649/0/full.jsonl",
+      "content_hash": "/f9/c2ef0f5649/0/content_hash.txt",
+      "prompt": "/f9/c2ef0f5649/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60502,
+    "cache_creation_tokens": 675563,
+    "cache_read_tokens": 133571880,
+    "output_tokens": 355685,
+    "api_call_count": 360
+  }
+}
