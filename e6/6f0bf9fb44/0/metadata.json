@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e66f0bf9fb44",
+  "session_id": "15d11480-b111-40ed-afcb-55b50a1977a3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T07:32:51.198939Z",
+  "branch": "feat/worlds-and-profiles",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/save-format.md",
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/testing.md",
+    "README.md",
+    "docs/manual.md",
+    "docs/tuning.md",
+    "docs/adding-content.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "303822edb9dd",
+  "checkpoint_transcript_start": 585,
+  "transcript_lines_at_start": 585,
+  "token_usage": {
+    "input_tokens": 3357,
+    "cache_creation_tokens": 50847,
+    "cache_read_tokens": 8826489,
+    "output_tokens": 19284,
+    "api_call_count": 31
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T07:32:51.170068Z",
+    "agent_lines": 95,
+    "agent_removed": 43,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 95,
+    "total_lines_changed": 138,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
