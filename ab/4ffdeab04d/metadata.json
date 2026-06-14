@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ab4ffdeab04d",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/reference.md",
+    "docs/testing.md",
+    "lib/game/audio/materials.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/items.ts",
+    "lib/game/save.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts",
+    "lib/world/generation.test.ts",
+    "lib/world/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ab/4ffdeab04d/0/metadata.json",
+      "transcript": "/ab/4ffdeab04d/0/full.jsonl",
+      "content_hash": "/ab/4ffdeab04d/0/content_hash.txt",
+      "prompt": "/ab/4ffdeab04d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 15977,
+    "cache_creation_tokens": 120343,
+    "cache_read_tokens": 37069063,
+    "output_tokens": 74841,
+    "api_call_count": 71
+  }
+}

@@ -1,0 +1,33 @@
+push and open a pr
+
+---
+
+what about after the boss was killed? can I continue to play?
+
+---
+
+commit, not push
+
+---
+
+check about the code reviews on the pr
+
+---
+
+check about the code reviews on the pr
+
+---
+
+check about the code reviews on the pr
+
+---
+
+is it a bug?
+
+---
+
+ok, push and reply
+
+---
+
+now let's switch to the main branch, and merge the upstream/main, resolve the conflicts if it has, what do you think?
