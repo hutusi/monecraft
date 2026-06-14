@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a1bb5c4035ac",
+  "session_id": "42c92057-1586-458a-aafa-4421814e2de6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T03:08:15.139654Z",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/meshing.ts",
+    "lib/world/generation.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "95c05da1f817",
+  "checkpoint_transcript_start": 275,
+  "transcript_lines_at_start": 275,
+  "token_usage": {
+    "input_tokens": 466,
+    "cache_creation_tokens": 13369,
+    "cache_read_tokens": 2450369,
+    "output_tokens": 10322,
+    "api_call_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T03:08:15.123451Z",
+    "agent_lines": 51,
+    "agent_removed": 15,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 51,
+    "total_lines_changed": 66,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

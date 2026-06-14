@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a1bb5c4035ac",
+  "strategy": "manual-commit",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/generation.test.ts",
+    "lib/world/meshing.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a1/bb5c4035ac/0/metadata.json",
+      "transcript": "/a1/bb5c4035ac/0/full.jsonl",
+      "content_hash": "/a1/bb5c4035ac/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 466,
+    "cache_creation_tokens": 13369,
+    "cache_read_tokens": 2450369,
+    "output_tokens": 10322,
+    "api_call_count": 13
+  }
+}
