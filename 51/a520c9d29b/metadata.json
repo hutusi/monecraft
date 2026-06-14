@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "51a520c9d29b",
+  "strategy": "manual-commit",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/blockChanges.ts",
+    "lib/world/lighting.test.ts",
+    "lib/world/lighting.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/51/a520c9d29b/0/metadata.json",
+      "transcript": "/51/a520c9d29b/0/full.jsonl",
+      "content_hash": "/51/a520c9d29b/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1370,
+    "cache_creation_tokens": 64369,
+    "cache_read_tokens": 6352852,
+    "output_tokens": 55454,
+    "api_call_count": 25
+  }
+}
