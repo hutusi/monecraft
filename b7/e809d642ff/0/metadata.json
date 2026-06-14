@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b7e809d642ff",
+  "session_id": "575d903c-fef2-439c-aad2-b56323eb6ddd",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T00:09:32.771384Z",
+  "branch": "feat/endgame-ranged",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/render/projectileVisuals.ts",
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/render/projectileVisuals.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "14d2a983ffde",
+  "checkpoint_transcript_start": 450,
+  "transcript_lines_at_start": 450,
+  "token_usage": {
+    "input_tokens": 807,
+    "cache_creation_tokens": 50201,
+    "cache_read_tokens": 7095360,
+    "output_tokens": 12886,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T00:09:32.744742Z",
+    "agent_lines": 170,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 170,
+    "total_lines_changed": 170,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
