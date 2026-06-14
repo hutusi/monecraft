@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6041e2848e7a",
+  "session_id": "6ba5df66-45b4-4fbd-9326-96c489f36921",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T12:45:33.342815Z",
+  "branch": "feat/recipe-book-categories",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/testing.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "5d023aec864f",
+  "checkpoint_transcript_start": 194,
+  "transcript_lines_at_start": 194,
+  "token_usage": {
+    "input_tokens": 2225,
+    "cache_creation_tokens": 11973,
+    "cache_read_tokens": 1461202,
+    "output_tokens": 4767,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T12:45:33.327515Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 13,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 13,
+    "total_lines_changed": 15,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
