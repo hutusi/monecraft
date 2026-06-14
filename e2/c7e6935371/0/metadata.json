@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e2c7e6935371",
+  "session_id": "575d903c-fef2-439c-aad2-b56323eb6ddd",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T01:46:40.803399Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "ba6afef1dc5b",
+  "token_usage": {
+    "input_tokens": 64330,
+    "cache_creation_tokens": 775177,
+    "cache_read_tokens": 159663053,
+    "output_tokens": 336206,
+    "api_call_count": 384
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T01:46:40.738904Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 1873,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 1873,
+    "total_lines_changed": 1979,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

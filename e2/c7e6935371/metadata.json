@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e2c7e6935371",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e2/c7e6935371/0/metadata.json",
+      "transcript": "/e2/c7e6935371/0/full.jsonl",
+      "content_hash": "/e2/c7e6935371/0/content_hash.txt",
+      "prompt": "/e2/c7e6935371/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 64330,
+    "cache_creation_tokens": 775177,
+    "cache_read_tokens": 159663053,
+    "output_tokens": 336206,
+    "api_call_count": 384
+  }
+}
