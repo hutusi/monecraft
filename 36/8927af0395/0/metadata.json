@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "368927af0395",
+  "session_id": "42c92057-1586-458a-aafa-4421814e2de6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T03:52:17.883815Z",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/generation.ts",
+    "lib/world/generation.test.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "95c05da1f817",
+  "checkpoint_transcript_start": 696,
+  "transcript_lines_at_start": 696,
+  "token_usage": {
+    "input_tokens": 2270,
+    "cache_creation_tokens": 48982,
+    "cache_read_tokens": 12495921,
+    "output_tokens": 32666,
+    "api_call_count": 35
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T03:52:17.851386Z",
+    "agent_lines": 48,
+    "agent_removed": 12,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 50,
+    "total_lines_changed": 64,
+    "agent_percentage": 93.75,
+    "metric_version": 2
+  }
+}
