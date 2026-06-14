@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "128476d44213",
+  "strategy": "manual-commit",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/lighting.test.ts",
+    "lib/world/lighting.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/12/8476d44213/0/metadata.json",
+      "transcript": "/12/8476d44213/0/full.jsonl",
+      "content_hash": "/12/8476d44213/0/content_hash.txt",
+      "prompt": "/12/8476d44213/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10662,
+    "cache_creation_tokens": 322632,
+    "cache_read_tokens": 1656732,
+    "output_tokens": 62708,
+    "api_call_count": 19
+  }
+}
