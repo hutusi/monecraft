@@ -1,0 +1,1 @@
+I think we can add a rule to AGENTS.md, only we plan to implement a big feature or big refactoring or big improvement, we need to create a new branch; if it is a minor fix, improvements or other minor modified, just commit on main. what do you think?
