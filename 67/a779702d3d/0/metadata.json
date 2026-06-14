@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "67a779702d3d",
+  "session_id": "42c92057-1586-458a-aafa-4421814e2de6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-14T03:37:05.506646Z",
+  "branch": "feat/caves-lighting",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/blocks.ts",
+    "lib/game/items.ts",
+    "lib/game/audio/materials.ts",
+    "lib/world/lighting.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/lighting.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "95c05da1f817",
+  "checkpoint_transcript_start": 538,
+  "transcript_lines_at_start": 538,
+  "token_usage": {
+    "input_tokens": 5766,
+    "cache_creation_tokens": 29996,
+    "cache_read_tokens": 7309101,
+    "output_tokens": 17466,
+    "api_call_count": 24
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-14T03:37:05.474381Z",
+    "agent_lines": 73,
+    "agent_removed": 6,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 73,
+    "total_lines_changed": 79,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
