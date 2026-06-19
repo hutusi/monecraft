@@ -1,0 +1,25 @@
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+merge the pr
+
+---
+
+what's next feature do you suggest?
+
+---
+
+what's next feature do you suggest?
+
+---
+
+if user got a fish, is it better to prompt to show the message or animitation? what do you think?
+
+---
+
+ok, go ahead
