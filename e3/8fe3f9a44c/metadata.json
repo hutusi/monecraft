@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e38fe3f9a44c",
+  "strategy": "manual-commit",
+  "branch": "feat/fishing",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "docs/tuning.md",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e3/8fe3f9a44c/0/metadata.json",
+      "transcript": "/e3/8fe3f9a44c/0/full.jsonl",
+      "content_hash": "/e3/8fe3f9a44c/0/content_hash.txt",
+      "prompt": "/e3/8fe3f9a44c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 41699,
+    "cache_creation_tokens": 541759,
+    "cache_read_tokens": 67796798,
+    "output_tokens": 211274,
+    "api_call_count": 237
+  }
+}
