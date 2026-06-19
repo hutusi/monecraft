@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "57dd815cdddb",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T12:21:05.751357Z",
+  "branch": "feat/fishing",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "d4eb12ac844f",
+  "token_usage": {
+    "input_tokens": 39427,
+    "cache_creation_tokens": 513864,
+    "cache_read_tokens": 55335632,
+    "output_tokens": 196596,
+    "api_call_count": 209
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-19T12:21:05.710461Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 184,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 184,
+    "total_lines_changed": 184,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}

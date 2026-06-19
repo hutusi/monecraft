@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "57dd815cdddb",
+  "strategy": "manual-commit",
+  "branch": "feat/fishing",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/57/dd815cdddb/0/metadata.json",
+      "transcript": "/57/dd815cdddb/0/full.jsonl",
+      "content_hash": "/57/dd815cdddb/0/content_hash.txt",
+      "prompt": "/57/dd815cdddb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 39427,
+    "cache_creation_tokens": 513864,
+    "cache_read_tokens": 55335632,
+    "output_tokens": 196596,
+    "api_call_count": 209
+  }
+}
