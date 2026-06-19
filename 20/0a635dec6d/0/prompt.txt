@@ -1,0 +1,57 @@
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+merge the pr
+
+---
+
+what's next feature do you suggest?
+
+---
+
+what's next feature do you suggest?
+
+---
+
+if user got a fish, is it better to prompt to show the message or animitation? what do you think?
+
+---
+
+ok, go ahead
+
+---
+
+the random 3–9s wait fish dips seems too long, is it better be short? what do you think?
+
+---
+
+ok, 2-5s seems good, and remember to update the docs and tests, what do you think?
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+ok, go ahead
+
+---
+
+Should we add fishing rod animations (like casting and reeling in) during fishing? what do you think?
+
+---
+
+I think you can plan a better solution, to make the user experience more awesome, what do you think?
+
+---
+
+let's create this branch, then implement the commits, then just open pr, no need let me review, I permit you open the pr, auto to do this

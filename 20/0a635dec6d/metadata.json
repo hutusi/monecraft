@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "200a635dec6d",
+  "strategy": "manual-commit",
+  "branch": "feat/fishing-animations",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/render/bobberVisuals.test.ts",
+    "lib/game/render/bobberVisuals.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/20/0a635dec6d/0/metadata.json",
+      "transcript": "/20/0a635dec6d/0/full.jsonl",
+      "content_hash": "/20/0a635dec6d/0/content_hash.txt",
+      "prompt": "/20/0a635dec6d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54471,
+    "cache_creation_tokens": 669798,
+    "cache_read_tokens": 101691637,
+    "output_tokens": 294115,
+    "api_call_count": 303
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "200a635dec6d",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T14:09:45.790274Z",
+  "branch": "feat/fishing-animations",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/render/bobberVisuals.test.ts",
+    "lib/game/render/bobberVisuals.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "6041baeea1ad",
+  "token_usage": {
+    "input_tokens": 54471,
+    "cache_creation_tokens": 669798,
+    "cache_read_tokens": 101691637,
+    "output_tokens": 294115,
+    "api_call_count": 303
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-19T14:09:45.738451Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 142,
+    "human_modified": 35,
+    "human_removed": 0,
+    "total_committed": 142,
+    "total_lines_changed": 177,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
