@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a175af2d1a5",
+  "session_id": "6ba5df66-45b4-4fbd-9326-96c489f36921",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T10:22:34.733041Z",
+  "branch": "feat/living-world",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "92bd540d6751",
+  "token_usage": {
+    "input_tokens": 22439,
+    "cache_creation_tokens": 291313,
+    "cache_read_tokens": 18283310,
+    "output_tokens": 110907,
+    "api_call_count": 114
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-19T10:22:34.693299Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 105,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 105,
+    "total_lines_changed": 107,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

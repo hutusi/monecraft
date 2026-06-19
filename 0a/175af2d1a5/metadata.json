@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a175af2d1a5",
+  "strategy": "manual-commit",
+  "branch": "feat/living-world",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0a/175af2d1a5/0/metadata.json",
+      "transcript": "/0a/175af2d1a5/0/full.jsonl",
+      "content_hash": "/0a/175af2d1a5/0/content_hash.txt",
+      "prompt": "/0a/175af2d1a5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22439,
+    "cache_creation_tokens": 291313,
+    "cache_read_tokens": 18283310,
+    "output_tokens": 110907,
+    "api_call_count": 114
+  }
+}
