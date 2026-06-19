@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a175af2d1a5",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T10:22:44.659583Z",
+  "branch": "feat/living-world",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/items.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/game/config.ts",
+    "lib/game/recipes.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "4d6958c6355a",
+  "checkpoint_transcript_start": 369,
+  "transcript_lines_at_start": 369,
+  "token_usage": {
+    "input_tokens": 423,
+    "cache_creation_tokens": 16820,
+    "cache_read_tokens": 3836050,
+    "output_tokens": 10239,
+    "api_call_count": 18
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-19T10:22:44.627081Z",
+    "agent_lines": 105,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 105,
+    "total_lines_changed": 107,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
