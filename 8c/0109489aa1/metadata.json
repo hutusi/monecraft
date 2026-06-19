@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8c0109489aa1",
+  "strategy": "manual-commit",
+  "branch": "feat/fishing",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/8c/0109489aa1/0/metadata.json",
+      "transcript": "/8c/0109489aa1/0/full.jsonl",
+      "content_hash": "/8c/0109489aa1/0/content_hash.txt",
+      "prompt": "/8c/0109489aa1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42547,
+    "cache_creation_tokens": 586248,
+    "cache_read_tokens": 85606000,
+    "output_tokens": 245045,
+    "api_call_count": 274
+  }
+}
