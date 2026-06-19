@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6ec12d12b3ec",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T10:18:46.458527Z",
+  "branch": "feat/living-world",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/blocks.ts",
+    "lib/world/atlas.ts",
+    "lib/game/audio/materials.ts",
+    "lib/game/config.ts",
+    "lib/game/items.ts",
+    "lib/game/engine/systems/treeGrowth.ts",
+    "lib/game/engine/systems/randomTicks.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/engine/systems/randomTicks.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "4d6958c6355a",
+  "token_usage": {
+    "input_tokens": 12722,
+    "cache_creation_tokens": 291083,
+    "cache_read_tokens": 9406415,
+    "output_tokens": 72604,
+    "api_call_count": 63
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-19T10:18:46.431691Z",
+    "agent_lines": 191,
+    "agent_removed": 17,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 191,
+    "total_lines_changed": 208,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
