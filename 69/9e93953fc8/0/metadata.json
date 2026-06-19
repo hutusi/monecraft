@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "699e93953fc8",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-19T14:25:17.241469Z",
+  "branch": "feat/fishing-animations",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "6041baeea1ad",
+  "token_usage": {
+    "input_tokens": 55480,
+    "cache_creation_tokens": 712096,
+    "cache_read_tokens": 134148154,
+    "output_tokens": 322671,
+    "api_call_count": 356
+  },
+  "session_metrics": {
+    "turn_count": 13
+  }
+}

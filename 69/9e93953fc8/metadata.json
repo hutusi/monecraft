@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "699e93953fc8",
+  "strategy": "manual-commit",
+  "branch": "feat/fishing-animations",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/69/9e93953fc8/0/metadata.json",
+      "transcript": "/69/9e93953fc8/0/full.jsonl",
+      "content_hash": "/69/9e93953fc8/0/content_hash.txt",
+      "prompt": "/69/9e93953fc8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 55480,
+    "cache_creation_tokens": 712096,
+    "cache_read_tokens": 134148154,
+    "output_tokens": 322671,
+    "api_call_count": 356
+  }
+}
