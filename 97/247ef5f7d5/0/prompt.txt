@@ -1,0 +1,33 @@
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+merge the pr
+
+---
+
+what's next feature do you suggest?
+
+---
+
+what's next feature do you suggest?
+
+---
+
+if user got a fish, is it better to prompt to show the message or animitation? what do you think?
+
+---
+
+ok, go ahead
+
+---
+
+the random 3–9s wait fish dips seems too long, is it better be short? what do you think?
+
+---
+
+ok, 2-5s seems good, and remember to update the docs and tests, what do you think?
