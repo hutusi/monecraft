@@ -8,7 +8,11 @@
     "lib/game/audio/audioDirector.ts",
     "lib/game/audio/soundParams.ts",
     "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/commands.ts",
+    "lib/game/input/inputController.ts",
     "lib/game/items.ts",
+    "lib/game/types.ts",
     "lib/ui/spritePixels.ts"
   ],
   "sessions": [
@@ -17,13 +21,19 @@
       "transcript": "/e8/0acf745644/0/full.jsonl",
       "content_hash": "/e8/0acf745644/0/content_hash.txt",
       "prompt": "/e8/0acf745644/0/prompt.txt"
+    },
+    {
+      "metadata": "/e8/0acf745644/1/metadata.json",
+      "transcript": "/e8/0acf745644/1/full.jsonl",
+      "content_hash": "/e8/0acf745644/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 59544,
-    "cache_creation_tokens": 2053596,
-    "cache_read_tokens": 154662446,
-    "output_tokens": 365769,
-    "api_call_count": 390
+    "input_tokens": 65113,
+    "cache_creation_tokens": 2087890,
+    "cache_read_tokens": 161884721,
+    "output_tokens": 384228,
+    "api_call_count": 423
   }
 }
