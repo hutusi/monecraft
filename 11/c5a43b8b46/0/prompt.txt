@@ -1,0 +1,9 @@
+let's make some improvements and bugfix, what do you think? I will give you something I found, you also can detective by yourself.
+
+---
+
+when I rerun dev, my items in inventory seems lost many.
+
+---
+
+why all not commit? I think the flow is commit on each slice, what do you think?

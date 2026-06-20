@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "11c5a43b8b46",
+  "session_id": "4957a98a-ae20-4c62-b28e-a28c1e40d699",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T13:07:18.062884Z",
+  "branch": "feat/crafting-hints-and-fixes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "113346c4929a",
+  "token_usage": {
+    "input_tokens": 23744,
+    "cache_creation_tokens": 354800,
+    "cache_read_tokens": 24172465,
+    "output_tokens": 148216,
+    "api_call_count": 134
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T13:07:18.037464Z",
+    "agent_lines": 48,
+    "agent_removed": 6,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 50,
+    "total_lines_changed": 56,
+    "agent_percentage": 96.42857142857143,
+    "metric_version": 2
+  }
+}
