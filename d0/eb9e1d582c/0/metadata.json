@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d0eb9e1d582c",
+  "session_id": "e9337cff-0791-413d-ba5e-d844b4e3b3a1",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T09:50:16.666518Z",
+  "branch": "feat/xp-enchanting",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "8da0744b6b97",
+  "token_usage": {
+    "input_tokens": 50275,
+    "cache_creation_tokens": 1623378,
+    "cache_read_tokens": 197700786,
+    "output_tokens": 338953,
+    "api_call_count": 472
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T09:50:16.589301Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 1,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
