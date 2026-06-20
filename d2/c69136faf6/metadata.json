@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d2c69136faf6",
+  "strategy": "manual-commit",
+  "branch": "feat/xp-enchanting",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/save.test.ts",
+    "lib/game/save.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d2/c69136faf6/0/metadata.json",
+      "transcript": "/d2/c69136faf6/0/full.jsonl",
+      "content_hash": "/d2/c69136faf6/0/content_hash.txt",
+      "prompt": "/d2/c69136faf6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44405,
+    "cache_creation_tokens": 1600918,
+    "cache_read_tokens": 181774224,
+    "output_tokens": 324635,
+    "api_call_count": 448
+  }
+}
