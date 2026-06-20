@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ada1d1768566",
+  "strategy": "manual-commit",
+  "branch": "feat/crafting-hints-and-fixes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/save-format.md",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ad/a1d1768566/0/metadata.json",
+      "transcript": "/ad/a1d1768566/0/full.jsonl",
+      "content_hash": "/ad/a1d1768566/0/content_hash.txt",
+      "prompt": "/ad/a1d1768566/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23736,
+    "cache_creation_tokens": 352448,
+    "cache_read_tokens": 23038401,
+    "output_tokens": 146160,
+    "api_call_count": 130
+  }
+}
