@@ -1,0 +1,25 @@
+push
+
+---
+
+reply
+
+---
+
+check the pr status
+
+---
+
+merge it
+
+---
+
+what's next?
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr

@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b8dede3c7fb8",
+  "session_id": "e9337cff-0791-413d-ba5e-d844b4e3b3a1",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T11:07:46.658067Z",
+  "branch": "feat/xp-enchanting",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "97eb35d5fd30",
+  "token_usage": {
+    "input_tokens": 50424,
+    "cache_creation_tokens": 2300542,
+    "cache_read_tokens": 203847198,
+    "output_tokens": 347437,
+    "api_call_count": 482
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
