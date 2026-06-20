@@ -1,0 +1,25 @@
+push it and open a PR
+
+---
+
+I am not means about not save the inventory, I have some items in the inventory on last several times when bun run dev, but after this branch (or last pr branch) change, when I "bun run dev", I find many of my inventory's items lost.
+
+---
+
+continue
+
+---
+
+forget it, I will check later
+
+---
+
+check the code reviews on the pr
+
+---
+
+the pr is clean, let's merge it
+
+---
+
+what about the e2e test on local?
