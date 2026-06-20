@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f0b8e55ec137",
+  "session_id": "e9337cff-0791-413d-ba5e-d844b4e3b3a1",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T02:54:17.872099Z",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/legacyMigration.test.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "5e3982b2ffaf",
+  "checkpoint_transcript_start": 792,
+  "transcript_lines_at_start": 792,
+  "token_usage": {
+    "input_tokens": 1226,
+    "cache_creation_tokens": 33262,
+    "cache_read_tokens": 11450117,
+    "output_tokens": 22372,
+    "api_call_count": 35
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T02:54:17.835299Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 143,
+    "human_modified": 30,
+    "human_removed": 0,
+    "total_committed": 143,
+    "total_lines_changed": 173,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
