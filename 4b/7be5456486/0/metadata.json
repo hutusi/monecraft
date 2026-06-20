@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4b7be5456486",
+  "session_id": "4957a98a-ae20-4c62-b28e-a28c1e40d699",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T13:06:53.328072Z",
+  "branch": "feat/crafting-hints-and-fixes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/render/GameRenderer.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "113346c4929a",
+  "token_usage": {
+    "input_tokens": 23740,
+    "cache_creation_tokens": 353645,
+    "cache_read_tokens": 23604278,
+    "output_tokens": 147103,
+    "api_call_count": 132
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T13:06:53.301146Z",
+    "agent_lines": 7,
+    "agent_removed": 2,
+    "human_added": 1,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 8,
+    "total_lines_changed": 10,
+    "agent_percentage": 90,
+    "metric_version": 2
+  }
+}
