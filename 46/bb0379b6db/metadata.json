@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "46bb0379b6db",
+  "strategy": "manual-commit",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/46/bb0379b6db/0/metadata.json",
+      "transcript": "/46/bb0379b6db/0/full.jsonl",
+      "content_hash": "/46/bb0379b6db/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 303,
+    "cache_creation_tokens": 12673,
+    "cache_read_tokens": 2868344,
+    "output_tokens": 2534,
+    "api_call_count": 7
+  }
+}
