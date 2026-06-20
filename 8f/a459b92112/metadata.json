@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8fa459b92112",
+  "strategy": "manual-commit",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/adding-content.md",
+    "lib/game/legacyMigration.test.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8f/a459b92112/0/metadata.json",
+      "transcript": "/8f/a459b92112/0/full.jsonl",
+      "content_hash": "/8f/a459b92112/0/content_hash.txt",
+      "prompt": "/8f/a459b92112/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 286,
+    "cache_creation_tokens": 422821,
+    "cache_read_tokens": 5585434,
+    "output_tokens": 9311,
+    "api_call_count": 14
+  }
+}
