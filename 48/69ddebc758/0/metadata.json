@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4869ddebc758",
+  "session_id": "e9337cff-0791-413d-ba5e-d844b4e3b3a1",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T03:03:18.713194Z",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/save-format.md",
+    "docs/reference.md",
+    "docs/manual.md",
+    "docs/tuning.md",
+    "docs/adding-content.md",
+    "docs/testing.md"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "5e3982b2ffaf",
+  "checkpoint_transcript_start": 973,
+  "transcript_lines_at_start": 973,
+  "token_usage": {
+    "input_tokens": 9942,
+    "cache_creation_tokens": 51200,
+    "cache_read_tokens": 12041705,
+    "output_tokens": 17961,
+    "api_call_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T03:03:18.658633Z",
+    "agent_lines": 133,
+    "agent_removed": 29,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 133,
+    "total_lines_changed": 162,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
