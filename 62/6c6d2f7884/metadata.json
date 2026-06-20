@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "626c6d2f7884",
+  "strategy": "manual-commit",
+  "branch": "feat/xp-enchanting",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "docs/tuning.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/62/6c6d2f7884/0/metadata.json",
+      "transcript": "/62/6c6d2f7884/0/full.jsonl",
+      "content_hash": "/62/6c6d2f7884/0/content_hash.txt",
+      "prompt": "/62/6c6d2f7884/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 50267,
+    "cache_creation_tokens": 1615727,
+    "cache_read_tokens": 195002684,
+    "output_tokens": 337682,
+    "api_call_count": 468
+  }
+}

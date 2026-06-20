@@ -1,0 +1,17 @@
+push
+
+---
+
+reply
+
+---
+
+check the pr status
+
+---
+
+merge it
+
+---
+
+what's next?
