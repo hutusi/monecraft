@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d3e1b536233d",
+  "session_id": "a4369548-bcb5-437a-a9cf-d2fd6e84f9ef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-20T02:39:34.589506Z",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/config.test.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "c96fb38c17e6",
+  "token_usage": {
+    "input_tokens": 59544,
+    "cache_creation_tokens": 2053596,
+    "cache_read_tokens": 154662446,
+    "output_tokens": 365769,
+    "api_call_count": 390
+  },
+  "session_metrics": {
+    "turn_count": 18
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-20T02:39:34.506842Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 153,
+    "human_modified": 8,
+    "human_removed": 0,
+    "total_committed": 153,
+    "total_lines_changed": 169,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}

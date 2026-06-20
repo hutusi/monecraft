@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d3e1b536233d",
+  "strategy": "manual-commit",
+  "branch": "feat/status-effects-potions",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/config.test.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d3/e1b536233d/0/metadata.json",
+      "transcript": "/d3/e1b536233d/0/full.jsonl",
+      "content_hash": "/d3/e1b536233d/0/content_hash.txt",
+      "prompt": "/d3/e1b536233d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59544,
+    "cache_creation_tokens": 2053596,
+    "cache_read_tokens": 154662446,
+    "output_tokens": 365769,
+    "api_call_count": 390
+  }
+}
