@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "19476acdea5c",
+  "strategy": "manual-commit",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/architecture.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/gameModes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/19/476acdea5c/0/metadata.json",
+      "transcript": "/19/476acdea5c/0/full.jsonl",
+      "content_hash": "/19/476acdea5c/0/content_hash.txt",
+      "prompt": "/19/476acdea5c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 68726,
+    "cache_creation_tokens": 635457,
+    "cache_read_tokens": 136850193,
+    "output_tokens": 261879,
+    "api_call_count": 391
+  }
+}
