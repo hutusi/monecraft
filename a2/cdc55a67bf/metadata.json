@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a2cdc55a67bf",
+  "strategy": "manual-commit",
+  "branch": "feat/game-modes",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/a2/cdc55a67bf/0/metadata.json",
+      "transcript": "/a2/cdc55a67bf/0/full.jsonl",
+      "content_hash": "/a2/cdc55a67bf/0/content_hash.txt",
+      "prompt": "/a2/cdc55a67bf/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22879,
+    "cache_creation_tokens": 401267,
+    "cache_read_tokens": 30014476,
+    "output_tokens": 161398,
+    "api_call_count": 128
+  }
+}
