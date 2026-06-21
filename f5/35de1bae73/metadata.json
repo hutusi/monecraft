@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f535de1bae73",
+  "strategy": "manual-commit",
+  "branch": "feat/game-difficulty",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/architecture.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/gameModes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f5/35de1bae73/0/metadata.json",
+      "transcript": "/f5/35de1bae73/0/full.jsonl",
+      "content_hash": "/f5/35de1bae73/0/content_hash.txt",
+      "prompt": "/f5/35de1bae73/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 57857,
+    "cache_creation_tokens": 1284873,
+    "cache_read_tokens": 167782105,
+    "output_tokens": 377474,
+    "api_call_count": 395
+  }
+}
