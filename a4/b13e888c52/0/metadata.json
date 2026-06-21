@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a4b13e888c52",
+  "session_id": "1800237e-6b80-499a-b9d2-d1160f587bef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T09:17:13.370681Z",
+  "branch": "feat/game-difficulty",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "b8c2efbec1c1",
+  "token_usage": {
+    "input_tokens": 57857,
+    "cache_creation_tokens": 1284873,
+    "cache_read_tokens": 167782105,
+    "output_tokens": 377474,
+    "api_call_count": 395
+  },
+  "session_metrics": {
+    "turn_count": 16
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-21T09:17:13.299712Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 173,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 173,
+    "total_lines_changed": 173,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
