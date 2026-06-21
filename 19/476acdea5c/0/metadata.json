@@ -3,42 +3,21 @@
   "checkpoint_id": "19476acdea5c",
   "session_id": "9ad24e19-d20e-48d5-8e29-95c6c31f363b",
   "strategy": "manual-commit",
-  "created_at": "2026-06-21T11:19:02.082632Z",
+  "created_at": "2026-06-21T11:19:47.955701Z",
   "branch": "feat/hardcore-mode",
   "checkpoints_count": 1,
-  "files_touched": [
-    "CHANGELOG.md",
-    "README.md",
-    "docs/architecture.md",
-    "docs/manual.md",
-    "docs/reference.md",
-    "docs/save-format.md",
-    "docs/tuning.md",
-    "lib/game/gameModes.ts"
-  ],
+  "files_touched": [],
   "agent": "Claude Code",
   "model": "claude-opus-4-8[1m]",
   "turn_id": "810512b9ac07",
   "token_usage": {
-    "input_tokens": 68726,
-    "cache_creation_tokens": 635457,
-    "cache_read_tokens": 136850193,
-    "output_tokens": 261879,
-    "api_call_count": 391
+    "input_tokens": 75289,
+    "cache_creation_tokens": 644478,
+    "cache_read_tokens": 138609888,
+    "output_tokens": 263975,
+    "api_call_count": 394
   },
   "session_metrics": {
     "turn_count": 4
-  },
-  "initial_attribution": {
-    "calculated_at": "2026-06-21T11:19:02.024681Z",
-    "agent_lines": 0,
-    "agent_removed": 0,
-    "human_added": 37,
-    "human_modified": 5,
-    "human_removed": 0,
-    "total_committed": 37,
-    "total_lines_changed": 42,
-    "agent_percentage": 0,
-    "metric_version": 2
   }
 }
