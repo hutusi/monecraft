@@ -6,9 +6,12 @@
   "checkpoints_count": 1,
   "files_touched": [
     "components/MinecraftGame.tsx",
+    "components/game/PauseMenu.test.tsx",
+    "components/game/PauseMenu.tsx",
     "components/menu/CreateWorldForm.test.tsx",
     "components/menu/CreateWorldForm.tsx",
-    "components/menu/WorldSelect.tsx"
+    "components/menu/WorldSelect.tsx",
+    "lib/game/useMinecraftGame.ts"
   ],
   "sessions": [
     {
@@ -16,13 +19,19 @@
       "transcript": "/0c/bd4af5a793/0/full.jsonl",
       "content_hash": "/0c/bd4af5a793/0/content_hash.txt",
       "prompt": "/0c/bd4af5a793/0/prompt.txt"
+    },
+    {
+      "metadata": "/0c/bd4af5a793/1/metadata.json",
+      "transcript": "/0c/bd4af5a793/1/full.jsonl",
+      "content_hash": "/0c/bd4af5a793/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 57857,
-    "cache_creation_tokens": 1284873,
-    "cache_read_tokens": 167782105,
-    "output_tokens": 377474,
-    "api_call_count": 395
+    "input_tokens": 59343,
+    "cache_creation_tokens": 1313496,
+    "cache_read_tokens": 177000473,
+    "output_tokens": 390524,
+    "api_call_count": 428
   }
 }
