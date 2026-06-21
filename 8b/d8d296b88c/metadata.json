@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8bd8d296b88c",
+  "strategy": "manual-commit",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts",
+    "lib/game/worlds.test.ts",
+    "lib/game/worlds.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8b/d8d296b88c/0/metadata.json",
+      "transcript": "/8b/d8d296b88c/0/full.jsonl",
+      "content_hash": "/8b/d8d296b88c/0/content_hash.txt",
+      "prompt": "/8b/d8d296b88c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4013,
+    "cache_creation_tokens": 107664,
+    "cache_read_tokens": 23191970,
+    "output_tokens": 53221,
+    "api_call_count": 52
+  }
+}
