@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c46f05f2d4df",
+  "strategy": "manual-commit",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c4/6f05f2d4df/0/metadata.json",
+      "transcript": "/c4/6f05f2d4df/0/full.jsonl",
+      "content_hash": "/c4/6f05f2d4df/0/content_hash.txt",
+      "prompt": "/c4/6f05f2d4df/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 75911,
+    "cache_creation_tokens": 649146,
+    "cache_read_tokens": 143367015,
+    "output_tokens": 266851,
+    "api_call_count": 402
+  }
+}
