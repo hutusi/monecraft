@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "92771214a753",
+  "strategy": "manual-commit",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/menu.css",
+    "components/MinecraftGame.tsx",
+    "components/game/PauseMenu.test.tsx",
+    "components/game/PauseMenu.tsx",
+    "components/menu/CreateWorldForm.test.tsx",
+    "components/menu/CreateWorldForm.tsx",
+    "components/menu/WorldSelect.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/92/771214a753/0/metadata.json",
+      "transcript": "/92/771214a753/0/full.jsonl",
+      "content_hash": "/92/771214a753/0/content_hash.txt",
+      "prompt": "/92/771214a753/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 65171,
+    "cache_creation_tokens": 605626,
+    "cache_read_tokens": 115721444,
+    "output_tokens": 244176,
+    "api_call_count": 354
+  }
+}
