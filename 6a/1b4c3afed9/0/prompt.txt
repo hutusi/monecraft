@@ -1,0 +1,21 @@
+push
+
+---
+
+about the next features, I am thinking add more types, now it is survival mode, what about creative or more types, what do you think?
+
+---
+
+about the next features, I am thinking add more types, now it is survival mode, what about creative or more types, what do you think?
+
+---
+
+continue
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr
