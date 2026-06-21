@@ -1,0 +1,37 @@
+push
+
+---
+
+reply
+
+---
+
+check the pr status
+
+---
+
+merge it
+
+---
+
+what's next?
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+push
+
+---
+
+how to use the features about PR #28 & #29 ?
+
+---
+
+the pr is clean, let's merge it

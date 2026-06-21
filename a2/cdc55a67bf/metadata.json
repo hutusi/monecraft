@@ -3,21 +3,33 @@
   "checkpoint_id": "a2cdc55a67bf",
   "strategy": "manual-commit",
   "branch": "feat/game-modes",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 2,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/systems/playerMotion.ts",
+    "lib/game/engine/systems/playerStats.ts",
+    "lib/game/engine/systems/statusEffects.test.ts",
+    "lib/game/input/inputController.ts"
+  ],
   "sessions": [
     {
       "metadata": "/a2/cdc55a67bf/0/metadata.json",
       "transcript": "/a2/cdc55a67bf/0/full.jsonl",
       "content_hash": "/a2/cdc55a67bf/0/content_hash.txt",
       "prompt": "/a2/cdc55a67bf/0/prompt.txt"
+    },
+    {
+      "metadata": "/a2/cdc55a67bf/1/metadata.json",
+      "transcript": "/a2/cdc55a67bf/1/full.jsonl",
+      "content_hash": "/a2/cdc55a67bf/1/content_hash.txt",
+      "prompt": "/a2/cdc55a67bf/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 22879,
-    "cache_creation_tokens": 401267,
-    "cache_read_tokens": 30014476,
-    "output_tokens": 161398,
-    "api_call_count": 128
+    "input_tokens": 77155,
+    "cache_creation_tokens": 2708539,
+    "cache_read_tokens": 240125382,
+    "output_tokens": 513856,
+    "api_call_count": 619
   }
 }
