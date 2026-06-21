@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "76f0a9a431d7",
+  "session_id": "9ad24e19-d20e-48d5-8e29-95c6c31f363b",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T09:29:56.334339Z",
+  "branch": "feat/game-difficulty",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/commands.ts",
+    "lib/game/engine/difficultySwitch.test.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "dbfb5c0a46c0",
+  "checkpoint_transcript_start": 341,
+  "transcript_lines_at_start": 341,
+  "token_usage": {
+    "input_tokens": 5831,
+    "cache_creation_tokens": 45108,
+    "cache_read_tokens": 8050846,
+    "output_tokens": 19971,
+    "api_call_count": 41
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-21T09:29:56.314563Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 141,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 141,
+    "total_lines_changed": 141,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
