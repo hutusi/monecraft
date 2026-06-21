@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "64664a1f5dfa",
+  "session_id": "1800237e-6b80-499a-b9d2-d1160f587bef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T02:42:05.892326Z",
+  "branch": "feat/game-modes",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "7874e236f5ca",
+  "token_usage": {
+    "input_tokens": 26823,
+    "cache_creation_tokens": 488868,
+    "cache_read_tokens": 59524640,
+    "output_tokens": 219980,
+    "api_call_count": 202
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}
