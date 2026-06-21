@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "15524edd8893",
+  "strategy": "manual-commit",
+  "branch": "refactor/pause-menu-tabs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/15/524edd8893/0/metadata.json",
+      "transcript": "/15/524edd8893/0/full.jsonl",
+      "content_hash": "/15/524edd8893/0/content_hash.txt",
+      "prompt": "/15/524edd8893/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54303,
+    "cache_creation_tokens": 1272813,
+    "cache_read_tokens": 152603992,
+    "output_tokens": 366497,
+    "api_call_count": 373
+  }
+}

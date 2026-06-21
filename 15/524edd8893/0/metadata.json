@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "15524edd8893",
+  "session_id": "1800237e-6b80-499a-b9d2-d1160f587bef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T08:12:16.474292Z",
+  "branch": "refactor/pause-menu-tabs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "e2e/smoke.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "131a7c500cbb",
+  "token_usage": {
+    "input_tokens": 54303,
+    "cache_creation_tokens": 1272813,
+    "cache_read_tokens": 152603992,
+    "output_tokens": 366497,
+    "api_call_count": 373
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-21T08:12:16.40624Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 150,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 150,
+    "total_lines_changed": 219,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
