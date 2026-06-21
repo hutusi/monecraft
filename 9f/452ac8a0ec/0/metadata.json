@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9f452ac8a0ec",
+  "session_id": "1800237e-6b80-499a-b9d2-d1160f587bef",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T02:59:49.213384Z",
+  "branch": "feat/game-modes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "7874e236f5ca",
+  "token_usage": {
+    "input_tokens": 37100,
+    "cache_creation_tokens": 587004,
+    "cache_read_tokens": 96331655,
+    "output_tokens": 275647,
+    "api_call_count": 279
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-21T02:59:49.153264Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 118,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 118,
+    "total_lines_changed": 172,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
