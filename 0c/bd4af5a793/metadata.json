@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0cbd4af5a793",
+  "strategy": "manual-commit",
+  "branch": "feat/game-difficulty",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/MinecraftGame.tsx",
+    "components/menu/CreateWorldForm.test.tsx",
+    "components/menu/CreateWorldForm.tsx",
+    "components/menu/WorldSelect.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0c/bd4af5a793/0/metadata.json",
+      "transcript": "/0c/bd4af5a793/0/full.jsonl",
+      "content_hash": "/0c/bd4af5a793/0/content_hash.txt",
+      "prompt": "/0c/bd4af5a793/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 57857,
+    "cache_creation_tokens": 1284873,
+    "cache_read_tokens": 167782105,
+    "output_tokens": 377474,
+    "api_call_count": 395
+  }
+}
