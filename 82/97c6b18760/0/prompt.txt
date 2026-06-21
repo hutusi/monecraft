@@ -1,0 +1,53 @@
+push
+
+---
+
+about the next features, I am thinking add more types, now it is survival mode, what about creative or more types, what do you think?
+
+---
+
+about the next features, I am thinking add more types, now it is survival mode, what about creative or more types, what do you think?
+
+---
+
+continue
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+push
+
+---
+
+check the code reviews on the pr
+
+---
+
+reply and merge, what do you think?
+
+---
+
+continue
+
+---
+
+what's next?
+
+---
+
+Right now, pressing Esc opens the menu interface, but the content inside is getting cluttered. Can we optimize it to make it more user-friendly and practical? What do you think?
+
+---
+
+push and open pr
+
+---
+
+check the code reviews on the pr
