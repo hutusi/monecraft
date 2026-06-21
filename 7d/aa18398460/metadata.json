@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7daa18398460",
+  "strategy": "manual-commit",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/state.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7d/aa18398460/0/metadata.json",
+      "transcript": "/7d/aa18398460/0/full.jsonl",
+      "content_hash": "/7d/aa18398460/0/content_hash.txt",
+      "prompt": "/7d/aa18398460/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59966,
+    "cache_creation_tokens": 561836,
+    "cache_read_tokens": 90513723,
+    "output_tokens": 218702,
+    "api_call_count": 307
+  }
+}

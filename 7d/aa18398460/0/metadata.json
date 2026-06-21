@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7daa18398460",
+  "session_id": "9ad24e19-d20e-48d5-8e29-95c6c31f363b",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-21T11:05:50.431255Z",
+  "branch": "feat/hardcore-mode",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/state.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "810512b9ac07",
+  "token_usage": {
+    "input_tokens": 59966,
+    "cache_creation_tokens": 561836,
+    "cache_read_tokens": 90513723,
+    "output_tokens": 218702,
+    "api_call_count": 307
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-21T11:05:50.382742Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 209,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 209,
+    "total_lines_changed": 217,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
