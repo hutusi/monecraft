@@ -5,7 +5,10 @@
   "branch": "feat/game-difficulty",
   "checkpoints_count": 1,
   "files_touched": [
+    "CHANGELOG.md",
+    "README.md",
     "docs/architecture.md",
+    "docs/manual.md",
     "docs/reference.md",
     "docs/save-format.md",
     "docs/tuning.md",
@@ -17,13 +20,19 @@
       "transcript": "/f5/35de1bae73/0/full.jsonl",
       "content_hash": "/f5/35de1bae73/0/content_hash.txt",
       "prompt": "/f5/35de1bae73/0/prompt.txt"
+    },
+    {
+      "metadata": "/f5/35de1bae73/1/metadata.json",
+      "transcript": "/f5/35de1bae73/1/full.jsonl",
+      "content_hash": "/f5/35de1bae73/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 57857,
-    "cache_creation_tokens": 1284873,
-    "cache_read_tokens": 167782105,
-    "output_tokens": 377474,
-    "api_call_count": 395
+    "input_tokens": 59335,
+    "cache_creation_tokens": 1317841,
+    "cache_read_tokens": 176821536,
+    "output_tokens": 392250,
+    "api_call_count": 424
   }
 }
