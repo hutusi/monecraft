@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "dbf49a03fb49",
+  "strategy": "manual-commit",
+  "branch": "feat/anvil-grindstone-mending",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/db/f49a03fb49/0/metadata.json",
+      "transcript": "/db/f49a03fb49/0/full.jsonl",
+      "content_hash": "/db/f49a03fb49/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44986,
+    "cache_creation_tokens": 498090,
+    "cache_read_tokens": 68028418,
+    "output_tokens": 170163,
+    "api_call_count": 271
+  }
+}

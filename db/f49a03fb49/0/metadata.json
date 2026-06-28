@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "dbf49a03fb49",
+  "session_id": "3d82d4da-9c5d-48c8-a795-248d6965eac3",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-28T08:35:23.681916Z",
+  "branch": "feat/anvil-grindstone-mending",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "41a68cb4f4cd",
+  "token_usage": {
+    "input_tokens": 44986,
+    "cache_creation_tokens": 498090,
+    "cache_read_tokens": 68028418,
+    "output_tokens": 170163,
+    "api_call_count": 271
+  },
+  "session_metrics": {
+    "turn_count": 4
+  }
+}
