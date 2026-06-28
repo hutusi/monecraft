@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "49c7c0898a46",
+  "session_id": "34685084-7e91-4e2a-ba54-7a1729b88a50",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-28T12:29:42.336694Z",
+  "branch": "feat/deepen-progression",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/config.ts",
+    "lib/game/enchantments.test.ts",
+    "lib/game/enchantments.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/combat.test.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/mobLoot.test.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "34430b2413d6",
+  "checkpoint_transcript_start": 423,
+  "transcript_lines_at_start": 423,
+  "token_usage": {
+    "input_tokens": 1804,
+    "cache_creation_tokens": 36884,
+    "cache_read_tokens": 8619381,
+    "output_tokens": 30160,
+    "api_call_count": 41
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-28T12:29:42.314433Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 133,
+    "human_modified": 23,
+    "human_removed": 0,
+    "total_committed": 133,
+    "total_lines_changed": 156,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
