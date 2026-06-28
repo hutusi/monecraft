@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "fae5143e5ee0",
+  "strategy": "manual-commit",
+  "branch": "feat/anvil-grindstone-mending",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/game/AnvilColumn.tsx",
+    "docs/adding-content.md",
+    "lib/game/anvil.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fa/e5143e5ee0/0/metadata.json",
+      "transcript": "/fa/e5143e5ee0/0/full.jsonl",
+      "content_hash": "/fa/e5143e5ee0/0/content_hash.txt",
+      "prompt": "/fa/e5143e5ee0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 48183,
+    "cache_creation_tokens": 536563,
+    "cache_read_tokens": 81250963,
+    "output_tokens": 191998,
+    "api_call_count": 304
+  }
+}
