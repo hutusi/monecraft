@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "45c0e171cc13",
+  "strategy": "manual-commit",
+  "branch": "feat/anvil-grindstone-mending",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "app/ui.css",
+    "components/MinecraftGame.tsx",
+    "components/game/GrindstoneColumn.test.tsx",
+    "components/game/GrindstoneColumn.tsx",
+    "components/game/InventoryPanel.test.tsx",
+    "components/game/InventoryPanel.tsx",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/tuning.md",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/materials.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/commands.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/grindstone.test.ts",
+    "lib/game/grindstone.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/45/c0e171cc13/0/metadata.json",
+      "transcript": "/45/c0e171cc13/0/full.jsonl",
+      "content_hash": "/45/c0e171cc13/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 19575,
+    "cache_creation_tokens": 146331,
+    "cache_read_tokens": 51229679,
+    "output_tokens": 84199,
+    "api_call_count": 169
+  }
+}
