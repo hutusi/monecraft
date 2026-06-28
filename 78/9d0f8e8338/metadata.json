@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "789d0f8e8338",
+  "strategy": "manual-commit",
+  "branch": "feat/deepen-progression",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "components/game/ActiveEffects.tsx",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/playerLife.ts",
+    "lib/game/engine/systems/playerMotion.ts",
+    "lib/game/engine/systems/statusEffects.test.ts",
+    "lib/game/engine/systems/statusEffects.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.test.ts",
+    "lib/game/recipes.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts",
+    "lib/ui/hudPixels.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/78/9d0f8e8338/0/metadata.json",
+      "transcript": "/78/9d0f8e8338/0/full.jsonl",
+      "content_hash": "/78/9d0f8e8338/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10951,
+    "cache_creation_tokens": 78046,
+    "cache_read_tokens": 19399758,
+    "output_tokens": 44385,
+    "api_call_count": 63
+  }
+}
