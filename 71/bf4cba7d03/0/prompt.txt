@@ -1,0 +1,17 @@
+push
+
+---
+
+the pr is clean, let's merge it
+
+---
+
+delete the merged branch
+
+---
+
+open a pr to upstream repo
+
+---
+
+let's cut a new version then open the pr, what do you think?
