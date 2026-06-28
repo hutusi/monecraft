@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e0d7f17a026e",
+  "strategy": "manual-commit",
+  "branch": "feat/deepen-progression",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/config.ts",
+    "lib/game/enchantments.test.ts",
+    "lib/game/enchantments.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/playerMotion.ts",
+    "lib/game/items.test.ts",
+    "lib/game/items.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e0/d7f17a026e/0/metadata.json",
+      "transcript": "/e0/d7f17a026e/0/full.jsonl",
+      "content_hash": "/e0/d7f17a026e/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 9823,
+    "cache_creation_tokens": 39207,
+    "cache_read_tokens": 10598484,
+    "output_tokens": 31707,
+    "api_call_count": 43
+  }
+}
