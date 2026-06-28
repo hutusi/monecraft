@@ -3,7 +3,7 @@
   "checkpoint_id": "e66b9fc0e9b3",
   "strategy": "manual-commit",
   "branch": "feat/anvil-grindstone-mending",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "CHANGELOG.md",
     "docs/manual.md",
@@ -24,13 +24,19 @@
       "transcript": "/e6/6b9fc0e9b3/0/full.jsonl",
       "content_hash": "/e6/6b9fc0e9b3/0/content_hash.txt",
       "prompt": "/e6/6b9fc0e9b3/0/prompt.txt"
+    },
+    {
+      "metadata": "/e6/6b9fc0e9b3/1/metadata.json",
+      "transcript": "/e6/6b9fc0e9b3/1/full.jsonl",
+      "content_hash": "/e6/6b9fc0e9b3/1/content_hash.txt",
+      "prompt": "/e6/6b9fc0e9b3/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 19663,
-    "cache_creation_tokens": 298848,
-    "cache_read_tokens": 7228349,
-    "output_tokens": 63330,
-    "api_call_count": 59
+    "input_tokens": 100236,
+    "cache_creation_tokens": 1565843,
+    "cache_read_tokens": 173441320,
+    "output_tokens": 357236,
+    "api_call_count": 499
   }
 }

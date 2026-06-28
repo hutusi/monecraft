@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e66b9fc0e9b3",
+  "session_id": "9ad24e19-d20e-48d5-8e29-95c6c31f363b",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-28T07:58:52.997814Z",
+  "branch": "feat/anvil-grindstone-mending",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "d92e0fe317e4",
+  "token_usage": {
+    "input_tokens": 80573,
+    "cache_creation_tokens": 1266995,
+    "cache_read_tokens": 166212971,
+    "output_tokens": 293906,
+    "api_call_count": 440
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-28T07:58:52.933033Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 154,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 154,
+    "total_lines_changed": 180,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
