@@ -3,7 +3,7 @@
   "checkpoint_id": "e0d7f17a026e",
   "strategy": "manual-commit",
   "branch": "feat/deepen-progression",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "CHANGELOG.md",
     "docs/manual.md",
@@ -27,13 +27,19 @@
       "transcript": "/e0/d7f17a026e/0/full.jsonl",
       "content_hash": "/e0/d7f17a026e/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/e0/d7f17a026e/1/metadata.json",
+      "transcript": "/e0/d7f17a026e/1/full.jsonl",
+      "content_hash": "/e0/d7f17a026e/1/content_hash.txt",
+      "prompt": "/e0/d7f17a026e/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 9823,
-    "cache_creation_tokens": 39207,
-    "cache_read_tokens": 10598484,
-    "output_tokens": 31707,
-    "api_call_count": 43
+    "input_tokens": 80499,
+    "cache_creation_tokens": 852672,
+    "cache_read_tokens": 218225508,
+    "output_tokens": 386251,
+    "api_call_count": 569
   }
 }
