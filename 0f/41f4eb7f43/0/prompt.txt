@@ -1,0 +1,17 @@
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+push
+
+---
+
+now I found a bug, the armor seems take the space of hotbar, what do you think?
+
+---
+
+go merge it
