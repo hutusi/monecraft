@@ -1,0 +1,37 @@
+push and open pr
+
+---
+
+check the code reviews on the pr
+
+---
+
+push
+
+---
+
+now I found a bug, the armor seems take the space of hotbar, what do you think?
+
+---
+
+go merge it
+
+---
+
+check the code reviews on the pr
+
+---
+
+when I wear armors, I change the camera view, there seems no armor on the body, what do you think?
+
+---
+
+when I wear armors, I change the camera view, there seems no armor on the body, what do you think?
+
+---
+
+do you need to update pr's description?
+
+---
+
+check the code reviews on the pr
