@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "800fa82dba0a",
+  "strategy": "manual-commit",
+  "branch": "feat/deepen-progression",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/tuning.md",
+    "lib/game/config.ts",
+    "lib/game/enchantments.test.ts",
+    "lib/game/enchantments.ts",
+    "lib/game/engine/systems/combat.test.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/80/0fa82dba0a/0/metadata.json",
+      "transcript": "/80/0fa82dba0a/0/full.jsonl",
+      "content_hash": "/80/0fa82dba0a/0/content_hash.txt",
+      "prompt": "/80/0fa82dba0a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 23527,
+    "cache_creation_tokens": 236800,
+    "cache_read_tokens": 9443820,
+    "output_tokens": 49528,
+    "api_call_count": 70
+  }
+}
