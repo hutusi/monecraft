@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "2708d6ed35d3",
+  "strategy": "manual-commit",
+  "branch": "feat/villages-professions-raids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/MinecraftGame.tsx",
+    "components/game/InventoryPanel.test.tsx",
+    "components/game/InventoryPanel.tsx",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/spawnDirector.test.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/render/mobVisuals.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/trades.test.ts",
+    "lib/game/trades.ts",
+    "lib/game/types.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/27/08d6ed35d3/0/metadata.json",
+      "transcript": "/27/08d6ed35d3/0/full.jsonl",
+      "content_hash": "/27/08d6ed35d3/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14742,
+    "cache_creation_tokens": 74389,
+    "cache_read_tokens": 62748216,
+    "output_tokens": 43108,
+    "api_call_count": 87
+  }
+}
