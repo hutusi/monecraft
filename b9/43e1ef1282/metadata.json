@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b943e1ef1282",
+  "strategy": "manual-commit",
+  "branch": "feat/villages-professions-raids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/spawnDirector.test.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/world/generation.test.ts",
+    "lib/world/generation.ts",
+    "lib/world/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b9/43e1ef1282/0/metadata.json",
+      "transcript": "/b9/43e1ef1282/0/full.jsonl",
+      "content_hash": "/b9/43e1ef1282/0/content_hash.txt",
+      "prompt": "/b9/43e1ef1282/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10926,
+    "cache_creation_tokens": 111896,
+    "cache_read_tokens": 58565611,
+    "output_tokens": 75965,
+    "api_call_count": 94
+  }
+}
