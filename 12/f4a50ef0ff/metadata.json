@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "12f4a50ef0ff",
+  "strategy": "manual-commit",
+  "branch": "feat/villages-professions-raids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/raid.test.ts",
+    "lib/game/engine/systems/raid.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/items.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobXp.ts",
+    "lib/game/mobs.ts",
+    "lib/game/recipes.ts",
+    "lib/game/types.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/12/f4a50ef0ff/0/metadata.json",
+      "transcript": "/12/f4a50ef0ff/0/full.jsonl",
+      "content_hash": "/12/f4a50ef0ff/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10596,
+    "cache_creation_tokens": 61828,
+    "cache_read_tokens": 50313992,
+    "output_tokens": 40617,
+    "api_call_count": 64
+  }
+}

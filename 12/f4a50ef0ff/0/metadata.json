@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "12f4a50ef0ff",
+  "session_id": "6aff0716-f3fe-4fd7-872d-e2f69826d061",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T23:14:45.088066Z",
+  "branch": "feat/villages-professions-raids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/types.ts",
+    "lib/game/mobs.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobXp.ts",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/items.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/game/recipes.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/raid.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/engine/systems/raid.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "b5b600a2dc0d",
+  "checkpoint_transcript_start": 2297,
+  "transcript_lines_at_start": 2297,
+  "token_usage": {
+    "input_tokens": 10596,
+    "cache_creation_tokens": 61828,
+    "cache_read_tokens": 50313992,
+    "output_tokens": 40617,
+    "api_call_count": 64
+  },
+  "session_metrics": {
+    "turn_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T23:14:45.001959Z",
+    "agent_lines": 395,
+    "agent_removed": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 395,
+    "total_lines_changed": 398,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
