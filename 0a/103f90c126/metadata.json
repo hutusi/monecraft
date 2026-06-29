@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a103f90c126",
+  "strategy": "manual-commit",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/systems/interact.test.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/mobLoot.test.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobXp.ts",
+    "lib/game/mobs.ts",
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/render/mobVisuals.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0a/103f90c126/0/metadata.json",
+      "transcript": "/0a/103f90c126/0/full.jsonl",
+      "content_hash": "/0a/103f90c126/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11952,
+    "cache_creation_tokens": 90495,
+    "cache_read_tokens": 25811593,
+    "output_tokens": 53575,
+    "api_call_count": 63
+  }
+}

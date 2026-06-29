@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a103f90c126",
+  "session_id": "6aff0716-f3fe-4fd7-872d-e2f69826d061",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T14:48:55.605219Z",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/types.ts",
+    "lib/game/mobs.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobXp.ts",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/render/mobVisuals.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/render/GameRenderer.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/mobLoot.test.ts",
+    "lib/game/engine/systems/interact.test.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "955ab09a8028",
+  "checkpoint_transcript_start": 767,
+  "transcript_lines_at_start": 767,
+  "token_usage": {
+    "input_tokens": 11952,
+    "cache_creation_tokens": 90495,
+    "cache_read_tokens": 25811593,
+    "output_tokens": 53575,
+    "api_call_count": 63
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T14:48:55.566346Z",
+    "agent_lines": 468,
+    "agent_removed": 16,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 468,
+    "total_lines_changed": 484,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
