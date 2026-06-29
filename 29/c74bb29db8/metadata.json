@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "29c74bb29db8",
+  "strategy": "manual-commit",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/hardcore.test.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/29/c74bb29db8/0/metadata.json",
+      "transcript": "/29/c74bb29db8/0/full.jsonl",
+      "content_hash": "/29/c74bb29db8/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14552,
+    "cache_creation_tokens": 64851,
+    "cache_read_tokens": 16246825,
+    "output_tokens": 41701,
+    "api_call_count": 49
+  }
+}
