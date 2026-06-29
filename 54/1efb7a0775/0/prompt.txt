@@ -1,0 +1,888 @@
+what's next do you recommend?
+
+---
+
+<task-notification>
+<task-id>a4510314a9f90abb9</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/a4510314a9f90abb9.output</output-file>
+<status>completed</status>
+<summary>Agent "Map React shell UI panels and toasts" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Perfect. I now have a complete picture of the Monecraft architecture. Here's my comprehensive report:
+
+---
+
+## MONECRAFT UI ARCHITECTURE: ADVANCEMENTS + STATISTICS PANEL
+
+### 1. COMPONENT &amp; SHELL STRUCTURE
+
+**Top-Level Shell:**
+- `/components/GameShell.tsx` — State machine managing profile-select → world-select → play screen lifecycle
+- `/components/MinecraftGame.tsx` — Primary game UI component; reads `useMinecraftGame` hook and renders canvas + HUD + panels
+
+**Panel &amp; Overlay Components:**
+
+| Component | Visibility Flag | File Path |
+|-----------|-----------------|-----------|
+| InventoryPanel | `inventoryOpen` | `/components/game/InventoryPanel.tsx` |
+| PauseMenu | `paused` | `/components/game/PauseMenu.tsx` |
+| DeathScreen | `respawnSeconds &gt; 0` | `/components/game/DeathScreen.tsx` |
+| VictoryScreen | `victory` | `/components/game/VictoryScreen.tsx` |
+| GameOverScreen | `gameOver` | `/components/game/GameOverScreen.tsx` |
+| SleepOverlay | `sleeping` | `/components/game/SleepOverlay.tsx` |
+| DebugOverlay | `debugOpen` | `/components/game/DebugOverlay.tsx` |
+
+**Crafting Stations (rendered within InventoryPanel):**
+- `EnchantingColumn.tsx` — When `craftingStation === "enchanting"`
+- `AnvilColumn.tsx` — When `craftingStation === "anvil"`
+- `GrindstoneColumn.tsx` — When `craftingStation === "grindstone"`
+- `CreativeInventoryTab.tsx` — When `gameMode === "creative"`
+
+**Pattern:** MinecraftGame.tsx (lines 159–189) uses conditional rendering:
+```tsx
+{inventoryOpen || paused ? &lt;div className="menu-backdrop" /&gt; : null}
+{inventoryOpen ? &lt;InventoryPanel {...props} /&gt; : null}
+{paused ? &lt;PauseMenu {...props} /&gt; : null}
+```
+The `menu-backdrop` div (z-index 5, darkens the world) sits behind all panels.
+
+---
+
+### 2. PANEL OPEN/CLOSE: INPUT → COMMAND → SNAPSHOT → RENDER
+
+**Input Handling Chain:**
+
+**Step 1: Keyboard Input** (`/lib/game/input/inputController.ts`, lines 55–90)
+```typescript
+// Line 85–90: Inventory toggle
+if (evt.code === "KeyI") {
+  engine.dispatch({ type: "toggleInventory" });
+  input.keys.clear();
+  if (input.pointerLocked) document.exitPointerLock();
+  return;
+}
+
+// Line 58–63: Escape key (pauses OR closes inventory)
+if (evt.code === "Escape") {
+  if (engine.state.paused) engine.dispatch({ type: "resume" });
+  else if (engine.state.inventoryOpen) engine.dispatch({ type: "toggleInventory" });
+  else if (!input.pointerLocked) engine.dispatch({ type: "pause" });
+  return;
+}
+```
+
+**Available Key Bindings (from `/components/game/PauseMenu.tsx`, lines 36–49):**
+- `I` — Inventory
+- `E` — Place / interact
+- `F` — Eat food
+- `1-9` — Hotbar slots
+- `Space` (double-tap) — Toggle flight (Creative)
+- `V` — Camera view
+- `F3` — Debug overlay
+- `Shift + U` — Emergency unstuck
+
+**⚠️ For Advancements (e.g., `L` key):** Add entry to `inputController.ts` onKeyDown:
+```typescript
+if (evt.code === "KeyL") {
+  engine.dispatch({ type: "toggleAdvancements" });
+  input.keys.clear();
+  if (input.pointerLocked) document.exitPointerLock();
+  return;
+}
+```
+
+**Step 2: Command Dispatch** (`/lib/game/engine/commands.ts`, lines 17–44)
+```typescript
+export type Command =
+  | { type: "selectSlot"; index: number }
+  | { type: "toggleInventory" }
+  | { type: "pause" }
+  | { type: "resume" }
+  // ... add new command type:
+  | { type: "toggleAdvancements" }
+```
+
+**Step 3: State Mutation** (`/lib/game/engine/GameEngine.ts`, lines 356–612)
+```typescript
+dispatch(command: Command): void {
+  const state = this.state;
+  switch (command.type) {
+    case "toggleInventory": {
+      state.inventoryOpen = !state.inventoryOpen;
+      if (!state.inventoryOpen) {
+        state.craftingStation = null;
+        state.openContainerIndex = null;
+      }
+      break;
+    }
+    case "pause": {
+      if (state.isDead || state.paused || state.victory || state.gameOver) break;
+      state.paused = true;
+      break;
+    }
+    // ... add new handler:
+    case "toggleAdvancements": {
+      state.advancementsOpen = !state.advancementsOpen;
+      break;
+    }
+  }
+  this.refreshSnapshot();  // Line 612: Notify listeners
+}
+```
+
+**Step 4: GameState Flag** (`/lib/game/engine/state.ts`, lines 147–220)
+```typescript
+export type GameState = {
+  // ... existing fields
+  inventoryOpen: boolean;        // Line 174
+  paused: boolean;               // Line 190
+  // Add new flag:
+  advancementsOpen: boolean;
+}
+```
+
+**Step 5: Snapshot Projection** (`/lib/game/engine/state.ts`, lines 271–318)
+```typescript
+export type GameSnapshot = {
+  // ... existing fields
+  inventoryOpen: boolean;        // Line 295
+  paused: boolean;               // Line 296
+  // Add new projection:
+  advancementsOpen?: boolean;
+}
+```
+
+**Step 6: Snapshot Refresh &amp; Listener Notification** (`/lib/game/engine/GameEngine.ts`, lines 1019–1026)
+```typescript
+private refreshSnapshot(): void {
+  const next = this.buildSnapshot();
+  const prev = this.snapshot;
+  const changed = (Object.keys(next) as Array&lt;keyof GameSnapshot&gt;).some(
+    (key) =&gt; next[key] !== prev[key]
+  );
+  if (!changed) return;
+  this.snapshot = next;
+  for (const listener of this.listeners) listener();  // Trigger useSyncExternalStore
+}
+```
+
+**Step 7: React Re-render** (`/lib/game/useMinecraftGame.ts`, lines 191–195)
+```typescript
+const engine = ctx?.engine ?? null;
+const subscribe = useMemo(() =&gt; engine?.subscribe ?? noopSubscribe, [engine]);
+const getSnapshot = useMemo(() =&gt; engine?.getSnapshot ?? (() =&gt; PRE_MOUNT_SNAPSHOT), [engine]);
+const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+```
+
+React re-renders when `snapshot.advancementsOpen` changes, triggering conditional render in MinecraftGame.
+
+---
+
+### 3. TOAST / NOTIFICATION SYSTEM
+
+**Pattern:** Centralized in `/lib/game/useMinecraftGame.ts` (lines 215–330)
+
+**Toast Implementation:**
+```typescript
+const flashMessage = useCallback(
+  (text: string, durationMs = 1200) =&gt; {
+    setSaveMessage(text);  // UI state, not engine state
+    scheduleTimeout(() =&gt; setSaveMessage(""), durationMs);
+  },
+  [scheduleTimeout]
+);
+```
+
+**Rendering:** (`/components/MinecraftGame.tsx`, lines 131–135)
+```tsx
+{saveMessage &amp;&amp; !paused ? (
+  &lt;div className="hud-toast" role="status"&gt;
+    {saveMessage}
+  &lt;/div&gt;
+) : null}
+```
+
+**Event Listening Loop** (`/lib/game/useMinecraftGame.ts`, lines 293–329):
+The `clock()` rAF loop consumes events and dispatches toasts:
+```typescript
+for (const event of gameEngine.consumeEvents()) {
+  if (event.type === "pickedUp") {
+    flashMessage(event.items.map((drop) =&gt; 
+      `+${drop.count} ${ITEM_DEF_BY_ID[drop.itemId]?.label ?? drop.itemId}`
+    ).join(", "));
+  }
+  if (event.type === "breakBlocked") {
+    flashMessage("Not enough room to empty the chest");
+  }
+  if (event.type === "sleepDenied") {
+    flashMessage(event.reason === "daylight" ? "You can only sleep at night" : "Monsters are nearby");
+  }
+  // ... etc
+}
+```
+
+**Event Types** (`/lib/game/engine/state.ts`, lines 321–369):
+```typescript
+export type GameEvent =
+  | { type: "died" }
+  | { type: "pickedUp"; items: Array&lt;{ itemId: string; count: number }&gt; }
+  | { type: "enchanted"; enchant: EnchantmentId }
+  | { type: "smelted" }
+  | // ... 30+ event types
+  // Add new event type:
+  | { type: "advancementUnlocked"; id: string; name: string }
+```
+
+**⚠️ For "Advancement Unlocked" Toast:**
+
+1. Emit event in engine (e.g., when progression milestone hit):
+```typescript
+private emit = (event: GameEvent): void =&gt; {
+  this.events.push(event);
+};
+
+// In a system or dispatch handler:
+if (unlockedNewAdvancement) {
+  this.emit({ type: "advancementUnlocked", id: "first_stone", name: "Getting Wood" });
+}
+```
+
+2. Listen in `useMinecraftGame` clock loop:
+```typescript
+if (event.type === "advancementUnlocked") {
+  flashMessage(`Advancement Unlocked: ${event.name}`);
+}
+```
+
+3. Audio director also listens (optional):
+```typescript
+audio.handleEvent(event);  // /lib/game/audio/audioDirector.ts handles all events
+```
+
+---
+
+### 4. PRESENTATIONAL COMPONENTS &amp; PATTERNS
+
+**Icon Rendering:**
+
+| Component | Purpose | File | Key Props |
+|-----------|---------|------|-----------|
+| `PixelImg` | Data-URL sprite renderer | `/components/game/PixelImg.tsx` | `src` (data-URL), `size` (pixels), `imageRendering: "pixelated"` |
+| `ItemIcon` | Item grid slot icon | `/components/game/ItemIcon.tsx` | `slot: InventorySlot`, `size?: number` |
+| `ActiveEffects` | Status effect badges | `/components/game/ActiveEffects.tsx` | `effects: Array&lt;{id, seconds}&gt;` |
+
+**Sprite URL Generation** (`/lib/ui/sprites.ts`, lines 17–50):
+```typescript
+export function itemIconUrl(itemId: string): string {
+  return spriteDataUrl(`item:${itemId}`, () =&gt; renderSpritePixels(itemId));
+}
+
+export function hudIconUrl(name: HudIconName): string {
+  return spriteDataUrl(`hud:${name}`, () =&gt; renderHudIconPixels(name));
+}
+```
+
+**ActiveEffects Pattern** (`/components/game/ActiveEffects.tsx`, lines 50–62):
+```tsx
+export default function ActiveEffects({ effects }: ActiveEffectsProps) {
+  if (effects.length === 0) return null;
+  return (
+    &lt;div className="active-effects" role="list"&gt;
+      {effects.map((effect) =&gt; (
+        &lt;div key={effect.id} className="active-effect"&gt;
+          &lt;PixelImg src={hudIconUrl(EFFECT_ICONS[effect.id])} alt="" size={22} aria-hidden /&gt;
+          &lt;span className="active-effect-time"&gt;{formatDuration(effect.seconds)}&lt;/span&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+```
+
+**Recipe Book Grid Layout** (`/components/game/InventoryPanel.tsx`, lines 160–193):
+```tsx
+const recipeGroups = groupRecipes(recipes, canMakeNow);
+return (
+  &lt;div className="recipe-book"&gt;
+    &lt;div className="inventory-heading"&gt;Crafting&lt;/div&gt;
+    &lt;div className="recipe-list"&gt;
+      {recipeGroups.map((group) =&gt; (
+        &lt;Fragment key={group.category}&gt;
+          &lt;div className="recipe-category"&gt;{group.category}&lt;/div&gt;
+          {group.recipes.map((recipe) =&gt; (
+            &lt;button
+              key={recipe.id}
+              className={`recipe-entry${craftable ? "" : " is-disabled"}`}
+              aria-disabled={!craftable}
+              onClick={() =&gt; { if (craftable) onCraft(recipe); }}
+            &gt;
+              &lt;span className="recipe-ingredients"&gt;
+                {recipe.cost.map((cost) =&gt; (
+                  &lt;ItemIcon key={...} slot={createSlot(cost.slotId, cost.count)} size={24} /&gt;
+                ))}
+              &lt;/span&gt;
+              &lt;span className="recipe-arrow"&gt;→&lt;/span&gt;
+              &lt;ItemIcon slot={createSlot(recipe.result.slotId, recipe.result.count)} size={24} /&gt;
+            &lt;/button&gt;
+          ))}
+        &lt;/Fragment&gt;
+      ))}
+    &lt;/div&gt;
+  &lt;/div&gt;
+);
+```
+
+**⚠️ For Advancements Grid (mirror recipe pattern):**
+- Group by category (e.g., "Farming", "Combat", "Exploration")
+- Show icon (via `itemIconUrl()` or `hudIconUrl()`)
+- Display locked state: grayscale + opacity, or padlock overlay
+- Label: achievement name + description
+- Unlocked date (optional sub-label)
+
+**PauseMenu Tab Pattern** (`/components/game/PauseMenu.tsx`, lines 28–76):
+```typescript
+type PauseTab = "game" | "options" | "controls";
+
+const TABS: ReadonlyArray&lt;{ id: PauseTab; label: string }&gt; = [
+  { id: "game", label: "Game" },
+  { id: "options", label: "Options" },
+  { id: "controls", label: "Controls" }
+];
+
+export default function PauseMenu({ ... }: PauseMenuProps) {
+  const [tab, setTab] = useState&lt;PauseTab&gt;("game");
+
+  return (
+    &lt;div className="pause-overlay"&gt;
+      &lt;div className="pause-menu"&gt;
+        &lt;button className="mc-button" onClick={onBack}&gt;Back to Game&lt;/button&gt;
+        
+        &lt;div className="pause-tabs"&gt;
+          {TABS.map((entry) =&gt; (
+            &lt;button
+              key={entry.id}
+              className="mc-button pause-tab"
+              aria-pressed={tab === entry.id}
+              onClick={() =&gt; setTab(entry.id)}
+            &gt;
+              {entry.label}
+            &lt;/button&gt;
+          ))}
+        &lt;/div&gt;
+
+        &lt;div className="pause-panel"&gt;
+          {tab === "game" &amp;&amp; &lt;div&gt;...&lt;/div&gt;}
+          {tab === "options" &amp;&amp; &lt;div&gt;...&lt;/div&gt;}
+          {tab === "controls" &amp;&amp; &lt;div&gt;...&lt;/div&gt;}
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+```
+
+**⚠️ For Advancements UI:** Could follow same tab pattern (Advancements + Statistics tabs), or a single full-screen panel toggled by `advancementsOpen` state, rendered alongside pause menu.
+
+---
+
+### 5. SUMMARY: ADDING ADVANCEMENTS + STATISTICS
+
+**Required Engine Changes:**
+1. Add `advancementsOpen: boolean` to `GameState` (/lib/game/engine/state.ts, line 147+)
+2. Add `advancementsOpen?: boolean` to `GameSnapshot` (/lib/game/engine/state.ts, line 271+)
+3. Add `{ type: "toggleAdvancements" }` command to `Command` union (/lib/game/engine/commands.ts)
+4. Handle `"toggleAdvancements"` in `GameEngine.dispatch()` (/lib/game/engine/GameEngine.ts, line 356+)
+5. Add `{ type: "advancementUnlocked"; id: string; name: string }` to `GameEvent` union (/lib/game/engine/state.ts, line 321+)
+6. Emit events when advancements unlock (in progression logic)
+
+**Required Input Changes:**
+- Add KeyL handler to `/lib/game/input/inputController.ts` (line ~85, mirroring KeyI pattern)
+- Exit pointer lock, clear keys, dispatch toggle command
+
+**Required React Shell Changes:**
+1. Create `/components/game/AdvancementsPanel.tsx` — Main overlay component
+   - Conditional render in `MinecraftGame.tsx` based on `snapshot.advancementsOpen`
+   - Two-tab layout: "Advancements" + "Statistics"
+   - Grid layout (mirror `RecipeBook` + `CreativeInventoryTab` patterns)
+   - Show locked/unlocked state, icon, label, date
+2. Update `MinecraftGame.tsx` (line 159) to include backdrop when advancements open
+3. Listen for "advancementUnlocked" events in `useMinecraftGame` (line 317+) to flash toast
+
+**CSS Structure (mirror `/app/hud.css` patterns):**
+- `.advancements-overlay` — Centered full-screen (z-index 9, like pause-overlay)
+- `.advancements-panel` — Grid container, tab layout
+- `.advancement-entry` — Individual achievement button
+- `.advancement-locked` — Grayscale/opacity state
+- `.advancement-icon` — PixelImg wrapper (22–32px, matching ActiveEffects)
+
+All flags, commands, and events are mutation-free; snapshot refresh triggers React's `useSyncExternalStore` subscriber, which re-renders MinecraftGame with the updated state.</result>
+<usage><subagent_tokens>69751</subagent_tokens><tool_uses>47</tool_uses><duration_ms>130378</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a3dcbc4abe661f022</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/a3dcbc4abe661f022.output</output-file>
+<status>completed</status>
+<summary>Agent "Map engine events, state, save, projection" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now I'll compile a comprehensive report with all the findings:
+
+## Exploration Summary: Advancements + Statistics Architecture
+
+I've thoroughly explored the Monecraft engine to map out the complete event system, persistence pattern, snapshot projection, and best hooks for your advancement/statistics feature. Here are the findings:
+
+---
+
+### 1. **Complete GameEvent Union &amp; Every Emit Site**
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts` (lines 321–371)
+
+The full `GameEvent` union has **29 event types** (with payloads listed):
+
+| Event | Payload | Emit Sites |
+|-------|---------|-----------|
+| `died` | (none) | `GameEngine.ts:710,723` (damage handlers) |
+| `gameOver` | (none) | `GameEngine.ts:751` (hardcore permadeath) |
+| `respawned` | (none) | `GameEngine.ts:910` (respawn complete) |
+| `blockBroken` | `blockId`, `x`, `y`, `z` | `mining.ts:159` |
+| `blockPlaced` | `blockId`, `x`, `y`, `z` | `mining.ts:219` |
+| `playerHurt` | (none) | `GameEngine.ts:712,725,756,761` (damage taken) |
+| `ateFood` | (none) | `GameEngine.ts:427` |
+| `drankPotion` | (none) | `GameEngine.ts:438` |
+| `effectExpired` | `effect: EffectId` | `statusEffects.ts:103` |
+| `xpGained` | `amount: number` | `xp.ts:49` (ore mining, fishing, mobs) |
+| `jumped` | (none) | `GameEngine.ts:325` |
+| `landed` | `impact: number` | `GameEngine.ts:326` |
+| `mobAttacked` | `kind: MobKind` | `mobAI.ts:68,89,169,205` (skeleton/boss shots, creeper hiss) |
+| `mobHit` | `kind: MobKind` | `GameEngine.ts:545` (melee), `projectileAI.ts:114` (arrow), `spears.ts:96` (throw) |
+| `mobDied` | `kind`, `x`, `y`, `z` | `GameEngine.ts:777` |
+| `mobSpawned` | `kind`, `x`, `y`, `z` | `mobAI.ts:117` (boss minions), `spawnDirector.ts:182` (spawner) |
+| `mobFed` | `kind: MobKind` | `interact.ts:141` |
+| `mobBred` | `kind: MobKind` | `breeding.ts:45` |
+| `arrowHit` | `x`, `y`, `z`, `target: "block" \| "mob" \| "player"` | `projectileAI.ts:115,121,125-130` |
+| `bowFired` | (none) | `combat.ts:133` |
+| `bossSummoned` | `x`, `y`, `z` | `GameEngine.ts:803` |
+| `bossDefeated` | `x`, `y`, `z` | `GameEngine.ts:783` |
+| `summonFailed` | (none) | `GameEngine.ts:797` |
+| `explosion` | `x`, `y`, `z`, `power: number` | `explosion.ts:131` |
+| `tntPrimed` | `x`, `y`, `z` | `explosion.ts:84,139` (torch &amp; chain reactions) |
+| `attackSwung` | (none) | `GameEngine.ts:528` (melee), `spears.ts:43` (throw) |
+| `sleepStarted` | (none) | `interact.ts:215` |
+| `sleepDenied` | `reason: "daylight" \| "hostiles"` | `interact.ts:203,208` |
+| `wokeUp` | (none) | `GameEngine.ts:920` |
+| `tilledSoil` | (none) | `interact.ts:272` (hoe on grass/dirt) |
+| `plantedSeed` | (none) | `interact.ts:292` |
+| `plantedSapling` | (none) | `interact.ts:283` |
+| `usedBoneMeal` | (none) | `interact.ts:263` |
+| `fishingCast` | `x`, `y`, `z` | `fishing.ts:64` |
+| `fishingBite` | `x`, `y`, `z` | `fishing.ts:100` |
+| `fishingCaught` | `items: Array&lt;{itemId, count}&gt;`, `x`, `y`, `z` | `fishing.ts:48` |
+| `fishingReeledEmpty` | (none) | `fishing.ts:50` |
+| `openedStation` | `station: "furnace" \| "villager" \| "brewing" \| "enchanting" \| "anvil" \| "grindstone"` | `interact.ts:149,157,165,173,181,196` |
+| `enchanted` | `enchant: EnchantmentId` | `GameEngine.ts:450` |
+| `anvilCombined` | (none) | `GameEngine.ts:466` |
+| `anvilRepaired` | (none) | `GameEngine.ts:481` |
+| `anvilRenamed` | (none) | `GameEngine.ts:495` |
+| `grindstoneStripped` | (none) | `GameEngine.ts:507` |
+| `openedContainer` | (none) | `interact.ts:112` (chest) |
+| `doorToggled` | `open: boolean` | `interact.ts:95` |
+| `breakBlocked` | `reason: "containerFull"` | `mining.ts:68` |
+| `smelted` | (none) | `GameEngine.ts:383` |
+| `pickedUp` | `items: Array&lt;{itemId, count}&gt;` | `mining.ts:74` (chest break), `GameEngine.ts:779` (mob drops) |
+
+**Emit Chokepoint:** All events funnel through `GameEngine.private emit()` (line 668–670), which pushes to `this.events[]`. The array is drained by `consumeEvents()` (line 661–666) in each rAF frame by React via `useMinecraftGame.ts:293`.
+
+---
+
+### 2. **Persistent Gameplay State: Save Pattern (v12)**
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/types.ts` (lines 239–242, SaveData type)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/save.ts` (persistence functions)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts` (serialize at line 623–651)
+
+**Current Save Version:** 12 (line 210 in save.ts; line 626 in GameEngine.ts)
+
+**The XP Pattern (Your Model for Stats/Advancements):**
+
+```typescript
+// In GameState (state.ts:147–220):
+xp: number;  // NOT cleared on death (line 171: "NOT cleared on death")
+
+// Serialized (GameEngine.serialize, line 649):
+xp: state.xp
+
+// Restored (GameEngine constructor, line 247):
+this.state.xp = restoreXp(save);  // function at save.ts:443–446
+
+// Restoration logic (save.ts:443–446):
+export function restoreXp(save: SaveData): number {
+  if (typeof save.xp !== "number" || !Number.isFinite(save.xp) || save.xp &lt; 0) return 0;
+  return Math.floor(save.xp);
+}
+```
+
+**Why XP survives death:**
+- Defined at top level of `SaveData` (line 239)
+- Explicitly restored at engine init (line 247), **NOT** cleared in `clearEffects()` (which only wipes transient effects, line 705)
+- Contrast: `effects` (Map&lt;EffectId, number&gt;) are cleared on death (line 708)
+
+**Pattern to Add Stats/Advancements:**
+
+1. **Add to `GameState` (state.ts ~line 171):**
+   ```typescript
+   stats: Map&lt;string, number&gt;;  // e.g., "blocks_mined" → count
+   advancements: Set&lt;string&gt;;   // e.g., "mine_diamond", "breed_animals"
+   ```
+
+2. **Add to `SaveData` type (types.ts ~line 242):**
+   ```typescript
+   stats?: Array&lt;{ id: string; value: number }&gt;;
+   advancements?: string[];
+   ```
+
+3. **Serialize (GameEngine.serialize, line 650):**
+   ```typescript
+   stats: [...state.stats.entries()].map(([id, value]) =&gt; ({ id, value })),
+   advancements: [...state.advancements]
+   ```
+
+4. **Restore (GameEngine constructor, ~line 248):**
+   ```typescript
+   if (save.stats) for (const {id, value} of save.stats) state.stats.set(id, value);
+   if (save.advancements) state.advancements = new Set(save.advancements);
+   ```
+
+5. **Version Bump:** Increment save version to v13 with pure-bump migration (like v11→v12, line 159: `migrateSaveV11toV12`), since both fields are optional—old saves load with empty stats/advancements.
+
+**Critical Detail:** Stats/advancements survive death and reload, just like xp. Effects (status buffs) do **not** survive death (line 708: `clearEffects(state)`).
+
+---
+
+### 3. **Engine State → React Snapshot Projection**
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts` (GameSnapshot type, lines 270–318)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts` (snapshot building, lines 982–1026)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts` (React hook, lines 192–195)
+
+**GameSnapshot Type (immutable view for UI):**
+- Built every frame in `buildSnapshot()` (line 982)
+- Contains: inventory, armor, gameMode, hearts, hunger, daylightPercent, **xpLevel** (line 1014), **xpProgress** (line 1015), **activeEffects** (line 1013), boss health, victory flag, etc.
+- **Crucially:** `activeEffects` is ref-stable through `effectsProjection()` (lines 968–980) — only rebuilt when content changes (id or rounded seconds), so HUD updates ~1 Hz not 60 Hz.
+
+**XP Projection Pattern (Your Model for Stats/Advancements):**
+```typescript
+// In buildSnapshot (line 1014–1015):
+xpLevel: xpLevel(state.xp),        // derived from state
+xpProgress: xpProgress(state.xp)   // progress 0–1 to next level
+
+// Functions (xp.ts:28–35):
+export function xpLevel(xp: number): number {
+  return Math.floor(xp / XP_PER_LEVEL);
+}
+export function xpProgress(xp: number): number {
+  return (xp % XP_PER_LEVEL) / XP_PER_LEVEL;
+}
+```
+
+**Best Pattern for Stats/Advancements Snapshot:**
+
+1. **Add to GameSnapshot (state.ts ~line 318):**
+   ```typescript
+   stats: Map&lt;string, number&gt;;              // or Array&lt;{id: string; value: number}&gt;
+   unlockedAdvancements: Set&lt;string&gt;;       // or Array&lt;string&gt;
+   justUnlockedAdvancement: string | null;  // one-shot for toast
+   ```
+
+2. **Build in buildSnapshot() (~line 1016):**
+   ```typescript
+   stats: state.stats,  // or project/format as needed
+   unlockedAdvancements: state.advancements,
+   justUnlockedAdvancement: null  // set by advancement check logic
+   ```
+
+3. **Ref-Stability (like effectsProjection):**
+   Create a `statsProjection()` helper if you want HUD updates throttled (e.g., only refresh when a stat crosses a threshold). For now, simple passthrough is fine.
+
+**React Integration:**
+- `useMinecraftGame.ts` already reads snapshot via `useSyncExternalStore` (line 195)
+- Events drained by `consumeEvents()` (line 293) each rAF frame
+- Audio/renderer/UI all react to drained events (lines 304–329)
+
+---
+
+### 4. **Engine Step, Command Dispatch, &amp; Best Hook for Stats/Advancements**
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts` (step loop, dispatch, serialize)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts` (GameState, GameApi types)
+
+**GameState Mutable Shape (state.ts:147–220):**
+```typescript
+export type GameState = {
+  world: VoxelWorld;
+  blockChanges: BlockChangeTracker;
+  player: PlayerState;
+  inventory: InventorySlot[];
+  equippedArmor: EquippedArmor;
+  selectedSlot: number;
+  gameMode: GameMode;    // switchable in-game
+  difficulty: Difficulty; // switchable in-game
+  hardcore: boolean;      // immutable
+  gameOver: boolean;
+  isFlying: boolean;
+  hearts: number;
+  hunger: number;
+  oxygen: number;
+  effects: Map&lt;EffectId, number&gt;;  // transient, cleared on death
+  xp: number;                      // persistent, NOT cleared on death
+  isDead: boolean;
+  respawnTimer: number;
+  inventoryOpen: boolean;
+  craftingStation: "furnace" | "villager" | "brewing" | "enchanting" | "anvil" | "grindstone" | null;
+  containers: Map&lt;number, InventorySlot[]&gt;;  // chest contents (block-entities)
+  primedTnt: Map&lt;number, number&gt;;            // session-only, never saved
+  openContainerIndex: number | null;
+  dungeonChestIndices: Set&lt;number&gt;;          // worldgen, session-only
+  dungeonSpawnerIndices: Set&lt;number&gt;;        // worldgen, session-only
+  lootedDungeonChests: Set&lt;number&gt;;          // persisted, gates loot roll
+  paused: boolean;
+  debugOpen: boolean;
+  debugInfo: DebugInfo | null;
+  cameraMode: CameraMode;
+  capsActive: boolean;
+  mobs: MobState[];
+  nextMobId: number;
+  thrownSpears: ThrownSpearState[];
+  nextThrownSpearId: number;
+  projectiles: ProjectileState[];            // arrows, session-only
+  nextProjectileId: number;
+  fishing: FishingState | null;
+  dayClock: number;
+  daylight: number;                          // derived from dayClock
+  daylightPercent: number;                   // derived from daylight
+  weather: WeatherState;                     // transient
+  sleepTimer: number;
+  spawnPoint: {x, y, z} | null;
+  mining: MiningState;
+  timers: GameTimers;                        // many accumulators
+  worldMeshDirty: boolean;
+  victory: boolean;                          // one-shot after boss kill
+};
+```
+
+**Step Loop (lines 282–353):**
+```typescript
+step(dt: number, input: FrameInput): void {
+  // Freeze during pause
+  if (state.paused) {
+    this.refreshSnapshot();
+    return;
+  }
+
+  // Death: only mobs/respawn countdown tick
+  if (state.isDead) {
+    if (tickRespawnTimer(state, dt)) this.respawn();  // → emit("respawned")
+    else {
+      tickMobs(state, dt, this.mobTickDeps);
+      tickPrimedTnt(state, dt, this.mobTickDeps);
+      tickProjectiles(state, dt, this.mobTickDeps);
+    }
+    this.refreshSnapshot();
+    return;
+  }
+
+  // Sleeping: fade + time skip
+  if (state.sleepTimer &gt; 0) {
+    state.sleepTimer = Math.max(0, state.sleepTimer - dt);
+    if (state.sleepTimer === 0) this.wakeToMorning();  // → emit("wokeUp")
+    this.refreshSnapshot();
+    return;
+  }
+
+  // Live gameplay: 40+ tick subsystems in order
+  const move = tickPlayerMotion(...);
+  if (move.didJump) this.emit({type: "jumped"});
+  if (move.didLand) this.emit({type: "landed", impact: ...});
+  
+  tickHungerDrain(state, move);
+  tickHealthRegen(state, dt);
+  tickStarvation(state, dt, this.applyStarvationFloored, this.applyEnvironmentalDamage);
+  tickStatusEffects(state, dt, {applyPoisonDamage: this.applyPoisonDamage, emit: this.emit});
+  tickWaterExposure(state, dt, this.applyEnvironmentalDamage);
+  tickLavaExposure(state, dt, this.applyEnvironmentalDamage, hasEffect(state, "fire_resistance"));
+  tickOxygen(state, dt, this.applyEnvironmentalDamage, hasEffect(state, "water_breathing"));
+  
+  tickMining(state, input, dt, this.emit, this.rng);
+  tickThrownSpears(state, dt, this.removeMobAt, this.emit);
+  tickFishing(state, dt, this.rng, this.emit);
+  
+  tickDayNight(state, dt);
+  tickWeather(state);
+  tickRandomBlocks(state, dt, this.rng);
+  tickHostileSpawnDirector(state, dt, this.rng, this.surfaceYAt);
+  tickSpawnerDirector(state, dt, this.rng, this.emit);  // ← emits mobSpawned
+  tickMobs(state, dt, this.mobTickDeps);                 // ← handles mobAttacked, mobDied
+  tickPrimedTnt(state, dt, this.mobTickDeps);            // ← emits explosion, tntPrimed
+  tickProjectiles(state, dt, this.mobTickDeps);          // ← emits arrowHit, mobHit
+  tickBreeding(state, dt, this.rng, this.surfaceYAt, this.emit);
+  
+  this.refreshSnapshot();
+}
+```
+
+**Command Dispatch (lines 356–613):**
+```typescript
+dispatch(command: Command): void {
+  switch (command.type) {
+    case "eatFood": {
+      // ... state mutation ...
+      this.emit({type: "ateFood"});
+      break;
+    }
+    case "enchant": {
+      spendXpLevels(state, ENCHANT_COST_LEVELS);
+      state.inventory = applyEnchant(...);
+      this.emit({type: "enchanted", enchant: command.enchant});
+      break;
+    }
+    // ... 20+ other commands (craft, swapSlots, toggleEquipArmor, anvilCombine, attack, etc.)
+  }
+  this.refreshSnapshot();
+}
+```
+
+**Best Hook Point for Stats/Advancements:**
+
+There are **three viable patterns**:
+
+**Option A: Central Observer (Recommended)**
+Create a new system function called early in step():
+```typescript
+// lib/game/engine/systems/advancements.ts
+export function tickAdvancements(
+  state: GameState, 
+  emit: EmitGameEvent
+): void {
+  // Drain `this.events` (not exposed) — would need refactor.
+  // Or: pass a reference to pending events.
+}
+```
+**Pros:** Single chokepoint, easy to audit.
+**Cons:** Requires passing `events[]` ref or draining inside tick (timing issue if events added after check).
+
+**Option B: Per-Event Increment (Pragmatic)**
+Hook into each relevant emit site directly (already there in the code):
+```typescript
+// In mining.ts:159 (blockBroken)
+emit({type: "blockBroken", blockId, x, y, z});
+state.stats.set("blocks_mined", (state.stats.get("blocks_mined") ?? 0) + 1);
+
+// In GameEngine.ts:777 (mobDied)
+emit({type: "mobDied", kind, x, y, z});
+state.stats.set(`mobs_killed_${kind}`, (state.stats.get(`mobs_killed_${kind}`) ?? 0) + 1);
+checkAdvancementUnlock(state, `kill_${kind}`, emit);
+
+// In interact.ts:215 (sleepStarted)
+emit({type: "sleepStarted"});
+state.stats.set("times_slept", (state.stats.get("times_slept") ?? 0) + 1);
+```
+**Pros:** Exact timing (increments when event fires); no extra post-pass.
+**Cons:** Stats logic scattered across 15+ files; harder to maintain.
+
+**Option C: Post-Frame Drain (Cleanest)**
+Drain `consumeEvents()` inside `step()` and post-process before snapshot refresh:
+```typescript
+// At end of step(), before refreshSnapshot()
+const events = this.events;  // temp reference
+for (const event of events) {
+  if (event.type === "blockBroken") stats.set("blocks_mined", ...);
+  if (event.type === "mobDied") stats.set("mobs_killed", ...);
+  if (event.type === "ateFood") stats.set("foods_eaten", ...);
+  // ... check advancement unlocks ...
+}
+this.refreshSnapshot();
+```
+**Pros:** Stats in one place; doesn't interfere with event listeners (audio, renderer still see events).
+**Cons:** Requires refactor of `emit()` to allow read-only peek; events aren't available to consumeEvents() if read early.
+
+**My Recommendation:** **Option B (Per-Event)** is most pragmatic given the existing architecture. Events already flow through multiple systems (audio, renderer, UI), and stats increments are cheap. Add a helper:
+
+```typescript
+// lib/game/engine/systems/advancements.ts
+export function recordStat(
+  state: GameState,
+  statId: string,
+  delta: number = 1
+): void {
+  state.stats.set(statId, (state.stats.get(statId) ?? 0) + delta);
+}
+
+export function checkAdvancementUnlock(
+  state: GameState,
+  advancementId: string,
+  emit: EmitGameEvent
+): void {
+  if (state.advancements.has(advancementId)) return; // already unlocked
+  // Criteria logic per advancement
+  if (advancementId === "mine_diamond" &amp;&amp; state.stats.get("blocks_mined_diamond") ?? 0 &gt;= 1) {
+    state.advancements.add(advancementId);
+    emit({type: "advancementUnlocked", id: advancementId});  // new event type
+  }
+  // ... 20+ more advancement checks
+}
+```
+
+Then insert 1–2 lines at each emit site:
+```typescript
+// mining.ts:159
+emit({type: "blockBroken", blockId, x, y, z});
+recordStat(state, `ore_mined_${blockId}`);
+```
+
+---
+
+### Summary Table: Architecture At-A-Glance
+
+| Component | Location | Key Pattern |
+|-----------|----------|-------------|
+| **Event Type** | `state.ts:321–371` | Union of 29 types, each with optional payload (blockId, coordinates, kind, items, etc.) |
+| **Event Emit** | Various system files | `emit({type: "...", ...payload})` → pushed to `this.events[]` |
+| **Event Drain** | `GameEngine.consumeEvents():GameEvent[]` | Called once per rAF frame; audio/renderer/UI each loop |
+| **Persistent XP** | `state.ts:171` (GameState), `types.ts:239` (SaveData v12), `save.ts:443` (restore) | Persists across death/reload; **not** cleared on death (unlike effects) |
+| **GameSnapshot** | `state.ts:270–318` | Immutable React view, replaced only when a value changes; ref-stable for HUD throttling |
+| **Snapshot Build** | `GameEngine.buildSnapshot():GameSnapshot` (line 982) | Runs every frame; `effectsProjection()` pattern keeps HUD updates ~1 Hz |
+| **React Hook** | `useMinecraftGame.ts:195` | `useSyncExternalStore(subscribe, getSnapshot)` |
+| **Step Loop** | `GameEngine.step()` lines 282–353 | 40+ subsystem ticks in order; commands via `dispatch()` |
+| **Serialize** | `GameEngine.serialize():SaveData` (line 623) | Top-level fields only (version 12); non-persisted = session-only |
+
+---
+
+### Precise File Paths &amp; Symbol Names for Advancements Feature
+
+**Core Symbols to Reference:**
+- `GameEvent` type: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts:321`
+- `GameState.xp`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts:171`
+- `GameState.effects`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts:169`
+- `SaveData` type: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/types.ts:239`
+- `restoreXp()`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/save.ts:443`
+- `clearEffects()`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/statusEffects.ts:54`
+- `GameSnapshot` type: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts:270`
+- `GameEngine.emit()`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:668`
+- `GameEngine.consumeEvents()`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:661`
+- `effectsProjection()` (ref-stable HUD pattern): `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:968`
+- `xpLevel()`, `xpProgress()`: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/xp.ts:28,33`
+- React integration: `/Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts:293–329` (event drain loop)
+
+This architecture is clean, testable, and ready for stats/advancements without major refactoring. The event system is already your trigger surface; just add Map fields to GameState and hook into the existing emit sites.</result>
+<usage><subagent_tokens>91246</subagent_tokens><tool_uses>29</tool_uses><duration_ms>165971</duration_ms></usage>
+</task-notification>
+
+---
+
+plan it first

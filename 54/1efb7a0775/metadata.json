@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "541efb7a0775",
+  "strategy": "manual-commit",
+  "branch": "feat/advancements",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/54/1efb7a0775/0/metadata.json",
+      "transcript": "/54/1efb7a0775/0/full.jsonl",
+      "content_hash": "/54/1efb7a0775/0/content_hash.txt",
+      "prompt": "/54/1efb7a0775/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2250,
+    "cache_creation_tokens": 489680,
+    "cache_read_tokens": 4371491,
+    "output_tokens": 38649,
+    "api_call_count": 10
+  }
+}
