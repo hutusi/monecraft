@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c5e341df8282",
+  "session_id": "6aff0716-f3fe-4fd7-872d-e2f69826d061",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T14:20:24.075949Z",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/config.ts",
+    "lib/game/types.ts",
+    "lib/game/mobs.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/engine/systems/breeding.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/render/mobVisuals.test.ts",
+    "lib/game/engine/systems/explosion.test.ts",
+    "lib/game/engine/systems/projectileAI.test.ts",
+    "lib/game/bossTracking.test.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/systems/breeding.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "955ab09a8028",
+  "token_usage": {
+    "input_tokens": 14983,
+    "cache_creation_tokens": 312435,
+    "cache_read_tokens": 19183142,
+    "output_tokens": 120072,
+    "api_call_count": 92
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T14:20:23.981576Z",
+    "agent_lines": 316,
+    "agent_removed": 14,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 316,
+    "total_lines_changed": 330,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

@@ -1,0 +1,1075 @@
+about the next features, what do you recommend? what about Living world? what do you think?
+
+---
+
+<task-notification>
+<task-id>a52302b678a01901d</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/a52302b678a01901d.output</output-file>
+<status>completed</status>
+<summary>Agent "Review roadmap and changelog history" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Based on my exploration of the codebase, here's the structured landscape of the Monecraft project:
+
+## Version Trajectory &amp; Release Cadence
+
+**Current version: 0.11.0** (released 2026-06-28), with an unreleased feature branch for **0.12.0** adding advancements &amp; statistics.
+
+**Version history** (v0.1 → v0.11):
+- **v0.1–v0.4** (June 11–12): Foundation layers — engine refactor, UI overhaul, rendering, procedural audio, survival mechanics
+- **v0.5–v0.8** (June 13–14): Content depth — beds/sleep, farming, dungeons/loot, caves/lighting, spears, endgame boss, fishing
+- **v0.9–v0.11** (June 14–28): Meta-progression — villagers/trading, world types/profiles, game modes (Creative/Adventure/Spectator), difficulty levels, hardcore permadeath, enchanting/XP, brewing, status effects, armor storage
+
+**Cadence**: Feature-driven releases bundling related systems (not time-based), typically 1–3 weeks apart, averaging **4–5 features per release**.
+
+## Recently Shipped &amp; Currently In Flight
+
+**Last 40 commits span:**
+- ✅ **Advancements &amp; statistics** (merged PR #38, branch `feat/advancements`): 16 advancement milestones + running stat counters (blocks mined, mobs slain, items crafted, etc.), persisted across death
+- ✅ **Deepen progression** (merged PR #37): added Fortune &amp; Feather Falling enchants, Knockback/Looting (weapons), Power/Punch (bows), three new potions (Haste/Resistance/Leaping), armor visual rendering on third-person model
+- ✅ **Anvil &amp; Grindstone** (merged PR #35): Anvil for repair/combine/rename (with custom item names via save v11), Grindstone to strip enchantments for XP refunds
+- ✅ **Hardcore mode** (merged PR #34): permadeath toggle locked to Survival+Hard
+- ✅ **Difficulty &amp; game modes** (merged PRs #33, #31): four difficulty levels (Peaceful–Hard), four game modes (Survival/Creative/Adventure/Spectator), all switchable mid-play
+
+**No active work branches on main or origin** — the upstream repo has older feature branches (`feat/doors`, `feat/spears-nonstackable-gear`, `feat/water-placement-damage`) that are already shipped in the main branch.
+
+## What's Already Built (Breadth of Content)
+
+**37 block types** (grass, dirt, wood, ores, furnace, chest, brewing stand, enchanting table, anvil, grindstone, doors, TNT, bed, farmland, crops, saplings, etc.). Per `/docs/reference.md`:
+- Ores: coal, sliver, ruby, gold, sapphire, diamond (7 mining tiers with tool gating)
+- Interactive blocks: 8 (furnace, chest, brewing stand, enchanting table, anvil, grindstone, bed, door)
+- Special: torch, TNT, lava, mossy cobble, spawner, saplings
+
+**71 crafting recipes** + 10 villager trades:
+- Tools: 7 pickaxe tiers + hoe + fishing rod
+- Weapons: 8 sword tiers + 7 spear tiers + bow + dragon sword (endgame)
+- Armor: 6 pieces (helmet, face mask, neck, chestplate, leggings, boots)
+- Food/smelting: 7 recipes (charcoal, cooked meats/fish, bread)
+- Brewing: 8 potions from 8 reagents
+- Stations: 6 (furnace, brewing stand, enchanting table, anvil, grindstone, villager)
+- Building: TNT, doors, bed, chests, torches, bricks, glass
+
+**11 mobs** (6 passive, 1 trade partner, 4 hostile + boss):
+- Passive: sheep, chicken, horse, cow, pig, villager (breedable, except villager)
+- Hostile: zombie, skeleton (ranged), spider (twilight-only), creeper (explosive), boss (summoned)
+
+**9 status effects**: Swiftness, Strength, Regeneration, Fire Resistance, Water Breathing, Haste, Resistance, Leaping, Poison
+
+**11 enchantments**: Sharpness, Knockback, Looting (weapons); Power, Punch (bows); Protection, Feather Falling (armor); Efficiency, Fortune, Unbreaking (tools); Mending (durable gear)
+
+**5 biomes**: Plains, Forest, Desert, Ocean, Mountain (each with surface/cave variation)
+
+**Worldgen**: 4 world types (Default, Superflat, Amplified, Islands); caves with lava; dungeons with chests &amp; spawners; trees (renewable via saplings); structures (houses, none visible in play but referenced in code)
+
+**Survival systems**: Health (20 HP / 10 hearts), hunger (20 / 10 drumsticks), drowning, lava damage, fall damage, starvation, armor defense, tool durability, status effects, XP/enchanting
+
+## Obvious Content/System Gaps (Thin Areas)
+
+1. **Worldgen structures are skeletal**: "Houses" exist (referenced in code, referenced in CHANGELOG as flavor text), but dungeons are the only meaningful generated structure. No villages, temples, mansions, End cities, Nether fortresses.
+
+2. **Biome-specific content is absent**: No biome-exclusive blocks (ice, red sand, mushrooms, coral). All 5 biomes share identical ore/tree/mob distribution; biomes are purely **visual** (noise-driven height + surface color). The comment in `CHANGELOG.md` [0.9.0] hints: _"Village structures are a possible future addition — villagers currently wander the world among the existing houses rather than spawning in generated settlements."_
+
+3. **Enchanting table interface is minimal**: 4 fixed enchantments with no randomness or mystery. Real Minecraft offers 30+ enchantments, bookshelves, and random rolls.
+
+4. **No secondary gear variety**: Tools exist in 7 tiers (wood → diamond) but shovels, axes, hoes are absent. Only a knife (melee), no flint-and-steel. Armor is 6 slots but no elytra, no shield.
+
+5. **Food/cooking system is thin**: 9 food items (raw meats, bread, fish). No cake, cookies, mushroom stew, suspicious stew, golden apples, or any consumables with positive effects beyond the potion system.
+
+6. **Mob variety is limited**: 4 hostile types (zombie, skeleton, spider, creeper) + boss. Minecraft has 20+ hostile types (pillager, witch, enderman, etc.). Passives are 6 (no goats, llamas, axolotls, etc.). Villager has one generic NPC; Minecraft has 15 professions.
+
+7. **No Nether or End dimension**: The game is single-biome surface-only. Endgame is a summoned boss fight, not a progression into alternate realms.
+
+8. **No advanced redstone or automation**: No hoppers, droppers, comparators, observers (except the comment-reference in advancements code), or repeaters.
+
+9. **Loot tables are two-tier**: Chests roll "common" (75%) or "rare" (25%). No fine-grained tiers, no cursed items, no conditionals.
+
+10. **No projectile diversity**: Only arrows (from bows). No snowballs, eggs, potions, ender pearls, or tridents.
+
+11. **No status effect visual ambiguity**: All 9 effects are visible in the HUD top-left. Real Minecraft sometimes hides them or applies particle clouds.
+
+12. **Advancement/statistics are minimal**: 16 advancements grouped into 6 categories. Real Minecraft has 100+. The advancements are **gating-free** (declaring an achievement doesn't gate anything — they're pure meta).
+
+## Saved State Architecture
+
+**Save schema**: Currently **v13** (advancements/stats bump from v12).
+- Per-world: seed, worldgen version, game mode, difficulty, hardcore flag, game-over flag, block diffs, containers (chests), loot-accessed indices, custom item names, advancements/stats, XP
+- Per-profile: name, skin choice (persisted separately, not in save)
+- Per-browser: audio settings (global, not per-world)
+
+All saves are **client-only** (localStorage), never persisted to a server.
+
+## File Reference
+
+- `/Users/hutusi/workspace/ai/david/monecraft/CHANGELOG.md` — full version history
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/reference.md` — scannable recipes/blocks/mobs/items tables
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/manual.md` — player guide (gameplay, survival, crafting)
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/adding-content.md` — step-by-step extension guide (well-documented)
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/architecture.md` — engine/renderer/shell layers &amp; invariants
+- `/Users/hutusi/workspace/ai/david/monecraft/AGENTS.md` — development workflow &amp; CI gate requirements
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts` — all tunables (balance/gameplay numbers)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/recipes.ts` — 71 recipes + 10 trades
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/mobs.ts` — 11 mob templates
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/` — 20+ modular systems (one per mechanic)
+
+The codebase is **exceptionally well-documented** — every major feature has a design doc, test coverage, and a companion changelog entry noting save/worldgen impact.</result>
+<usage><subagent_tokens>62622</subagent_tokens><tool_uses>23</tool_uses><duration_ms>71271</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aeec303903364a568</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/aeec303903364a568.output</output-file>
+<status>completed</status>
+<summary>Agent "Map current game systems" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Based on my thorough exploration of your monecraft repository, here's a comprehensive inventory of all existing gameplay systems and content:
+
+## 1. BLOCKS, ITEMS, AND RECIPES
+
+### Blocks (37 total + Air + Bedrock)
+**Building/Environmental:** Grass, Dirt, Stone, Wood, Leaves, Planks, Cobblestone, Sand, Brick, Glass, Cactus, Snow
+**Functional Blocks:** 
+- Torch (light source, 14 block light)
+- Bed (sleep/respawn point)
+- Door (interactive, 2-cell state machine with 16 BlockId variants)
+- Chest (27-slot storage, drops contents on break)
+- Furnace (smelting station)
+- Brewing Stand (potion station)
+- Enchanting Table (enchant station)
+- Anvil (repair/combine/rename station)
+- Grindstone (enchantment strip station)
+- Farmland (tilled soil)
+- Sapling (grows into trees)
+**Crops:** Wheat (4 growth stages)
+**Ores:** Coal Ore, Sliver Ore, Ruby Ore, Gold Ore, Sapphire Ore, Diamond Ore
+**Hazards:** Lava (solid, unmineable, 3 hearts/0.5s contact damage), Water (liquid, replaceable)
+**Dungeon:** Mossy Cobblestone, Spawner (30 hardness, drops nothing, mobs don't open doors)
+**Misc:** TNT (explosive, 2.5s fuse), Bedrock (unbreakable)
+
+**File:** `/lib/world/blocks.ts`
+
+### Items (65+ in ITEM_DEFS)
+**Tools:** Wood/Stone/Sliver/Ruby/Sapphire/Gold/Diamond Pickaxe; Wood Hoe; Fishing Rod
+**Weapons:** Knife, Swords (7 tiers), Spears (7 tiers), Bow, Dragon Sword (endgame)
+**Armor:** Helmet, Face Mask, Neck Protection, Chestplate, Leggings, Boots (6 pieces)
+**Food:** Raw (Chicken, Mutton, Beef, Porkchop, Fish, Rotten Flesh), Cooked variants, Bread
+**Materials:** Wool, Feather, Bone, Bone Meal, Leather, String, Coal, Charcoal, Gunpowder, Emerald, Arrows, Dragon Heart, Cursed Totem
+**Potions:** 8 types (Swiftness, Strength, Regeneration, Fire Resistance, Water Breathing, Haste, Resistance, Leaping)
+**Glass Bottles &amp; Materials**
+
+**File:** `/lib/game/items.ts`
+
+### Recipes (71 crafting + 10 villager trades)
+**Categories:** Tools (7 pickaxes + hoe), Weapons (9 melee + 8 spears + bow), Armor (6 pieces), Building (furnace, chest, brewing stand, enchanting table, anvil, grindstone, bed, door, torches, TNT), Food (bread + 5 cooked meats), Materials (wool, glass bottles, bone meal), Smelting (6 cooking recipes), Brewing (8 potions), Trades (10 villager exchanges)
+
+**Repair Materials:** Each durable item has a tier material (e.g., diamond pickaxe → diamond ore, planks → wood)
+
+**File:** `/lib/game/recipes.ts`, `/lib/game/trades.ts`
+
+---
+
+## 2. MOBS AND BEHAVIORS
+
+### Mob Kinds (10 creatures + Boss)
+**Passive Animals (flee on proximity, no aggression, breedable):**
+- Sheep (10 HP, speed 0.9, drops 1-2 wool + 1 raw mutton)
+- Chicken (7 HP, speed 1.2, drops 0-2 feathers + 1 raw chicken)
+- Horse (14 HP, speed 1.4, drops 1-2 leather)
+- Cow (10 HP, speed 0.9, drops 1-2 leather + 1 raw beef)
+- Pig (8 HP, speed 1.0, drops 1 raw porkchop)
+
+**Special Passive:**
+- Villager (20 HP, speed 0.6, doesn't flee, interactive trading NPC)
+
+**Hostile Mobs (spawn at night, hunter AI, 100 HP each except boss):**
+- Zombie (speed 1.05, detect range 11, 3 damage melee, 1.35s cooldown)
+- Skeleton (speed 1.08, detect range 12, **ranged archer** fires arrows at 27m/s, 4 damage each, 1.8s cooldown, kites within 5-9 block standoff)
+- Spider (speed 1.2, detect range 10, 2 damage melee, 1.1s cooldown, **hostile only below daylight 0.42** — passive in daylight)
+- Creeper (speed 1.0, detect range 12, **explosive** — lights 1.5s fuse when within 2.6 blocks, deals power 3 explosion, hissing/swelling animation)
+
+**Boss (summoned):**
+- Boss (1000 HP, speed 1.1, detect range 28, ranged + melee, approaches player, fires 3-arrow spread at range, summons minions up to 4, immune to daylight)
+
+### Mob AI Features
+- **Wandering:** Passive movement patterns
+- **Aggression:** Line-of-sight detection, chase mechanics
+- **Flee:** Passive animals flee on player proximity (except villagers)
+- **Ranged:** Skeletons and boss fire arrows; boss leads moving targets
+- **Breeding:** Sheep/Horse/Cow breed with wheat; Chicken/Pig with seeds; babies mature in 90s, passive cap 24
+- **Daylight Burn:** Hostiles burn above daylight 0.72 (caves stay dark)
+- **Spawning:** Night spawner (12+ blocks away), dungeon spawner (time-independent, 8s drips, 6-local + 16-global caps)
+
+**Files:** `/lib/game/mobs.ts`, `/lib/game/mobLoot.ts`, `/lib/game/engine/systems/mobAI.ts`, `/lib/game/engine/systems/spawnDirector.ts`
+
+---
+
+## 3. GAMEPLAY MECHANICS
+
+### Survival Mechanics
+**Health &amp; Death:**
+- 20 HP (10 hearts display)
+- 3-second respawn countdown
+- Respawn at bed or random safe land
+- Death doesn't wipe inventory (but effects clear)
+- Fall damage, void death, mob damage, environmental damage
+
+**Hunger:**
+- 20 hunger (10 drumsticks display)
+- Drain: 1 per 100 sprinted blocks, 1 per 300 walked, 1 per 50 jumps
+- Gates: Sprint needs &gt;6 hunger; regen needs ≥12 hunger
+- Starvation: At hunger 0, lose 1 HP every 4s down to difficulty-scaled floor
+  - Peaceful: never starves
+  - Easy: stops at 10 HP (5 hearts)
+  - Normal: stops at 1 HP (½ heart)
+  - Hard: can kill (0 HP floor)
+
+**Water &amp; Lava:**
+- Water: 60s immersion timer before 1.5 heart/s armor-bypass damage; separate head-based drowning (15s breath, 1 heart/s after)
+- Lava: 3 hearts/0.5s contact (armor-bypass), 3s lingering burn
+
+### Mining &amp; Building
+- Reach: 7 blocks
+- Mining hardness per block; tool tier gates ore harvest (wood/stone/sliver/ruby pickaxe tiers)
+- Crack overlay shows progress
+- Block placing with right-click/E; water-replaceable placement
+- Durability system (non-stackable durable gear)
+
+### Combat
+- Melee: 6 damage (fist), reach 4.5 blocks, knockback 0.75 impulse
+- Spears: 7-block reach melee, throwable with E (right-click), shallow arc, stuck 2s on miss
+- Armor: 6 slots, dedicated equip storage, reduces damage, absorbs durability
+- Bow: Instant click-to-fire (no draw), 9 arrow damage, 200 durability
+- Arrows: Gravity-affected projectiles, 4-4.5 second TTL, fast arrows don't tunnel (substepped collision)
+
+### Day-Night Cycle
+- 240s full cycle (4 minutes)
+- Daylight: 0.04 (midnight) to 1.0 (noon) smooth curve
+- Thresholds:
+  - Below 0.28: Night (mobs spawn, sleep allowed)
+  - Below 0.42: Spiders hostile
+  - Above 0.72: Daylight burn for hostiles
+- Boot at dim dawn (~0.05)
+
+### Weather (Cosmetic, transient)
+- Rain/snow procedural, seeded by 180s windows
+- 35% chance rain, varies by biome (deserts/oceans clear)
+- No spawn/balance effects
+
+### Beds &amp; Sleep
+- Craft from 3 wool + 3 planks
+- Right-click at night (only below daylight 0.28)
+- 1.5s fade, skips to morning (0.07 daylight phase)
+- Requires no hostiles within 12 blocks
+
+### Biomes (5 types)
+Plains, Desert, Ocean, Forest, Mountains — affects tree distribution, temperature-based weather
+
+### World Generation
+- Deterministic (seed-based)
+- Terrain: Default, Superflat (level), Amplified (exaggerated), Islands (raised sea)
+- Caves (procedural dig), Lava lakes, Ore distribution (depth-graded), Trees, Houses, Dungeons
+- WORLDGEN_VERSION = 8 (tracks baseline for block-diff compatibility)
+
+**Files:** `/lib/world/generation.ts`, `/lib/game/engine/systems/dayNight.ts`, `/lib/game/engine/systems/weather.ts`, `/lib/game/engine/systems/playerStats.ts`, `/lib/game/engine/systems/playerMotion.ts`, `/lib/game/engine/systems/mining.ts`, `/lib/game/engine/systems/combat.ts`, `/lib/game/engine/systems/spears.ts`
+
+---
+
+## 4. RECENTLY ADDED SYSTEMS
+
+### Enchantments (11 types)
+**Melee Weapons:** Sharpness (±2 damage/level), Knockback (±0.4 impulse/level), Looting (±1 drop/level)
+**Bows:** Power (±2 damage/level), Punch (±0.25 knockback/level)
+**Armor:** Protection (±2 defense/level), Feather Falling (−15% fall damage/level, caps −80%)
+**Tools:** Efficiency (×(1+0.3×level) speed), Fortune (±1 ore/level)
+**All Gear:** Unbreaking (20% skip chance/level), Mending (2 durability per XP, level 1 max)
+
+Cost: 3 XP levels per application (1 for Mending max), max levels per enchant vary (3 for most, 1 for Mending)
+
+**Files:** `/lib/game/enchantments.ts`
+
+### Potions (8 types + crafting)
+Craft at brewing stand: Glass Bottle + reagent → effect
+- Swiftness (Feather) — 3:00, ×1.2 movement
+- Strength (Gunpowder) — 3:00, +3 melee damage
+- Regeneration (Wheat) — 0:45, 1 HP/1.5s (hunger-independent)
+- Fire Resistance (Coal) — 3:00, lava immunity
+- Water Breathing (Raw Fish) — 3:00, no drowning
+- Haste (Gold Ore) — 3:00, ×1.4 mining speed
+- Resistance (Leather) — 2:00, ×0.8 combat damage
+- Leaping (Sliver Ore) — 3:00, +2 jump velocity
+
+Drink with F, consumed whole, persistent across reload but cleared on death. Re-drink refreshes to longer time.
+
+**Files:** `/lib/game/engine/systems/statusEffects.ts`, `/lib/game/recipes.ts`
+
+### Armor System
+6 dedicated equip slots (helmet, face_mask, neck_protection, chestplate, leggings, boots), separate from inventory. Click to equip/unequip. Defense reduces incoming damage (min 1 always lands). Worn pieces render on 3rd-person model.
+
+**Files:** `/lib/game/items.ts`, `/lib/game/inventory.ts`
+
+### Anvil &amp; Repair
+Craft: 3 gold ore + 4 cobble
+Operations (cost XP levels):
+- **Combine:** Duplicate + orignal → merged (durability summed + bonus 12%, enchants merged at higher level) — 4 levels
+- **Repair with material:** Feed tier material (1 unit) → restore ~25% durability — 1 level each
+- **Rename:** Custom name (32 char max) — 1 level
+
+**Files:** `/lib/game/anvil.ts`, `/lib/game/config.ts`
+
+### Grindstone
+Craft: 2 cobble + 2 planks
+Strip all enchantments from held gear, refund 5 XP points per level removed (no cost to use)
+
+**Files:** `/lib/game/grindstone.ts`
+
+### Mending
+Enchantment (level 1 max, any gear): Gained XP repairs the held or worn item (2 durability per XP), not banked
+
+**Files:** `/lib/game/enchantments.ts` (seam reader), `/lib/game/engine/systems/xp.ts`
+
+### Status Effects (9 types, Poison special)
+See Potions above, plus:
+- **Poison** (Rotten Flesh 80% chance) — 0:08 duration, 1 HP/1.25s, **floors at ½ heart** (never lethal)
+
+All effects persist across reload, clear on death. Icon + countdown rendered top-left when active.
+
+### XP &amp; Enchanting
+**Sources:**
+- Mob kills: Passives 1-2, Hostiles 5, Boss 200; babies grant none
+- Ore mining: Coal 1, Sliver 2, Ruby/Gold 4, Sapphire 6, Diamond 8
+- Fishing: 2 per catch
+- Conversion: 10 points = 1 XP level
+- Station: Enchanting Table (spend 3 levels per enchant application)
+
+**Files:** `/lib/game/mobXp.ts`, `/lib/game/engine/systems/xp.ts`, `/lib/game/enchantments.ts`
+
+### Advancements &amp; Statistics (16 advancements)
+**Advancement Registry:**
+1. Getting Wood (logs chopped ≥1) — Mining
+2. Stone Age (stone mined ≥1) — Mining
+3. Iron-ish (sliver ore ≥1) — Mining
+4. Diamonds! (diamond ore ≥1) — Mining
+5. Tool Up (pickaxes crafted ≥1) — Crafting
+6. Hot Topic (furnace crafted ≥1) — Crafting
+7. Take Aim (arrows fired ≥1) — Combat
+8. Monster Hunter (hostiles killed ≥1) — Combat
+9. Dragon Slayer (boss defeated ≥1) — Combat
+10. Two by Two (animals bred ≥1) — Farming
+11. Time to Farm (wheat harvested ≥1) — Farming
+12. Gone Fishing (fish caught ≥1) — Farming
+13. Enchanter (items enchanted ≥1) — Magic
+14. Local Brewery (potions drunk ≥1) — Magic
+15. Sleep Tight (sleeps ≥1) — Adventure
+16. Hired Help (villager trades ≥1) — Adventure
+
+**Statistics (15 displayed):**
+Play Time, Distance Travelled, Blocks Mined, Logs Chopped, Diamond Ore Mined, Monsters Slain, Animals Bred, Items Crafted, Items Enchanted, Potions Drunk, Fish Caught, Arrows Fired, Villager Trades, Jumps, Deaths
+
+Both persist in save, kept across death.
+
+**Files:** `/lib/game/engine/systems/advancements.ts`
+
+### Game Modes (4 switchable)
+- **Survival:** Damage/hunger on, block edit on, no flight, interact on, mobs hostile
+- **Creative:** Invulnerable, instant break, flight, all items palette, mobs ignore
+- **Adventure:** Damage/hunger on, block edit OFF, no flight, interact on, mobs hostile
+- **Spectator:** Invulnerable, no break/place, flight + noclip, can't interact, mobs ignore
+
+Switched in-game from pause menu, resets transient hazard timers.
+
+**Files:** `/lib/game/gameModes.ts`
+
+### Difficulty (4 levels, separate axis)
+- **Peaceful:** No mobs, 2× regen, never starves
+- **Easy:** Half mob damage, 8-mob cap, starvation stops at 5 hearts
+- **Normal:** Baseline, 16-mob cap, starvation stops at ½ heart
+- **Hard:** 1.5× mob damage, 24-mob cap, starvation can kill
+
+Switched in-game, affects spawn rates/caps/damage/regen scales.
+
+**Files:** `/lib/game/difficulties.ts`
+
+### Hardcore (Per-world immutable)
+Locked to Survival + Hard + permadeath. On death: world becomes spectator-only "dead world" with Game Over screen. Persisted in save.
+
+---
+
+## 5. OVERALL ENGINE/ARCHITECTURE
+
+### Three-Layer Architecture
+**React UI** (`lib/game/useMinecraftGame.ts`, `components/`) → **GameEngine** (headless, no DOM) → **Voxel World** + **GameRenderer** (Three.js) + **AudioDirector**
+
+### Engine Organization (`lib/game/engine/`)
+**Core:**
+- `GameEngine.ts` — state machine, command dispatch, step(dt, input), snapshots
+- `state.ts` — GameState (player, inventory, mobs, day clock, mining progress, effects, stats, advancements)
+- `commands.ts` — Command union (all UI intents enter here)
+- `blockChanges.ts` — delta tracker for saves
+
+**Systems (`systems/` directory):**
+1. **playerMotion.ts** — movement physics, knockback, flight
+2. **playerStats.ts** — hunger, health regen, water/lava/drowning damage, armor bypass hazards
+3. **mining.ts** — block breaking, placement, reach
+4. **dayNight.ts** — daylight curve formula
+5. **weather.ts** — transient rain/snow simulation
+6. **randomTicks.ts** — crop growth, sapling growth, grass spread
+7. **spawnDirector.ts** — night hostile spawning, dungeon spawners, caps
+8. **mobAI.ts** — wander, aggro, flee, ranged kiting, daylight burn
+9. **projectileAI.ts** — arrow gravity integration, swept collision tests
+10. **spears.ts** — thrown spear state, gravity, terrain/mob collision
+11. **breeding.ts** — feed-to-love timers, pairing, baby maturity
+12. **combat.ts** — attack command, bow fire, spear throw
+13. **interact.ts** — right-click precedence (throw spear → feed animal → interact block → summon boss → use item → place block)
+14. **mining.ts** (also) — block breaking/placement
+15. **fishing.ts** — bobber cast/bite/reel mechanics
+16. **explosion.ts** — TNT/creeper/boss splash damage
+17. **statusEffects.ts** — effect ticks (regen/poison), accumulators
+18. **xp.ts** — XP award, level tracking
+19. **advancements.ts** — stat bumping, advancement unlock evaluation
+20. **dungeon.ts** — dungeon loot chest generation on first open/break
+
+### Renderer (`lib/game/render/`)
+- `GameRenderer.ts` — scene/camera, sync(state) → Three.js update, dispose()
+- **Camera modes:** 1st-person, 3rd-person rear/front boom (clamped against walls)
+- **World mesh:** Single mesh per visible region, rebuilt on player RENDER_GRID (20-block) crossing or worldMeshDirty
+- **Lighting:** Per-voxel sky+block light baked at load, patched per edit, no serializaton (derived cache)
+- **Mob models:** Procedural box humanoids with leg gait + bob animation
+- **Projectiles:** Arrow sprites oriented along velocity, single shared geometry
+- **Particles:** Procedural bursts (block shards, mob death, eat crumbs, dust)
+- **Atmosphere:** Procedural sky, stars, moon, clouds, weather precipitation
+- **Minimap:** 128×128 canvas, 10Hz refresh, rebuilt on 16-block grid or worldMeshDirty
+- **Skins:** 6 player palettes, persisted on profile, no image assets
+
+### Audio (`lib/game/audio/`)
+- Procedural sound (ZZFX parameter arrays), no audio files
+- `audioDirector.ts` — event handler for block break/place, hurt, mob attacks, etc.
+- **Music:** Generative ambient pads, day/night mood, biome flavor (5s hysteresis), ducks while paused
+- **Ambient:** Mob calls, footsteps (distance-accumulated strides), weather rain bed (filtered noise)
+- **10-voice budget** for SFX, per-sound retrigger throttling
+
+### World Layer (`lib/world/`)
+- `voxelWorld.ts` — flat Uint8Array storage (x + z×sizeX + y×sizeX×sizeZ)
+- `lighting.ts` — baked sky+block light, derived cache (computeFullLight, applyEdit)
+- `generation.ts` — deterministic worldgen (terrain, caves, ores, trees, houses, dungeons), collectDungeonSites
+- `meshing.ts` — face culling, AO, atlas UVs, per-vertex aLight
+- `atlas.ts` — runtime procedural block atlas, no image files
+- `queries.ts` — voxelRaycast (DDA), collidesAt, hasSupportUnderPlayer
+- `doors.ts` — door state encoding (4 facings × open/closed × upper/lower)
+
+### Inventory &amp; Items
+- `inventory.ts` — pure slot algebra (craft, durability, armor equip/unequip)
+- `items.ts` — ITEM_DEFS registry, BLOCK_TO_SLOT mapping, drop tables
+- Armor: dedicated EquippedArmor record, moves in/out of inventory on equip/unequip
+- Block-entities: `state.containers` Map for chest contents (keyed by voxel index)
+- Dungeon loot: sesion-only `dungeonChestIndices` set + persisted `lootedDungeonChests` + seeded per-chest generation
+
+### Save System
+- Per-world localStorage key (`minecraft_world_save_&lt;id&gt;`)
+- Versioned schema (currently v6, plus WORLDGEN_VERSION 8 for generation baseline)
+- Autosave interval: 15 seconds
+- Serializes: world seed, block diffs, player pos/inventory/armor/stats/advancements, day clock, effects, containers, looted chests
+- Lighting &amp; weather never serialized (derived/transient)
+
+**Files:** `/lib/game/save.ts`, `/lib/game/worlds.ts`, `/lib/game/profiles.ts`
+
+### Game Loop (per-frame in `useMinecraftGame.ts`)
+1. Check pause gate (mobs/clock/mining all freeze)
+2. Stuck detection / auto-unstuck (STUCK_RESET_SECONDS)
+3. Death check + respawn countdown
+4. Sleep gate (fade + clock skip)
+5. Player motion
+6. Player stats (hunger, regen, water/lava/drowning)
+7. Mining progress + block breaking
+8. Day-night clock
+9. Weather (transient)
+10. Random block ticks (crops, saplings, grass)
+11. Night hostile spawning
+12. Dungeon spawners
+13. Mob AI
+14. Projectiles
+15. Animal breeding
+
+Bounded catch-up substeps (≤50ms each) prevent slow frames from time dilation. Snapshots replace on value change only (React re-render optimization).
+
+---
+
+## FILE STRUCTURE SUMMARY
+- Config/Data: `/lib/game/config.ts`, `items.ts`, `mobs.ts`, `recipes.ts`, `trades.ts`, `enchantments.ts`, `mobXp.ts`, `mobLoot.ts`, `gameModes.ts`, `difficulties.ts`
+- World: `/lib/world/blocks.ts`, `generation.ts`, `meshing.ts`, `lighting.ts`, `voxelWorld.ts`, `doors.ts`, `queries.ts`
+- Engine Core: `/lib/game/engine/GameEngine.ts`, `state.ts`, `commands.ts`, `blockChanges.ts`
+- Systems: `/lib/game/engine/systems/` (20+ system modules)
+- Renderer: `/lib/game/render/GameRenderer.ts`, `cameraView.ts`, `mobVisuals.ts`, `particleSystem.ts`, `skyView.ts`
+- Audio: `/lib/game/audio/audioDirector.ts`, `synth.ts`, `soundParams.ts`, `musicBrain.ts`
+- Save/Persistence: `/lib/game/save.ts`, `worlds.ts`, `profiles.ts`, `worlds.ts`
+- Anvil/Grindstone: `/lib/game/anvil.ts`, `grindstone.ts`
+- Inventory: `/lib/game/inventory.ts`
+
+This is a complete, mature codebase with 37+ blocks, 65+ items, 81 recipes, 11 enchantments, 9 status effects, 10 mob kinds plus boss, 4 game modes, 4 difficulties, 16 advancements, and a robust procedural-generation + delta-save system.</result>
+<usage><subagent_tokens>86095</subagent_tokens><tool_uses>20</tool_uses><duration_ms>109908</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ab3fbc077b7227ad8</task-id>
+<tool-use-id>toolu_017mbZj7qTsu7LH5zbbDQFZ3</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/ab3fbc077b7227ad8.output</output-file>
+<status>completed</status>
+<summary>Agent "Find world simulation systems" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Based on my exploration of the Monecraft codebase, here's a comprehensive map of the current world simulation infrastructure:
+
+## 1. MOB SPAWNING &amp; DESPAWNING
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/spawnDirector.ts` (main spawning logic)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts` (tuning constants)
+
+**Spawning Mechanisms:**
+
+1. **Initial population** (`spawnInitialMobs` — called once at engine boot):
+   - Passives: sheep (6), chicken (5), horse (3), cow (4), pig (4), villager (3) scattered at `RENDER_RADIUS × 1.2`
+   - Hostiles: zombie (8), skeleton (6), spider (6), creeper (4) at `RENDER_RADIUS × 0.7` (gated by difficulty)
+   - Hostile minimum spawn radius: 16 blocks from player (prevents point-blank spawns)
+
+2. **Night spawning director** (`tickHostileSpawnDirector` — system step #9):
+   - Trickles 1–2 hostiles every `HOSTILE_SPAWN_INTERVAL_SECONDS` (10s) while daylight &lt; 0.28
+   - Global hostile cap: 16 (easy: 8, hard: 24) — difficulty-scaled
+   - Spawn radius: max(26, `RENDER_RADIUS × 0.85`) ≈ 76–90 blocks
+   - Difficulty scales both the spawn cadence and cap via `hostileSpawnIntervalScale()` and `hostileCapScale()`
+   - Peaceful difficulty spawns zero hostiles
+
+3. **Dungeon spawner director** (`tickSpawnerDirector` — system step #10):
+   - Per-spawner block: drips one zombie/skeleton/spider every `SPAWNER_INTERVAL_SECONDS` (8s)
+   - Only activates when player is within `SPAWNER_ACTIVATION_RADIUS` (16 blocks)
+   - Local cluster cap per spawner: 6 mobs
+   - Respects global hostile cap; Peaceful mode disables all spawners
+   - Spawns on the spawner's own Y, not the surface
+   - Mined spawner blocks disable that spawner (checked via `world.get()`)
+
+**Despawning:**
+- **No distance-based despawning** — mobs persist until killed or the session ends
+- Mobs only removed when `hp &lt;= 0` (post-loop sweep in `tickMobs`)
+- All mobs are session-only entities; none are persisted to disk
+
+---
+
+## 2. MOB AI &amp; ENTITY UPDATE LOOP
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/mobAI.ts` (main mob AI)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/mobs.ts` (mob templates with stats)
+
+**Per-Mob Behavior (ticked in `tickMobs` — system step #11, line 360):**
+
+1. **Movement &amp; targeting:**
+   - Wander: random turn every 1.5–5.5s; random horizontal direction
+   - Aggro: hostile mobs within `detectRange` (11–12 blocks) lerp toward player; speed ×1.15
+   - Flee: passive animals within 4.2 blocks flee away; speed ×1.15
+   - Wall collision: bounce off boundaries and solid blocks; collision radius 0.28
+   - Surface following via `surfaceYAt()` (raycasts top solid block)
+
+2. **Attack logic:**
+   - Melee reach: 4 blocks (8 for boss); vertical gap &lt; 1.6 blocks
+   - Ranged reach: full detect range; vertical gap &lt; 3 blocks
+   - Line-of-sight check via `voxelRaycast()` before attacking
+   - Melee: `attackDamage` × difficulty multiplier (easy: 0.5×, hard: 1.5×) + knockback
+   - Ranged (skeletons): kite in 5–9 block band; lead-aim for moving targets
+   - Boss: melee up close (reach 3.5), spread-fire at range, summons minions every 12s (cap 4)
+   - Creepers: light fuse at 2.6 block range, detonate after 1.5s, abort if player &gt; 4.5 blocks
+   - Attackcooldown: 1.1–1.8s per kind
+
+3. **Day/night behavior:**
+   - Spiders: hostile below daylight 0.42, passive 0.42–0.72, flee above 0.72
+   - Zombies/skeletons/creepers: burn (−0.8 HP/s) above daylight 0.72
+   - Boss: immune to daylight
+
+4. **Spider aggression gate:**
+   - Spiders only aggro below `SPIDER_AGGRO_BELOW_DAYLIGHT` (0.42)
+   - Controlled via `activeHostile = threatened &amp;&amp; mob.hostile &amp;&amp; (mob.kind !== "spider" || daylight &lt; SPIDER_AGGRO_BELOW_DAYLIGHT)`
+
+5. **Boss summons:**
+   - Boss spawns skeleton or zombie within 2–4 block radius every 12s
+   - Respects global `HOSTILE_CAP` and `BOSS_MINION_CAP` (4)
+
+6. **Difficulty damage scaling:**
+   - Applied at the strike in `tickMobs`, never at template level
+   - `dmgScale = mobDamageMultiplier(state.difficulty)`
+
+---
+
+## 3. DAY/NIGHT CYCLE &amp; TIME SYSTEM
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/dayNight.ts` (time &amp; daylight)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts` (timing)
+
+**Core Formula (ticked in `tickDayNight` — system step #7):**
+
+```typescript
+dayClock += dt (per frame)
+daylight = Math.max(0.04, Math.sin(phase * π * 2) * 0.95 + 0.05)
+  // ranges 0.04 (midnight) to 1.0 (noon) over DAY_CYCLE_SECONDS (240s = 4 min)
+```
+
+**Daylight thresholds** (hard-coded in config):
+- 0.28: hostile spawn threshold; sleep/wakeup boundary
+- 0.42: spider aggro threshold
+- 0.72: hostile burn threshold (daylight)
+
+**Key tiered system:**
+- Full day cycle: 240 seconds (4 minutes real-time)
+- Daylight updates: per-frame in engine, HUD refreshed at 4 Hz to avoid React churn
+- Never serialized: `dayClock` persists; `daylight` is derived every tick
+
+---
+
+## 4. WEATHER SYSTEM
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/weather.ts`
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts`
+
+**Characteristics:**
+
+1. **Purely cosmetic &amp; transient:**
+   - Never persisted to save
+   - Never touches spawn/daylight balance
+   - Never affects gameplay logic
+   - Deterministic from `dayClock + world.seed` (no internal state)
+
+2. **Algorithm:**
+   - Time split into fixed `WEATHER_CYCLE_SECONDS` windows (180s = 3 min)
+   - Seeded hash of window index decides if it precipitates (`WEATHER_RAIN_FRACTION` = 35% chance)
+   - Triangular envelope ramps intensity 0→1→0 across the window (smooth easing)
+
+3. **Biome-driven precipitation:**
+   - Mountains → snow
+   - Desert, Ocean → clear (no weather)
+   - Everything else → rain
+
+4. **Integration:**
+   - Sets `state.weather: { kind, intensity }` every tick (system step #7, after day/night)
+   - Drives renderer sky tint, precipitation particles, and audio rain bed
+   - Intensity: 0 (none) to 1.0 (peak)
+
+---
+
+## 5. AMBIENT EFFECTS: PARTICLES &amp; SOUND
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/render/particleSystem.ts` (GPU particle system)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/render/particlePool.ts` (pure particle pool)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/audio/mobAmbience.ts` (mob idle sounds)
+
+**Particle System:**
+
+1. **Event-driven bursts:**
+   - Block breaks: color from `BLOCK_COLORS`, speed 2–3 m/s, gravity, life 0.5–1.2s
+   - Mob death: puff at mob position, color from mob palette
+   - Eat crumbs, jump/land/footstep dust
+   - Arrow hits: small bursts at impact
+   - Emitted via `renderer.handleEvent(event, state)` in the event drain
+
+2. **GPU-side:**
+   - One `THREE.Points` draw call with soft-sprite shader
+   - Position/color/size/alpha updated via dynamic buffers each frame
+   - No texture assets (procedural soft-circle fragment shader)
+
+**Mob Ambient Sounds:**
+
+1. **Scheduler** (`createMobAmbienceScheduler`):
+   - Per-mob call interval: kind-specific (sheep 6–14s, zombie 4–9s, etc.)
+   - Earshot: 24 blocks (distance falloff gain = `(1 - dist/24)²`)
+   - Stereo pan relative to player's look direction
+
+2. **Integration:**
+   - Called in `audio.sync(state, dt)` (driven by event drain each frame)
+   - Reuses mob state position; no separate data structure
+
+**Ambient &amp; Music:**
+
+- Music follows `state.daylight` with 5s hysteresis and biome change
+- Rain bed: looping filtered-noise source, gain tracks `state.weather.intensity`
+- All synthesis via ZZFX (zero audio assets); 10-voice SFX cap
+
+---
+
+## 6. ENTITY SIMULATION BUDGET &amp; PERFORMANCE CONSTRAINTS
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts` (caps &amp; intervals)
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/architecture.md` (frame budgeting)
+
+**Entity Caps:**
+
+1. **Mobs:**
+   - Hostile cap: 16 (easy: 8, normal: 16, hard: 24)
+   - Passive cap: 24 (no difficulty scaling)
+   - Boss minion cap: 4 (sub-cap under hostile cap)
+   - Session-only; no persistence
+
+2. **Projectiles:**
+   - Arrows: unbounded; despawn after 4 seconds TTL or on block/entity hit
+   - Spears: unbounded; despawn after 4 seconds or on embed in terrain
+   - Fishing bobber: max 1 at a time (session-only)
+   - TNT: unbounded; respects world coordinate bounds
+
+3. **Rendering:**
+   - World mesh: single mesh covering visible region (`RENDER_RADIUS` = 90 blocks)
+   - Rebuilt when player crosses `RENDER_GRID` boundary (20-block grid)
+   - Old geometry disposed on rebuild (no incremental meshing)
+   - Mob visuals: one model per mob, removed on death
+   - Particle pool: fixed capacity, reused per frame
+
+**Spatial Scope:**
+
+1. **Spawn radius:** max(26, 76–90 blocks) around player depending on difficulty
+2. **Detect range:** 10–12 blocks for hostiles; 0 for passives (fleeing at 4.2 blocks)
+3. **Ambient sounds:** 24 block earshot
+4. **Random ticks (crop growth):** sampled within 32-block radius, every 0.5s, 64 samples/tick
+5. **Spawn locations:** random land point via `randomLandPointNear()` and `surfaceYAt()`
+
+**Frame Budgeting:**
+
+From `useMinecraftGame.ts` line 20:
+- `engine.step(dt, input)` run in bounded catch-up substeps of ≤50ms
+- Slow frames (e.g., software GL) don't run simulation in slow-motion
+- Event drain → minimap sync → renderer sync → audio sync → render
+- Minimap syncs **before** renderer (reads `state.worldMeshDirty`)
+
+**No chunk system:**
+- Entire world is always in simulation (voxel array indexed `x + z*sizeX + y*sizeX*sizeZ`)
+- World size: 384×128×384 blocks default (see `WORLD_SIZE_*` constants)
+- No spatial hashing or quadtree for mob lookup; all mobs iterate per tick
+
+---
+
+## 7. EXISTING PASSIVE SIMULATION
+
+**Files:**
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/randomTicks.ts` (crop/grass/sapling growth)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/treeGrowth.ts` (tree generation)
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/breeding.ts` (animal reproduction)
+
+**Random Block Ticks (system step #8):**
+
+1. **Interval:** every 0.5 seconds
+2. **Sampling:** 64 random columns within 32-block radius of player
+3. **Handler registry:**
+   - WheatStage0–2: grow next stage (65% chance per tick)
+   - Sapling: mature into tree (12% chance) if on soil
+   - Dirt: spread grass from adjacent grassy columns (18% chance)
+4. **Tree growth:** 3–5 block trunk + 5-block-radius leaf canopy (deterministic shape, random height)
+5. **Persistence:** edits flow through `blockChanges.set()`, ride the save diff
+
+**Animal Breeding (system step #13):**
+
+1. **Per-tick aging:**
+   - Decrement `fedTimer` and `ageTimer` on all mobs
+   - Babies scale to full size at `ageTimer = 0`
+
+2. **Breeding interval:** every 0.5 seconds
+   - Check pairs of same-kind passives within 3-block radius, both "in love" (fedTimer &gt; 0), not babies
+   - Spawn baby at parent's position, scaled to 55% height, grows for 90 seconds
+   - Consumed: both parents lose `fedTimer`
+
+3. **Population bound:** passive cap = 24 (never exceeds, even with active breeding)
+
+---
+
+## INTEGRATION POINT: GAMEENGINE.STEP()
+
+**Per-frame order** (lines 350–363 of `GameEngine.ts`):
+
+```typescript
+step(dt, input) {
+  // 0–3: pause/death/sleep gates
+  // 4: tickPlayerMotion
+  // 5: tickPlayerStats (hunger, health, water, lava, oxygen)
+  // 6: tickMining
+  // 7: tickDayNight → tickWeather
+  // 8: tickRandomBlocks (crop/grass/sapling)
+  // 9: tickHostileSpawnDirector
+  // 10: tickSpawnerDirector
+  // 11: tickMobs (wander, aggro, attack, burn, creeper fuse, boss summon)
+  // 12: tickProjectiles (arrows integrate gravity, swept collision)
+  // 13: tickBreeding
+  // then: emit events → drain to React snapshot + renderer events + audio events
+}
+```
+
+**Event drain** (shell-side in `useMinecraftGame.ts`):
+- Engine emits events (death, mob hit, arrow hit, mob spawned, etc.)
+- Shell calls `renderer.handleEvent()` (particle bursts, attack swing)
+- Shell calls `audio.handleEvent()` (SFX one-shots, mob ambient calls)
+- Shell calls `minimap.sync()` then `renderer.sync()` (React churn minimal via identity checks)
+
+---
+
+## EXTENSION POINTS FOR "LIVING WORLD"
+
+1. **Mob behavior:** modify `tickMobs` or add a new system (e.g., wandering traders, patrol paths, aggression zones)
+2. **Block growth:** add handlers to `RANDOM_TICK_HANDLERS` in `randomTicks.ts` (e.g., fire spread, water flow, mycelium decay)
+3. **Environmental events:** new system ticked per-frame or on interval (e.g., storms, earthquakes, day-driven behavior changes)
+4. **Population dynamics:** expand breeding logic or add predator-prey in `breeding.ts`
+5. **Entity spawning:** new director system (e.g., "wandering merchants spawn every N minutes near player")
+6. **Time-driven world changes:** hook into `tickDayNight` or `tickWeather` (e.g., crops wilt in drought, snow accumulates)
+7. **Ambient life:** expand `mobAmbience.ts` or add new ambient schedulers (e.g., bird calls, environmental sounds, ecosystem noise)
+
+All systems are modular, tested in headless `bun test`, and emit events for the renderer/audio to react to.</result>
+<usage><subagent_tokens>63264</subagent_tokens><tool_uses>32</tool_uses><duration_ms>110924</duration_ms></usage>
+</task-notification>
+
+---
+
+I am thinking Generated villages + villager professions + raids, plus tameable wolf/cat companions that fight for me. what do you think?
+
+---
+
+<task-notification>
+<task-id>a63298c0f7f0730cf</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/a63298c0f7f0730cf.output</output-file>
+<status>completed</status>
+<summary>Agent "Design Living World epic plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>The Write/Edit tools are not available in this environment — this is a read-only planning task, so I'll deliver the complete design as my response (which is what the calling agent consumes). I verified every claim in the brief against the source. Here is the execution-ready plan.
+
+---
+
+# Living World epic — implementation design
+
+## Verified ground truth (corrections to the brief)
+
+- Save schema is **v13**; the migration chain in `lib/game/save.ts` `readSave` runs v1→…→v13 and rejects unknown versions. `serialize()` (`GameEngine.ts:651`) writes v13 with **no `mobs` field** — mobs are session-only, confirmed.
+- A new `MobKind` fills **six** exhaustive `Record&lt;MobKind,…&gt;` tables, not five: `MOB_TEMPLATES` (`lib/game/mobs.ts`), `MOB_DROPS` (`lib/game/mobLoot.ts`), `MOB_XP` (`lib/game/mobXp.ts` — the brief omitted this one), `CALL_INTERVALS` (`lib/game/audio/mobAmbience.ts`), `MOB_AMBIENT_SOUNDS` + `MOB_ATTACK_SOUNDS` (`lib/game/audio/soundParams.ts`). Plus a `HOSTILE_MOB_KINDS` membership decision (`lib/game/mobs.ts:122`). `soundParams.test.ts` iterates `MOB_TEMPLATES`, so all stay in lockstep.
+- `MobState` (`lib/game/engine/state.ts:29`) has only `hostile: boolean` — no allegiance/owner today. Targeting in `mobAI.ts` is hard-wired to `state.player`.
+- The renderer reconciles models **by `mob.id`** (`mobVisuals.ts:66`), and health bars are created only when `mob.hostile`. Restored mobs need no special re-attach: `sync` auto-creates a model for any unseen id.
+- `removeMobAt` (`GameEngine.ts:822`) assumes the **player** killed: it routes drops to `state.inventory`, XP to the player, fires `mobDied`, and the boss-victory. The post-loop death sweep in `tickMobs` (`mobAI.ts:277`) calls it for **every** 0-hp mob regardless of cause.
+- `WORLDGEN_VERSION = 8` (`config.ts:290`); worldgen PRNG decoupling pattern is real (`coalRand`/`dungeonRand` in `generation.ts`), and `collectDungeonSites` is the derive-pass precedent. BlockId enum ends at `Grindstone = 54`.
+- `tame` items already exist: `bone` (`items.ts:123`) and `raw_fish` (`items.ts:166`).
+
+---
+
+## Recommended PR/commit breakdown (whole epic)
+
+| PR | Phase | Save bump | Worldgen bump | Independently shippable &amp; testable? |
+|----|-------|-----------|---------------|--------------------------------------|
+| **PR1** | 0b — Allegiance + mob-vs-mob combat | none | none | **Yes** — hostiles now attack villagers; villagers flee. Pure-AI, user-visible, headless-testable with existing mobs. |
+| **PR2** | 1 + 0a — Companions + mob persistence | **v13→v14** | none | Yes — tame wolf/cat, sit/follow/fight, persist pets. |
+| **PR3** | 2 — Generated villages | reuses v14 (persist residents) | **8→9** | Yes — villages generate; residents spawn + persist. |
+| **PR4** | 3 — Villager professions | **v14→v15** (additive `profession`) | none | Yes — profession-filtered trades + tint. |
+| **PR5** | 4 — Raids | none (additive item id only) | none | Yes — raider mob + wave/trigger/reward. |
+
+**Key sequencing decision (the cross-phase risk you flagged): split Phase 0.**
+- **Phase 0b ships alone as PR1.** It is pure AI with no save impact, and it has genuine standalone value *using only existing content*: make `hostile` mobs target villagers (the `villager` kind already exists), and make villagers flee hostiles. That is shippable, observable, and headless-testable without any new mob — so it does not need to wait for Phase 1.
+- **Phase 0a (persistence) folds into Phase 1 (PR2).** Shipping the v13→v14 bump on its own would persist *nothing* (no tamed pets, no residents exist yet), so it would be a save-version bump with no user-visible feature and nothing to gameplay-test. Folding it into Phase 1 ties the bump to the first thing worth persisting (tamed pets). Phases 2/3 then build on the v14 `mobs` field already in place.
+- Risk if order changes: Phase 2's resident persistence depends on the v14 field from PR2. If Phase 2 must ship before Phase 1, move the v13→v14 mob-persistence bump into whichever PR lands first. Keep the order **0b → 1 → 2 → 3 → 4** and this never bites.
+
+---
+
+## PHASE 0b — Allegiance + mob-vs-mob combat (PR1, no save bump)
+
+### The allegiance model (`lib/game/engine/state.ts`)
+Keep `hostile: boolean` (it is load-bearing for caps, `despawnHostiles`, `HOSTILE_CAP` directors, the snapshot `passiveCount`/`hostileCount`, and the health-bar gate). **Add a coexisting `faction`:**
+
+```
+Faction = "wild" | "hostile" | "ally" | "villager" | "raider"
+```
+
+Add to `MobState`:
+- `faction: Faction` — set at spawn (`pushMob`) from a `FACTION_BY_KIND` map; overridden on tame (Phase 1) and for raiders (Phase 4).
+- `owner?: "player"` — pet ownership (Phase 1; unused here but define the field now so the persistence shape is stable).
+- `targetId: number | null` — session-only cache of the mob it is currently fighting.
+- `retargetTimer: number` — session-only throttle for the enemy scan.
+
+`hostile` stays the *threat/cap* axis; `faction` is the *targeting* axis. Initial mapping: sheep/chicken/horse/cow/pig → `wild`; zombie/skeleton/spider/creeper/boss → `hostile`; villager → `villager`. (`ally`/`raider` arrive in later phases.) `pushMob` (`spawnDirector.ts:32`) sets `faction` from the map; `spawnBaby` (`breeding.ts:52`) inherits the parent's `faction`/`owner`.
+
+### Shared target selection (`lib/game/engine/systems/mobAI.ts`)
+One helper, `selectMobTarget(state, mob)`, driven by a small enmity table:
+
+```
+ENEMIES: ally → {hostile, raider}; hostile → {villager, ally}; raider → {villager, ally}; wild,villager → ∅
+```
+
+Behaviour: only "fighter" factions (`ally`/`hostile`/`raider`) scan. A fighter rescans only when `retargetTimer ≤ 0` **or** its cached `targetId` is dead/out of range — then one linear pass over `state.mobs` finds the nearest enemy-faction, alive mob within `detectRange`, reusing the existing scratch vectors (no allocation). Reset `retargetTimer` to `MOB_RETARGET_SECONDS` (~0.6 s). This keeps the all-mobs loop **O(N)** per frame for steering and amortizes the O(N) scan to ~1–2 Hz per fighter, so worst-case stays well under budget for the ~70-mob population.
+
+Player aggro is preserved as today for backward compatibility with every existing test: a `hostile` still prefers the player when the player is within `detectRange` (the existing `activeHostile` block). Only when no player aggro applies does it fall through to a mob target. A `raider` (Phase 4) inverts the priority (villagers first, player second). `villager`/`wild` never fight: villagers gain a *flee-from-nearest-hostile/raider* branch (mirror the existing animal-flee branch at `mobAI.ts:166`, but flee the nearest enemy mob instead of the player).
+
+### Striking a mob target (not the player)
+When a fighter is in melee reach + LOS of its `targetId` and `attackTimer ≤ 0`: lower `target.hp` by `attackDamage` (apply knockback to the target via the same `addScaledVector` pattern as `tryAttackMob`, `combat.ts:89`), emit `mobAttacked`, reset `attackTimer`. **Difficulty `dmgScale` is NOT applied to mob-vs-mob** — `mobDamageMultiplier` scales damage *to the player* only; mob-vs-mob uses raw `attackDamage`. Deaths are still handled by the existing post-loop sweep, never mid-loop (preserves the splice-safety invariant).
+
+**Melee-only by design.** Ranged mob-vs-mob is explicitly out of scope: the projectile hit-filter is a binary `fromPlayer` flag (`projectileAI`/`state.ts:71`), so a mob arrow can only hit the player. Making arrows team-aware is a separate, larger change. Pets (Phase 1) and raiders (Phase 4) are therefore **melee fighters**. Call this out in the PR.
+
+### Kill / loot / XP flow when a mob is the killer (`GameEngine.ts:822`)
+Generalize `removeMobAt(index, opts?: { credit?: boolean; lootingLevel?: number })`, default `credit: true` so **every existing call site is unchanged** (player melee, arrows, spears, explosions, daylight burn all keep crediting). The death sweep in `mobAI.ts` computes credit from the **victim's faction**:
+
+```
+credit = victim.faction ∈ {wild, hostile, raider}   // false for {ally, villager}
+```
+
+Rationale: a pet (`ally`) killing a `hostile`/`raider` should still drop loot into your inventory and award XP ("your wolf hunts for you"), so a *victim-faction* rule (not attacker) is correct. A slain villager or pet yields the player nothing — and crucially closes the XP-leak where the player would otherwise farm XP off raiders/hostiles killing each other. (Today villager/ally drop tables are empty and XP is 0, so this is mostly a correctness guard, but it must be explicit before professions/raids give those factions value.) The boss-victory branch keys on `kind === "boss"` and is untouched.
+
+### Save/worldgen impact
+None. `MobState` is not serialized yet, so the new fields are session-only.
+
+### Tests (headless `bun test`)
+- `mobAI.test.ts`: spawn a zombie next to a villager → villager loses hp / flees; spawn far apart → no engagement; the enmity table and `selectMobTarget` as a pure unit. The credit rule: a hostile dying credits the player, a villager dying does not (assert no XP/loot delta).
+- Regression: existing dawn-aggro-to-player tests stay green (player priority preserved).
+- **Manual pass:** none strictly required (no visuals/audio change), though watching a zombie chase a villager is a good sanity check.
+
+### Docs (PR1)
+`docs/architecture.md` (allegiance model + the `removeMobAt` credit option), `docs/adding-content.md` ("A new mob" — note `faction` + the enmity table), `docs/testing.md` (new `mobAI` coverage row), `CHANGELOG.md`.
+
+---
+
+## PHASE 0a + 1 — Companions + mob persistence (PR2, save v13→v14)
+
+### 0a. Mob persistence
+
+**What to serialize.** A minimal `SavedMob` carrying only irreplaceable identity/state; everything else is re-derived from the template:
+
+```
+SavedMob = { kind, x, y, z, hp, faction, owner?, sitting?, ageTimer? }
+```
+
+- **Persist:** `kind` (validated against a known-kinds set on load — drops unknown kinds for version drift), position (`x,y,z` floats), `hp` (finite, clamp to `(0, template.hp]`; ≤0 drops the mob), `faction`, `owner`, `sitting` (pet stay-state), and optional `ageTimer` (so a bred puppy stays a baby).
+- **Re-derive from `MOB_TEMPLATES` on restore:** `speed`, `detectRange`, `attackDamage`, `attackCooldown`, `halfHeight`, plus fresh `direction`/`yaw`/`bobSeed`/`turnTimer`/`attackTimer`/`moveSpeed`.
+- **Never persist (transient):** `fedTimer` (love window), `summonTimer`, `fuseTimer`, `targetId`, `retargetTimer`, `id` (fresh ids assigned on restore — see below).
+
+**Minimal-persistence policy (recommended): persist only the `persistent` set — tamed pets ∪ village residents — NOT the whole population.** Justification:
+1. Ambient wildlife and hostiles are *fungible* — `spawnInitialMobs` (`spawnDirector.ts:81`) re-seeds them every boot anyway, so persisting them is wasted bytes and would double the population on load.
+2. It bounds the save: a save can't balloon with hundreds of wandering animals.
+3. It avoids serializing volatile combat/AI state on throwaway mobs.
+4. The boss and creepers are already deliberately transient (`fuseTimer`/`summonTimer`/`victory` never saved) — persisting a mid-fight boss reopens minion-cap and victory-flag hazards. Keep them transient, consistent with the existing design.
+
+The persistence predicate is `isPersistentMob(mob) = mob.owner != null || mob.faction === "villager"`. In Phase 1 only pets match; Phase 2 marks village residents (also `villager`, so they match automatically).
+
+**`serializeMobs` / `restoreMobs`** in `lib/game/save.ts` (mirroring `serializeContainers`/`readContainers`):
+- `serializeMobs(mobs)` filters `isPersistentMob` and maps to `SavedMob`.
+- `restoreMobs(save, surfaceYAt)` validates each entry, rebuilds a full `MobState` via a template-based factory (the same construction as `pushMob`), **re-grounds y** via `surfaceYAt(x,z) + halfHeight` (so a pet saved on now-air or buried terrain lands on the regenerated surface; `tickMobs` re-grounds every tick anyway), clamps x/z into world bounds (drop if hopeless), and assigns **fresh sequential ids** with `nextMobId` advanced past them. Fresh ids are safe because the renderer is a cold boot too (`mobVisuals` reconciles by id from empty).
+
+**`migrateSaveV13toV14`** is a pure version bump (`mobs` absent ⇒ empty). `readSave` gains `if (migrated.version === 13) migrated = migrateSaveV13toV14(migrated)` and accepts `version === 14`. Types: rename current `SaveData`→`SaveDataV13`, add `SaveData = Omit&lt;SaveDataV13,"version"&gt; &amp; { version: 14; mobs?: SavedMob[] }`.
+
+**Engine wiring (`GameEngine.ts` constructor):** restore persisted mobs **before** `spawnInitialMobs` (line 286). `spawnInitialMobs` still runs unconditionally (it seeds fungible wildlife/hostiles at fixed counts, no cap check) so the world stays alive; restored pets/residents simply pre-exist. Cap interaction: `PASSIVE_CAP`/`HOSTILE_CAP` only gate *breeding* and *night/dungeon spawns* (both count live mobs), so a few extra restored mobs self-limit those — there is no crash and no runaway. `serialize()` adds `mobs: serializeMobs(state.mobs)`.
+
+**Re-attach to renderer:** nothing special. On the next `renderer.sync`, `mobVisuals.sync` sees ids it hasn't created and builds models. Pets are non-hostile ⇒ no health bar (the existing gate). The pet's `owner`/`sitting`/`faction` drive an optional sit pose + collar tint (below).
+
+**Edge cases (explicit):** unknown `kind` → dropped; non-finite/≤0 `hp` or non-finite coords → dropped; out-of-bounds position → clamped or dropped; mob on now-air terrain → re-grounded; version drift → migration + per-entry validation tolerate it.
+
+### 1. Companions
+
+**New `MobKind`s: `wolf`, `cat`.** Fill all six exhaustive tables + `HOSTILE_MOB_KINDS` (neither is hostile):
+- `MOB_TEMPLATES` (`mobs.ts`): `wolf` small grey body / lighter head / dark legs, `speed ~1.3`, `hp 8`, `detectRange 0` (wild = passive wander), `attackDamage 4`, `attackCooldown ~0.9`. `cat` smaller orange-tabby, `speed ~1.4`, `hp 8`, `attackDamage 3`. (On tame, bump hp to a `PET_TAMED_HP` and set `detectRange` to `PET_FIGHT_RANGE` so the ally targeting engages.)
+- `MOB_DROPS` (`mobLoot.ts`): `wolf: []`, `cat: []` (don't loot pets; wild ones drop nothing either — keep simple). `mobLoot.test.ts` allows empty tables.
+- `MOB_XP` (`mobXp.ts`): `wolf: 1`, `cat: 1`.
+- `CALL_INTERVALS` (`mobAmbience.ts`): `wolf [5,12]`, `cat [6,14]`.
+- `MOB_AMBIENT_SOUNDS` + `MOB_ATTACK_SOUNDS` (`soundParams.ts`): wolf bark/growl ZZFX, cat meow/hiss ZZFX.
+
+**Taming flow (reuse the feed plumbing, `interact.ts`).** Add `TAME_ITEMS: Partial&lt;Record&lt;MobKind,string&gt;&gt; = { wolf: "bone", cat: "raw_fish" }` and a `tryTameAimedMob(state, emit, rng)` mirroring `tryFeedAimedMob` (uses `findAimedMobIndex`, consumes one item via `adjustSlotCount`). On an untamed wolf/cat: roll `TAME_CHANCE` (config; 1/3 like MC); on success set `owner: "player"`, `faction: "ally"`, raise hp to `PET_TAMED_HP`, set `detectRange = PET_FIGHT_RANGE`, emit a new `mobTamed` event. On an already-owned pet, `tryToggleSitPet` flips `sitting` and emits a new `petSitToggled` event.
+
+**Right-click precedence (`GameEngine.dispatch` `placeBlock`, currently `GameEngine.ts:538`):**
+```
+throw spear → tryTameAimedMob (wild wolf/cat + bone/fish) → tryToggleSitPet (own pet, non-feed hand) → tryFeedAimedMob (breeding) → tryTradeAimedVillager → tryInteractBlock → trySummonBoss → tryFish → tryUseHeldItem → place
+```
+Disambiguation: sit-toggle fires on your own pet when the held item is **not** the breed/tame food; with bone/fish on a *wild* wolf/cat it tames; with the breed food on two owned adults it breeds.
+
+**Ally state machine (in `mobAI.ts`, the `faction === "ally"` branch):**
+- `sitting` → fully parked (no follow, no wander, no fight; face forward).
+- else if a valid enemy target in range (Phase 0b targeting) → engage + melee (credit-true kills feed the player).
+- else if owner distance `&gt; PET_FOLLOW_MAX` (~10) → steer toward the player; if `&gt; PET_TELEPORT_DISTANCE` (~24) → **teleport** adjacent to the player on solid ground (`surfaceYAt` + `collidesAt` check), mirroring MC wolf recall.
+- else → gentle wander near the owner.
+
+**Leverages Phase 0a** (pets persist: `owner`/`sitting`/`hp`/`faction`/position) **and Phase 0b** (ally targeting + the victim-faction credit rule).
+
+**Breeding/drops.** Add `wolf`/`cat` to `FEED_ITEMS` for breeding; gate pet breeding on `owner` set. `spawnBaby` (`breeding.ts:52`) must **inherit `faction` + `owner`** from the parent so puppies/kittens are owned allies (they then persist). No drops while a baby (`ageTimer &gt; 0`), already handled by `removeMobAt`.
+
+**Procedural models / renderer (`mobVisuals.ts`, `mobModel.ts`).** New `MOB_TEMPLATES` `modelArgs` give wolf/cat their look via the existing `createMobModel` (body/head/legs/eyes/snout/stripe — no new geometry). Optional cheap visuals, read from `MobState`: tint the `stripe` material red for `owner != null` (a "collar"); lower the hindquarters / drop a leg rotation when `sitting`. Both are renderer-only reads of existing fields.
+
+**New sounds/events.** `mobTamed` (happy chime + heart particles via `renderer.handleEvent`), `petSitToggled` (a soft yip/meow). Add the `GameEvent` variants in `state.ts`, route in `audioDirector.ts` `handleEvent`, and add a heart-burst case in `particleSystem.ts`.
+
+### Save/worldgen impact (PR2)
+Save **v13→v14** (additive `mobs?`). **No worldgen change** — wolves/cats spawn into the passive population via `spawnInitialMobs`; taming is interaction-only. `WORLDGEN_VERSION` stays **8**.
+
+### Tests
+- `save.test.ts`: `migrateSaveV13toV14` pure bump; `serializeMobs`/`restoreMobs` round-trip; unknown-kind / garbage-hp / non-finite-coord dropping.
+- `GameEngine.test.ts`: tame (seeded rng) → owner/faction/hp; sit toggle; follow (move player, step, assert approach); teleport when far; pet kills a spawned zombie and the player gets the loot/XP (credit rule); pet never targets the player; **persistence round-trip through a second engine** (pet restored with owner/sitting/hp; ambient wildlife not duplicated).
+- `breeding.test.ts`: a bred pet inherits `owner`/`faction`.
+- `mobLoot.test.ts` / `xp.test.ts` / `soundParams.test.ts`: auto-extended by the exhaustive Records (typecheck + iteration enforce wolf/cat rows).
+- `mobVisuals.test.ts`: wolf/cat models build, dispose cleanly.
+- **Manual pass (not headless):** wolf/cat appearance, collar tint, sit pose, bark/meow ZZFX quality, tame heart particles.
+
+### Docs (PR2)
+`docs/save-format.md` (v14 entry: `SavedMob` shape, persist-vs-transient policy, migration, edge cases), `docs/architecture.md` (persistence in serialize/restore; the ally state machine as a new `mobAI` behavior), `docs/adding-content.md` (a "Taming / companion mob" subsection; correct the table count to **six**), `docs/testing.md`, `docs/tuning.md` (`TAME_CHANCE`, `PET_*` distances/ranges, `MOB_RETARGET_SECONDS`), `docs/manual.md` + `docs/reference.md` (taming, sit/follow), `CHANGELOG.md`.
+
+---
+
+## PHASE 2 — Generated villages (PR3, WORLDGEN_VERSION 8→9) — sketch
+
+**Seams.** Append a `placeVillages(world, cfg)` pass **last** in `generateWorld` (`generation.ts:157`, after `placeDungeons`), driven by a dedicated `villageRand(world.seed)` (like `coalRand`/`dungeonRand`) so it never consumes the shared `rand` stream — existing ores/trees/houses/dungeons stay byte-identical and only village bytes are new. Reuse `placeHouse` for the buildings; arrange `GEN.villageHouseCount` houses radially/grid around a validated flat center (validate against the seed-pure `terrainTopY`, like dungeons, and keep clear of spawn). Reuse existing blocks (cobblestone paths, planks, doors) — **no new `BlockId`** to keep the PR lean.
+
+**Worldgen→mob seam.** Add a derive pass `collectVillageSites(world, worldType)` (the `collectDungeonSites` pattern: a `write/record` toggle over the shared placement routine, drawing a fixed number of values per village from `villageRand`). The engine stores `state.villageSites` (session, re-derived each boot) and spawns `GEN.villagersPerVillage` villagers at each site at boot, **flagged persistent** (`faction === "villager"` already qualifies under `isPersistentMob`). Reduce `spawnInitialMobs`' spawn-area villager count when village sites exist (cosmetic).
+
+**Save/worldgen impact.** Any block write breaks the hash → **bump `WORLDGEN_VERSION` 8→9** and re-baseline the `generation.test.ts` SHA-256 digests + the in-region meshing snapshot in the same commit (per `docs/testing.md` case 1). Existing worlds discard stale block-diffs and reboot from seed (documented). Add a **structural probe** test (a village's houses generate; `collectVillageSites` reproduces centers; villagers spawn there) that survives re-baselining. Resident persistence **reuses v14** — no new save bump.
+
+**Tests:** worldgen determinism re-baseline + structural probe; engine boot spawns residents at sites and they persist across reload. **Manual pass:** village layout aesthetics. **Docs:** `save-format.md` (WORLDGEN_VERSION 8→9 + residents reuse v14), `architecture.md`, `adding-content.md` (extend "A worldgen structure"), `testing.md` (re-baseline note), `tuning.md` (`villageCount`/`villageHouseCount`/`villagersPerVillage`), `manual.md`/`reference.md`, `CHANGELOG.md`.
+
+---
+
+## PHASE 3 — Villager professions (PR4, save v14→v15) — sketch
+
+**Seams.** Add `Profession = "farmer" | "blacksmith" | "librarian" | "cleric" | "none"` and a `profession?: Profession` on `MobState` (villager-only). Assign per resident at village spawn (seeded round-robin). In `lib/game/trades.ts`, tag each `TRADES` entry with a `profession` (a parallel `TRADE_PROFESSION: Record&lt;recipeId, Profession&gt;` map, so `Recipe` itself stays shared/untouched). `tryTradeAimedVillager` (`interact.ts:191`) sets `state.craftingStation = "villager"` **and** a new session field `state.activeVillagerProfession = mob.profession`. The "Trading" recipe-book category filters `TRADES` to the active profession; the `craft` command's station gate (`GameEngine.ts:404`) adds a profession check (spoof-guard) so you can't craft a blacksmith trade at a farmer.
+
+**Differentiated look (renderer).** `createMobModelForKind` is per-kind, not per-instance. Add a per-instance recolor: `mobVisuals` reads `mob.profession` and recolors the villager's "smock" material (the `detail`/`body` material), exactly like `GameRenderer.setPlayerSkin` recolors named materials in place — zero new assets.
+
+**Save/worldgen impact.** **No worldgen change** (profession is mob state). Save **v14→v15**: additive `profession?` on `SavedMob` — a pure version bump (`migrateSaveV14toV15`), validated against the known professions on load. `state.activeVillagerProfession` is session-only. (Alternative: pre-include `profession?` in the v14 `SavedMob` in PR2 to avoid a second bump — noted, but the one-feature-per-bump discipline favors v15.)
+
+**Tests:** `trades.test.ts` (each profession's subset is a valid two-sided economy; the profession filter); engine (right-click a farmer shows only farmer trades; a blacksmith trade refuses while talking to a farmer); save round-trip of `profession`. **Manual pass:** profession tints. **Docs:** `save-format.md` (v15), `architecture.md`/`adding-content.md` (profession→trade-subset mechanism), `testing.md`, `manual.md`/`reference.md` (trades by profession), `CHANGELOG.md`.
+
+---
+
+## PHASE 4 — Raids (PR5, no save/worldgen bump beyond a new item) — sketch
+
+**New `MobKind`: `raider`** (`faction: "raider"`, `hostile: true` so it counts against `HOSTILE_CAP` and Peaceful's `despawnHostiles` clears it). Fill the six tables + add to `HOSTILE_MOB_KINDS`. Melee (per the Phase 0b ranged-scope decision). Targeting priority: villagers first, then allies, then player.
+
+**Trigger (reuse the boss-summon precedent).** A craftable additive item — an **"Ominous Horn"** — used at a village starts a raid, exactly mirroring `trySummonBoss` (`GameEngine.ts:850`): a step in the `placeBlock` precedence (`tryStartRaid`) that seeds the raid near the nearest `villageSite`, refuses if a raid is already active, consumes the item.
+
+**Wave logic (reuse `tickBossSummon`).** A new `systems/raid.ts` ticked in `step` (after the spawn directors). `state.raid: RaidState | null` (session-only, transient like `state.victory`/the boss): `{ center, wave, totalWaves, raidersAlive, timer }`. Each wave spawns `RAID_WAVE_SIZE` raiders near the center via `pushMob(..., faction "raider")`, bounded by `HOSTILE_CAP` — the same cap/cadence guard `tickBossSummon` uses. A wave clears when its raiders are dead; advance after a delay; **win** = all waves cleared (emit `raidWon`); **lose** = all residents at the site dead (emit `raidLost`). Peaceful's `despawnHostiles` clears raiders mid-raid → cancel the raid cleanly (clear `state.raid`).
+
+**Reward.** On win: emeralds + XP into the inventory (reuse `adjustSlotCount`/`awardXp`) and a celebratory event; optionally a "Hero of the Village" timed buff via the existing status-effect system (would need a trade-cost-discount seam in `craft` — note as optional). Raiders attack villagers; the player + pets defend (Phase 0b/1 targeting).
+
+**Save/worldgen impact.** **None beyond the additive Ominous Horn item id** (saved by string id). Raiders and `state.raid` are transient (not serialized — like the boss), so a reload cancels an in-progress raid. `WORLDGEN_VERSION` stays **9**; save schema stays **v15**.
+
+**Tests:** `raid.test.ts` / `GameEngine.test.ts` (trigger spawns wave 1; clearing a wave advances; all waves → `raidWon` + reward; all residents dead → `raidLost`; Peaceful cancels). The six exhaustive tables auto-enforce the `raider` rows. **Manual pass:** raider look, raid pacing/feel, audio. **Docs:** `architecture.md` (raid system + transient state), `adding-content.md` (raid as a summon-precedent mechanic), `testing.md`, `tuning.md` (`RAID_WAVE_SIZE`/`RAID_WAVE_COUNT`/rewards), `manual.md`/`reference.md`, `CHANGELOG.md`.
+
+---
+
+## Cross-phase risks (summary)
+- **`faction` vs `hostile`:** keep both. `hostile` remains the cap/threat/health-bar axis; `faction` adds targeting. Don't let raids break `despawnHostiles`/Peaceful — raiders are `hostile: true`, so Peaceful clears them; ensure `state.raid` clears with them.
+- **O(N²) targeting:** mitigated by the `retargetTimer` throttle (scan ~1–2 Hz per fighter; steer O(N)).
+- **Ranged mob-vs-mob excluded** (binary `fromPlayer` arrow filter) → pets/raiders melee-only this epic.
+- **WORLDGEN_VERSION 8→9 (Phase 2)** discards existing worlds' block-diffs (reboot from seed) — acceptable and documented; re-baseline hashes carefully since only `villageRand` bytes change.
+- **Renderer reconciles by id:** restored mobs get fresh ids on cold boot — safe.
+- **Persistence ordering:** the v14 `mobs` field must land (PR2) before Phase 2/3 rely on it; keep the 0b→1→2→3→4 order.
+
+---
+
+### Critical Files for Implementation
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts (MobState: `faction`/`owner`/`sitting`/`targetId`; GameEvent additions; `state.raid`/`activeVillagerProfession`)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/mobAI.ts (shared target selection, ally state machine, villager flee, mob-vs-mob strike, victim-faction credit in the death sweep)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts (restore-before-spawn wiring, `serialize` mobs, `removeMobAt` credit option, taming/raid precedence in `dispatch`)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/save.ts (`serializeMobs`/`restoreMobs`, `migrateSaveV13toV14`/`V14toV15`, chain + version acceptance)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/generation.ts (`placeVillages` + `collectVillageSites` derive pass, `villageRand`, WORLDGEN_VERSION 8→9 re-baseline)
+
+Supporting (exhaustive-table) edits for each new `MobKind`: /Users/hutusi/workspace/ai/david/monecraft/lib/game/mobs.ts, /Users/hutusi/workspace/ai/david/monecraft/lib/game/mobLoot.ts, /Users/hutusi/workspace/ai/david/monecraft/lib/game/mobXp.ts, /Users/hutusi/workspace/ai/david/monecraft/lib/game/audio/soundParams.ts, /Users/hutusi/workspace/ai/david/monecraft/lib/game/audio/mobAmbience.ts; taming/trade interaction in /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/interact.ts; profession trades in /Users/hutusi/workspace/ai/david/monecraft/lib/game/trades.ts.
+
+Note: I could not write the plan to `/Users/hutusi/.claude/plans/...` — no Write/Edit tool is available in this read-only planning environment — so the full design is delivered above for the calling agent to consume.</result>
+<usage><subagent_tokens>203401</subagent_tokens><tool_uses>31</tool_uses><duration_ms>538479</duration_ms></usage>
+</task-notification>
+
+---
+
+I change my mind, two pr is ok, just push the first pr, then next pr let me review first before push

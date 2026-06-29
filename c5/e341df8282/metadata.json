@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c5e341df8282",
+  "strategy": "manual-commit",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/bossTracking.test.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/breeding.test.ts",
+    "lib/game/engine/systems/breeding.ts",
+    "lib/game/engine/systems/explosion.test.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/engine/systems/projectileAI.test.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/mobs.ts",
+    "lib/game/render/mobVisuals.test.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c5/e341df8282/0/metadata.json",
+      "transcript": "/c5/e341df8282/0/full.jsonl",
+      "content_hash": "/c5/e341df8282/0/content_hash.txt",
+      "prompt": "/c5/e341df8282/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14983,
+    "cache_creation_tokens": 312435,
+    "cache_read_tokens": 19183142,
+    "output_tokens": 120072,
+    "api_call_count": 92
+  }
+}
