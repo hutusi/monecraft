@@ -5,8 +5,14 @@
   "branch": "feat/advancements",
   "checkpoints_count": 0,
   "files_touched": [
+    "e2e/smoke.e2e.ts",
     "lib/game/engine/GameEngine.test.ts",
     "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/hardcore.test.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/mobs.ts",
     "lib/game/save.test.ts",
     "lib/game/save.ts",
     "lib/game/types.ts"
@@ -17,13 +23,19 @@
       "transcript": "/54/1efb7a0775/0/full.jsonl",
       "content_hash": "/54/1efb7a0775/0/content_hash.txt",
       "prompt": "/54/1efb7a0775/0/prompt.txt"
+    },
+    {
+      "metadata": "/54/1efb7a0775/1/metadata.json",
+      "transcript": "/54/1efb7a0775/1/full.jsonl",
+      "content_hash": "/54/1efb7a0775/1/content_hash.txt",
+      "prompt": "/54/1efb7a0775/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2250,
-    "cache_creation_tokens": 489680,
-    "cache_read_tokens": 4371491,
-    "output_tokens": 38649,
-    "api_call_count": 10
+    "input_tokens": 27296,
+    "cache_creation_tokens": 744728,
+    "cache_read_tokens": 16885701,
+    "output_tokens": 119206,
+    "api_call_count": 80
   }
 }

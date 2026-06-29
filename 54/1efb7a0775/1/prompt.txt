@@ -1,0 +1,1018 @@
+Implement the plan in ~/.claude/plans/what-s-next-features-do-wondrous-pinwheel.md — branch feat/advancements, the usual branch→commits→PR flow.
+
+---
+
+<task-notification>
+<task-id>aa3263e45f0584426</task-id>
+<tool-use-id>toolu_01B6ptYbYUR7EsDWpZ8ytpD8</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/aa3263e45f0584426.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify save/persistence patterns" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Perfect! Now let me compile the complete findings report with exact code snippets and line numbers.
+
+## Investigation Report: Save System Persistence Patterns (v12→v13 Migration)
+
+### 1. XP Persistence Pattern
+
+**restoreXp function** (`lib/game/save.ts`, lines 442–446):
+```typescript
+export function restoreXp(save: SaveData): number {
+  if (typeof save.xp !== "number" || !Number.isFinite(save.xp) || save.xp &lt; 0) return 0;
+  return Math.floor(save.xp);
+}
+```
+
+**serializeEffects template** (`lib/game/save.ts`, lines 334–341):
+```typescript
+export function serializeEffects(effects: Map&lt;EffectId, number&gt;): SavedEffect[] {
+  const out: SavedEffect[] = [];
+  for (const [id, remaining] of effects) {
+    if (remaining &gt; 0) out.push({ id, remaining });
+  }
+  return out;
+}
+```
+
+**restoreEffects template** (`lib/game/save.ts`, lines 343–353):
+```typescript
+export function restoreEffects(save: SaveData): SavedEffect[] {
+  if (!Array.isArray(save.effects)) return [];
+  const out: SavedEffect[] = [];
+  for (const entry of save.effects) {
+    if (!entry || typeof entry.id !== "string" || !Object.hasOwn(VALID_EFFECT_IDS, entry.id)) continue;
+    if (!Number.isFinite(entry.remaining) || entry.remaining &lt;= 0) continue;
+    out.push({ id: entry.id, remaining: entry.remaining });
+  }
+  return out;
+}
+```
+
+**Pattern**: XP is a simple number field validated for finiteness and non-negativity, floored on restore. Effects follow a Map→Array→Map serialization pattern with validity checks against a known-IDs record.
+
+---
+
+### 2. GameEngine serialize/restore
+
+**serialize method** (`lib/game/engine/GameEngine.ts`, lines 622–651):
+```typescript
+serialize(): SaveData {
+  const state = this.state;
+  return {
+    version: 12,
+    seed: state.world.seed,
+    worldType: this.worldType,
+    gameMode: state.gameMode,
+    difficulty: state.difficulty,
+    hardcore: state.hardcore,
+    gameOver: state.gameOver,
+    changes: state.blockChanges.changes(),
+    inventorySlots: inventorySlotsSnapshot(state.inventory),
+    equippedArmor: serializeEquippedArmor(state.equippedArmor),
+    selectedSlot: state.selectedSlot,
+    player: {
+      x: state.player.position.x,
+      y: state.player.position.y,
+      z: state.player.position.z
+    },
+    dayClock: state.dayClock,
+    hearts: state.hearts,
+    hunger: state.hunger,
+    spawnPoint: state.spawnPoint ? { ...state.spawnPoint } : null,
+    blockEntities: serializeContainers(state.containers),
+    lootedChests: serializeLootedChests(state.lootedDungeonChests),
+    effects: serializeEffects(state.effects),
+    xp: state.xp
+  };
+}
+```
+
+**Constructor restore logic** (`lib/game/engine/GameEngine.ts`, lines 237–263):
+```typescript
+if (save) {
+  this.state.inventory = restoreInventorySlots(save) ?? this.state.inventory;
+  this.state.equippedArmor = restoreEquippedArmor(save) ?? this.state.equippedArmor;
+  this.state.selectedSlot = restoreSelectedSlot(save) ?? this.state.selectedSlot;
+  this.state.hearts = restoreHearts(save) ?? this.state.hearts;
+  this.state.hunger = restoreHungerLevel(save) ?? this.state.hunger;
+  this.state.spawnPoint = restoreSpawnPoint(save);
+  this.state.lootedDungeonChests = new Set(readLootedChests(save));
+  // Restore any active effects (cleared on death, so a live save carries them).
+  for (const { id, remaining } of restoreEffects(save)) this.state.effects.set(id, remaining);
+  this.state.xp = restoreXp(save); // XP is a long-term currency — kept across reload and death
+  // ... container and clock restoration ...
+}
+```
+
+**clearEffects function** (`lib/game/engine/systems/statusEffects.ts`, lines 54–58):
+```typescript
+export function clearEffects(state: GameState): void {
+  state.effects.clear();
+  state.timers.effectRegenTimer = 0;
+  state.timers.effectPoisonTimer = 0;
+}
+```
+
+**Death handling** (GameEngine.ts lines 703–727):
+- `applyDamage` (L708): `if (died) clearEffects(this.state);` — **effects cleared, XP untouched**
+- `applyEnvironmentalDamage` (L721): `if (died) clearEffects(this.state);` — **effects cleared, XP untouched**
+- `triggerGameOver` (L745): `clearEffects(state);` — **effects cleared, XP untouched**
+- `respawn` (L905): `clearEffects(state);` — **effects cleared, XP untouched**
+
+**Critical finding**: XP is restored in constructor (L247) **after** effects restoration (L246), with an explicit comment "XP is a long-term currency — kept across reload and death". The `clearEffects` function **only touches `state.effects` and timers**—it never references `state.xp`.
+
+---
+
+### 3. SaveData Type Definition
+
+**SaveData (current v12)** (`lib/game/types.ts`, lines 239–242):
+```typescript
+export type SaveData = Omit&lt;SaveDataV11, "version" | "equippedArmor"&gt; &amp; {
+  version: 12;
+  equippedArmor?: SavedEquippedArmor;
+};
+```
+
+**xp field inheritance** (SaveDataV7, line 184):
+```typescript
+export type SaveDataV7 = Omit&lt;SaveDataV6, "version"&gt; &amp; {
+  version: 7;
+  xp?: number;  // ← Optional, inherited by all v8–v12
+};
+```
+
+**effects field inheritance** (SaveDataV6, line 173):
+```typescript
+export type SaveDataV6 = Omit&lt;SaveDataV5, "version"&gt; &amp; {
+  version: 6;
+  effects?: SavedEffect[];  // ← Optional, inherited by all v7–v12
+};
+```
+
+**SavedEffect type** (line 163):
+```typescript
+export type SavedEffect = { id: EffectId; remaining: number };
+```
+
+Current version is hardcoded as **12**.
+
+---
+
+### 4. Migration Chain
+
+**readSave function** (`lib/game/save.ts`, lines 180–215):
+```typescript
+export function readSave(saveKey: string, storage: Storage = localStorage): SaveData | null {
+  try {
+    const raw = storage.getItem(saveKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as /* all version types */;
+    if (!parsed || !Number.isFinite(parsed.seed) || !Array.isArray(parsed.changes)) return null;
+    let migrated = /* ...initial assignment... */;
+    if (migrated.version === 2) migrated = migrateSaveV2toV3(migrated);
+    if (migrated.version === 3) migrated = migrateSaveV3toV4(migrated);
+    if (migrated.version === 4) migrated = migrateSaveV4toV5(migrated);
+    if (migrated.version === 5) migrated = migrateSaveV5toV6(migrated);
+    if (migrated.version === 6) migrated = migrateSaveV6toV7(migrated);
+    if (migrated.version === 7) migrated = migrateSaveV7toV8(migrated);
+    if (migrated.version === 8) migrated = migrateSaveV8toV9(migrated);
+    if (migrated.version === 9) migrated = migrateSaveV9toV10(migrated);
+    if (migrated.version === 10) migrated = migrateSaveV10toV11(migrated);
+    if (migrated.version === 11) migrated = migrateSaveV11toV12(migrated);
+    if (migrated.version !== 12) return null;
+    return migrated;
+  } catch {
+    return null;
+  }
+}
+```
+
+**Migration template: v11→v12** (`lib/game/save.ts`, lines 159–177):
+```typescript
+export function migrateSaveV11toV12(save: SaveDataV11): SaveData {
+  const legacy = save.equippedArmor;
+  if (!legacy || !Array.isArray(save.inventorySlots)) {
+    return { ...save, version: 12, equippedArmor: undefined };
+  }
+  const slots = save.inventorySlots.slice();
+  const equipped: SavedEquippedArmor = {};
+  for (const armorSlot of ARMOR_SLOTS) {
+    const id = legacy[armorSlot];
+    if (!id) continue;
+    const def = ITEM_DEF_BY_ID[id];
+    if (def?.kind !== "armor" || def.armorSlot !== armorSlot) continue; // drop invalid equips
+    const idx = slots.findIndex((s) =&gt; s?.id === id &amp;&amp; s.count &gt; 0);
+    if (idx &lt; 0) continue; // item not in inventory → drop the equip
+    equipped[armorSlot] = slots[idx]; // preserves durability/enchantments/customName
+    slots[idx] = { id: null, count: 0 };
+  }
+  return { ...save, version: 12, inventorySlots: slots, equippedArmor: equipped };
+}
+```
+
+**Pure version bump template** (`lib/game/save.ts`, lines 77–79):
+```typescript
+export function migrateSaveV2toV3(save: SaveDataV2): SaveDataV3 {
+  return { ...save, version: 3 };
+}
+```
+
+**Pattern**: Most migrations are pure version bumps (spread + version field). Non-pure migrations only appear when the schema changes structurally (v1→v2 repacked inventory, v11→v12 restructured armor).
+
+---
+
+### 5. Constants
+
+**SAVE_KEY** (`lib/game/config.ts`, line 279):
+```typescript
+export const SAVE_KEY = "minecraft_save_v7";
+```
+
+**Comment context** (lines 275–279):
+&gt; Legacy single-world save key. Since the multi-world feature, each world owns its own `minecraft_world_save_&lt;id&gt;` blob (see lib/game/worlds.ts); this key is only read once by the legacy migration (lib/game/legacyMigration.ts) and is otherwise unused.
+
+**WORLDGEN_VERSION** (`lib/game/config.ts`, line 290):
+```typescript
+export const WORLDGEN_VERSION = 8;
+```
+
+**Comment context** (lines 281–289):
+&gt; The deterministic world-generation baseline. Bumped whenever worldgen changes, so old block-diffs (which index against generated terrain) can't be applied to a different baseline: v6 added dungeons; v7 added deep-cave lava lakes; v8 added shallow coal ore. Each world records the WORLDGEN_VERSION it was generated under; a world whose recorded version differs from this constant has its block-diffs discarded and is rebooted from its stored seed (lib/game/worlds.ts). The save *schema* (SaveData, currently v6) is independent of this — lighting is a derived cache and lava is worldgen, so neither is persisted, and additive schema bumps (like v6's status effects) don't touch it.
+
+---
+
+## Summary
+
+**Persistence patterns for stats/advancements (mirroring XP)**:
+- **Serialize**: Add `stats?: StatsData` and `advancements?: AdvancementData` fields to save object in `serialize()` (L649–650 shows xp pattern)
+- **Restore**: Add `this.state.stats = restoreStats(save);` and `this.state.advancements = restoreAdvancements(save);` in constructor (L247 shows xp pattern)
+- **Death survival**: Both will automatically persist across death since `clearEffects` only touches `state.effects` and timers—neither stats nor advancements reference that function
+- **Type declarations**: Add optional fields to SaveDataV13 (new type), declaring `stats?: StatsData` and `advancements?: AdvancementData`
+- **Migration chain**: Add `migrateSaveV12toV13` as a pure version bump (lines 77–79 template), insert it at line 210 in `readSave`, update final version check (L210) from `=== 12` to `=== 13`
+- **Constants unchanged**: SAVE_KEY stays "minecraft_save_v7", WORLDGEN_VERSION stays 8</result>
+<usage><subagent_tokens>44837</subagent_tokens><tool_uses>10</tool_uses><duration_ms>64653</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ad23f9e7696338cb2</task-id>
+<tool-use-id>toolu_01UoYe8sytKqgktydau4GTqH</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/ad23f9e7696338cb2.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify UI/input/audio patterns" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Perfect! Now I have all the details. Let me provide you with a comprehensive report of the exact patterns you need to mirror:
+
+## Investigation Results
+
+### 1. **Input Handler (KeyI Pattern)** — `/Users/hutusi/workspace/ai/david/monecraft/lib/game/input/inputController.ts`
+
+**KeyI handler block (lines 85–90):**
+```typescript
+if (evt.code === "KeyI") {
+  engine.dispatch({ type: "toggleInventory" });
+  input.keys.clear();
+  if (input.pointerLocked) document.exitPointerLock();
+  return;
+}
+```
+
+**KeyL Status:** ✅ **Not bound** — safe to add.
+
+**Mirror pattern for KeyL:** Same dispatch type name will be needed (add `toggleAdvancements` command), plus clear keys and exit pointer lock.
+
+---
+
+### 2. **Inventory Overlay Rendering** — `/Users/hutusi/workspace/ai/david/monecraft/components/MinecraftGame.tsx`
+
+**Backdrop + panel pattern (lines 159–189):**
+```typescript
+{inventoryOpen || paused ? &lt;div className="menu-backdrop" /&gt; : null}
+
+{inventoryOpen ? (
+  &lt;InventoryPanel
+    inventory={inventory}
+    equippedArmor={equippedArmor}
+    selectedHotbarSlot={selectedSlot}
+    hotbarSlots={hotbarSlots}
+    recipes={recipes}
+    craftingStation={craftingStation}
+    gameMode={gameMode}
+    container={container}
+    xpLevel={xpLevel}
+    enchantCost={ENCHANT_COST_LEVELS}
+    anvilCombineCost={ANVIL_COMBINE_COST_LEVELS}
+    anvilRepairCost={ANVIL_REPAIR_COST_LEVELS}
+    anvilRenameCost={ANVIL_RENAME_COST_LEVELS}
+    canCraft={canCraft}
+    onSwapSlots={swapInventorySlots}
+    onMoveStack={moveStack}
+    onToggleEquipArmor={toggleEquipArmor}
+    onUnequipArmor={unequipArmor}
+    onCraft={craft}
+    onEnchant={enchant}
+    onAnvilCombine={anvilCombine}
+    onAnvilRepair={anvilRepair}
+    onAnvilRename={anvilRename}
+    onGrindstoneStrip={grindstoneStrip}
+    onGiveItem={giveCreativeItem}
+  /&gt;
+) : null}
+```
+
+**Note:** Line 159 shares the `.menu-backdrop` with paused menu. Your advancements overlay should follow this pattern—either add `advancementsOpen` to line 159's condition or create a separate backdrop.
+
+---
+
+### 3. **Recipe-Book Grid Pattern** — `/Users/hutusi/workspace/ai/david/monecraft/components/game/InventoryPanel.tsx`
+
+**Recipe rendering (lines 167–194):**
+```typescript
+const renderRecipe = (recipe: Recipe) =&gt; {
+  const locked = stationLocked(recipe);
+  const craftable = !locked &amp;&amp; canCraft(recipe);
+  return (
+    &lt;button
+      key={recipe.id}
+      className={`recipe-entry${craftable ? "" : " is-disabled"}`}
+      onClick={() =&gt; {
+        if (craftable) onCraft(recipe);
+      }}
+      aria-disabled={!craftable}
+      aria-label={recipe.label}
+      {...bind(recipeTooltip(recipe, inventory, locked, craftable))}
+    &gt;
+      &lt;span className="recipe-ingredients"&gt;
+        {recipe.cost.map((cost) =&gt; (
+          &lt;ItemIcon key={`${recipe.id}-${cost.slotId}`} slot={createSlot(cost.slotId, cost.count)} size={24} /&gt;
+        ))}
+      &lt;/span&gt;
+      &lt;span className="recipe-arrow" aria-hidden&gt;
+        →
+      &lt;/span&gt;
+      &lt;ItemIcon slot={createSlot(recipe.result.slotId, recipe.result.count)} size={24} /&gt;
+    &lt;/button&gt;
+  );
+};
+```
+
+**Recipe-book container (lines 270–283):**
+```typescript
+&lt;div className="recipe-book"&gt;
+  &lt;div className="inventory-heading"&gt;{craftingStation === "villager" ? "Trading" : craftingStation === "brewing" ? "Brewing" : "Crafting"}&lt;/div&gt;
+  &lt;div className="recipe-list"&gt;
+    {recipeGroups.map((group) =&gt; (
+      &lt;Fragment key={group.category}&gt;
+        &lt;div className="recipe-category" role="presentation"&gt;
+          {group.category}
+        &lt;/div&gt;
+        {group.recipes.map(renderRecipe)}
+      &lt;/Fragment&gt;
+    ))}
+  &lt;/div&gt;
+&lt;/div&gt;
+```
+
+---
+
+### 4. **PixelImg &amp; ItemIcon Components**
+
+**PixelImg** — `/Users/hutusi/workspace/ai/david/monecraft/components/game/PixelImg.tsx` (lines 31–45)
+```typescript
+export default function PixelImg({ src, alt, size, className, "aria-hidden": ariaHidden }: PixelImgProps) {
+  const hydrated = useHydrated();
+  return (
+    &lt;img
+      src={hydrated ? src : TRANSPARENT_PIXEL}
+      alt={alt}
+      draggable={false}
+      width={size}
+      height={size}
+      className={className}
+      aria-hidden={ariaHidden}
+      style={{ imageRendering: "pixelated" }}
+    /&gt;
+  );
+}
+```
+**Props:** `src` (string), `alt` (string), `size` (number), `className?` (string), `aria-hidden?` (boolean)
+
+**ItemIcon** — `/Users/hutusi/workspace/ai/david/monecraft/components/game/ItemIcon.tsx` (lines 15–36)
+```typescript
+export default function ItemIcon({ slot, size = 32 }: ItemIconProps) {
+  if (!slot.id || slot.count &lt;= 0) return null;
+
+  const durabilityRatio = slot.maxDurability &amp;&amp; slot.durability !== undefined ? Math.max(0, Math.min(1, slot.durability / slot.maxDurability)) : null;
+  const durabilityHue = durabilityRatio !== null ? Math.round(durabilityRatio * 120) : 0;
+
+  return (
+    &lt;span className="item-icon" style={{ width: size, height: size }}&gt;
+      &lt;PixelImg src={itemIconUrl(slot.id)} alt={slot.label} size={size} /&gt;
+      {durabilityRatio !== null &amp;&amp; durabilityRatio &lt; 1 &amp;&amp; (
+        &lt;span className="item-icon-durability"&gt;
+          &lt;span
+            className="item-icon-durability-fill"
+            style={{ width: `${Math.round(durabilityRatio * 100)}%`, background: `hsl(${durabilityHue}, 90%, 45%)` }}
+          /&gt;
+        &lt;/span&gt;
+      )}
+      {slot.count &gt; 1 &amp;&amp; &lt;span className="item-icon-count"&gt;{slot.count}&lt;/span&gt;}
+    &lt;/span&gt;
+  );
+}
+```
+**Props:** `slot` (InventorySlot), `size?` (number, default 32)
+
+---
+
+### 5. **PauseMenu Tab Pattern** — `/Users/hutusi/workspace/ai/david/monecraft/components/game/PauseMenu.tsx`
+
+**Tab state &amp; tab buttons (lines 75–107):**
+```typescript
+const [tab, setTab] = useState&lt;PauseTab&gt;("game");
+
+// ... inside render:
+
+&lt;div className="pause-tabs"&gt;
+  {TABS.map((entry) =&gt; (
+    &lt;button key={entry.id} className="mc-button pause-tab" aria-pressed={tab === entry.id} onClick={() =&gt; setTab(entry.id)}&gt;
+      {entry.label}
+    &lt;/button&gt;
+  ))}
+&lt;/div&gt;
+
+&lt;div className="pause-panel"&gt;
+  {tab === "game" &amp;&amp; (
+    &lt;&gt;
+      {/* game tab content */}
+    &lt;/&gt;
+  )}
+
+  {tab === "options" &amp;&amp; (
+    &lt;&gt;
+      {/* options tab content */}
+    &lt;/&gt;
+  )}
+
+  {tab === "controls" &amp;&amp; (
+    &lt;div className="pause-controls"&gt;
+      {/* controls content */}
+    &lt;/div&gt;
+  )}
+&lt;/div&gt;
+```
+
+**Tab definition (lines 28–34):**
+```typescript
+type PauseTab = "game" | "options" | "controls";
+
+const TABS: ReadonlyArray&lt;{ id: PauseTab; label: string }&gt; = [
+  { id: "game", label: "Game" },
+  { id: "options", label: "Options" },
+  { id: "controls", label: "Controls" }
+];
+```
+
+---
+
+### 6. **Sprite Mapping** — `/Users/hutusi/workspace/ai/david/monecraft/lib/ui/sprites.ts`
+
+**itemIconUrl signature (lines 38–40):**
+```typescript
+export function itemIconUrl(itemId: string): string {
+  return spriteDataUrl(`item:${itemId}`, () =&gt; renderSpritePixels(itemId));
+}
+```
+
+**Confirmation:** Maps `itemId` strings directly via `renderSpritePixels()`. IDs like `diamond_ore`, `enchanting_table`, `dragon_heart` will resolve if they're defined in the sprite pixel renderer. The cache key is prefixed `item:` for all item sprites.
+
+---
+
+### 7. **Event Drain &amp; Toast Pattern** — `/Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts`
+
+**Event loop (lines 293–330):**
+```typescript
+for (const event of gameEngine.consumeEvents()) {
+  if (event.type === "died" || event.type === "bossDefeated" || event.type === "gameOver") {
+    input.clearKeys();
+    if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
+  }
+  if (event.type === "gameOver") persistGame(gameEngine, saveKey, () =&gt; {});
+  if (event.type === "respawned") input.clearKeys();
+  if (event.type === "attackSwung") renderer.triggerSwing();
+  if (event.type === "openedStation" || event.type === "openedContainer") {
+    input.clearKeys();
+    if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
+  }
+  if (event.type === "breakBlocked") {
+    flashMessage("Not enough room to empty the chest");
+  }
+  if (event.type === "sleepDenied") {
+    flashMessage(event.reason === "daylight" ? "You can only sleep at night" : "Monsters are nearby");
+  }
+  if (event.type === "pickedUp") {
+    flashMessage(event.items.map((drop) =&gt; `+${drop.count} ${ITEM_DEF_BY_ID[drop.itemId]?.label ?? drop.itemId}`).join(", "));
+  }
+  if (event.type === "fishingCaught") {
+    const treasure = event.items.find((drop) =&gt; drop.itemId === "emerald");
+    if (treasure) flashMessage(`Reeled in treasure: ${ITEM_DEF_BY_ID[treasure.itemId]?.label ?? treasure.itemId}!`);
+  }
+  if (event.type === "summonFailed") {
+    flashMessage("The totem lies dormant — a beast already walks");
+  }
+  renderer.handleEvent(event, gameEngine.state);
+  audio.handleEvent(event);
+}
+```
+
+**flashMessage signature (lines 215–221):**
+```typescript
+const flashMessage = useCallback(
+  (text: string, durationMs = 1200) =&gt; {
+    setSaveMessage(text);
+    scheduleTimeout(() =&gt; setSaveMessage(""), durationMs);
+  },
+  [scheduleTimeout]
+);
+```
+
+**Pattern for advancements:** Add case like:
+```typescript
+if (event.type === "advancementUnlocked") {
+  flashMessage(`Advancement Unlocked: ${event.name}`);
+}
+```
+
+---
+
+### 8. **Audio Director Event Handling** — `/Users/hutusi/workspace/ai/david/monecraft/lib/game/audio/audioDirector.ts`
+
+**Switch pattern (lines 194–315):**
+```typescript
+handleEvent(event) {
+  const backend = graph?.backend;
+  if (!backend) return;
+  switch (event.type) {
+    case "blockBroken":
+      backend.play(BREAK_SOUNDS[materialGroupFor(event.blockId)]);
+      break;
+    case "blockPlaced":
+      backend.play(PLACE_SOUNDS[materialGroupFor(event.blockId)]);
+      break;
+    case "playerHurt":
+      backend.play(HURT_SOUND);
+      break;
+    case "ateFood":
+      backend.play(EAT_SOUND);
+      break;
+    case "drankPotion":
+      backend.play(DRINK_SOUND);
+      break;
+    case "xpGained":
+      backend.play(XP_SOUND);
+      break;
+    case "enchanted":
+      backend.play(ENCHANT_SOUND);
+      break;
+    // ... more cases
+  }
+}
+```
+
+**Available level-up/chime-like sounds:**
+- `XP_SOUND` (line 18, 214) — for xpGained events
+- `ENCHANT_SOUND` (line 19, 217) — for enchanted/anvil events
+
+**Pattern for advancements:** Add case like:
+```typescript
+case "advancementUnlocked":
+  backend.play(XP_SOUND); // or similar chime/level-up sound
+  break;
+```
+
+---
+
+### 9. **CSS Styling** — `/Users/hutusi/workspace/ai/david/monecraft/app/hud.css` &amp; `/Users/hutusi/workspace/ai/david/monecraft/app/ui.css`
+
+**Pause overlay (hud.css lines 14–22):**
+```css
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: mc-fade-in 140ms ease-out;
+}
+```
+
+**Pause menu container (hud.css lines 24–34):**
+```css
+.pause-menu {
+  display: grid;
+  gap: 8px;
+  width: min(92vw, 320px);
+  justify-items: stretch;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+```
+
+**Tab styling (hud.css lines 46–66):**
+```css
+.pause-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pause-tab {
+  padding: 7px 8px;
+  font-size: 12px;
+}
+
+.pause-tab[aria-pressed="true"] {
+  border-color: #f0be3c;
+  outline: 1px solid rgba(240, 190, 60, 0.6);
+}
+
+.pause-panel {
+  display: grid;
+  gap: 8px;
+}
+```
+
+**Recipe-book styling (ui.css lines 424–506):**
+```css
+.recipe-book {
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  border-left: 2px solid #9a9a9a;
+  padding-left: 12px;
+}
+
+.recipe-list {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  overflow-y: auto;
+  max-height: 360px;
+  padding-right: 4px;
+}
+
+.recipe-category {
+  color: #5a5a5a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.recipe-category:first-child {
+  margin-top: 0;
+}
+
+.recipe-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  cursor: pointer;
+  background: var(--mc-tile-well), var(--mc-slot-well);
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--mc-bevel-dark) var(--mc-bevel-light) var(--mc-bevel-light) var(--mc-bevel-dark);
+}
+
+.recipe-entry:hover:not(.is-disabled) {
+  background: var(--mc-tile-well), #a3a3a3;
+}
+
+.recipe-entry.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.recipe-entry.is-disabled img {
+  filter: grayscale(0.9);
+}
+```
+
+---
+
+## Summary
+
+You have a solid, consistent pattern across the codebase:
+
+1. **Input:** Add `KeyL` handler identical to `KeyI` (clear keys, exit pointer lock)
+2. **Render:** Gate both backdrop and panel on `advancementsOpen` similar to `inventoryOpen`
+3. **Tabs:** Copy PauseMenu's `useState&lt;Tab&gt;` + `TABS` array + conditional rendering
+4. **Sprites:** `itemIconUrl(id)` resolves ids directly; already cached
+5. **Event drain:** Add `advancementUnlocked` case calling `flashMessage()`
+6. **Audio:** Add case in `handleEvent()` switch using `XP_SOUND` or similar
+7. **CSS:** Mirror `.pause-overlay`, `.pause-panel`, `.pause-tabs` for your advancements panel, adjust z-index as needed
+
+All line numbers and signatures are exact—ready to implement.</result>
+<usage><subagent_tokens>43602</subagent_tokens><tool_uses>16</tool_uses><duration_ms>60519</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aa267c5dcfe8cdf18</task-id>
+<tool-use-id>toolu_011J8h8ZFtZkgXJNks8Ja2L6</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/34685084-7e91-4e2a-ba54-7a1729b88a50/tasks/aa267c5dcfe8cdf18.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify engine integration points" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Perfect! Now I have all the information needed. Let me compile my comprehensive findings report:
+
+## INVESTIGATION REPORT: Integration Points for Advancements + Statistics
+
+### 1. THE EMIT CHOKEPOINT
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts`  
+**Lines:** 668-670
+
+```typescript
+private emit = (event: GameEvent): void =&gt; {
+    this.events.push(event);
+};
+```
+
+**Analysis:** Single emit choke point confirmed. All gameplay events route through this method, which appends to the `this.events` array. Events are consumed one-shot via `consumeEvents()` (L661-665), which drains the queue and returns drained events.
+
+Every gameplay system has `emit` injected as a dependency (see `mobTickDeps` getter L807-815) or calls it directly (L325, L326, L338, etc.). This is a perfect integration point for stats capture—every event funnel-passes through here.
+
+---
+
+### 2. GAMEEVENT UNION
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts`  
+**Lines:** 321-369
+
+**Total event types: 48** (not 29 as mentioned in plan)
+
+**Complete list with exact field names:**
+1. `died` — no fields
+2. `gameOver` — no fields
+3. `respawned` — no fields
+4. `blockBroken` — blockId, x, y, z
+5. `blockPlaced` — blockId, x, y, z
+6. `playerHurt` — no fields
+7. `ateFood` — no fields
+8. `drankPotion` — no fields ✓ (confirmed, not "drunkPotion")
+9. `effectExpired` — effect (EffectId)
+10. `xpGained` — amount
+11. `jumped` — no fields ✓ (confirmed)
+12. `landed` — impact
+13. `mobAttacked` — kind
+14. `mobHit` — kind
+15. `mobDied` — kind, x, y, z ✓ (confirmed, carries `kind` field)
+16. `mobSpawned` — kind, x, y, z
+17. `arrowHit` — x, y, z, target ("block" | "mob" | "player")
+18. `bowFired` — no fields ✓ (confirmed)
+19. `bossSummoned` — x, y, z
+20. `bossDefeated` — x, y, z ✓ (confirmed)
+21. `summonFailed` — no fields
+22. `explosion` — x, y, z, power
+23. `tntPrimed` — x, y, z
+24. `attackSwung` — no fields
+25. `sleepStarted` — no fields ✓ (confirmed)
+26. `sleepDenied` — reason ("daylight" | "hostiles")
+27. `wokeUp` — no fields
+28. `tilledSoil` — no fields
+29. `plantedSeed` — no fields
+30. `plantedSapling` — no fields
+31. `usedBoneMeal` — no fields
+32. `fishingCast` — x, y, z
+33. `fishingBite` — x, y, z
+34. `fishingCaught` — items (Array&lt;{itemId: string; count: number}&gt;), x, y, z ✓ (confirmed)
+35. `fishingReeledEmpty` — no fields
+36. `openedStation` — station ("furnace" | "villager" | "brewing" | "enchanting" | "anvil" | "grindstone")
+37. `enchanted` — enchant (EnchantmentId) ✓ (confirmed)
+38. `anvilCombined` — no fields
+39. `anvilRepaired` — no fields
+40. `anvilRenamed` — no fields
+41. `grindstoneStripped` — no fields
+42. `openedContainer` — no fields
+43. `doorToggled` — open (boolean)
+44. `breakBlocked` — reason ("containerFull")
+45. `smelted` — no fields
+46. `mobFed` — kind
+47. `mobBred` — kind ✓ (confirmed)
+48. `pickedUp` — items (Array&lt;{itemId: string; count: number}&gt;) ✓ (confirmed)
+
+**Note:** `blockBroken` has `blockId`, not `kind`; it carries the block type, not mob type.
+
+---
+
+### 3. GAMESTATE INTERFACE
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts`  
+**Lines:** 147-220
+
+**XP declaration (L171):**
+```typescript
+/** Banked XP points (XP_PER_LEVEL points = 1 level). Persisted (save v7); NOT cleared on death. */
+xp: number;
+```
+
+**UI flags for advancements/stats:**
+- `inventoryOpen: boolean` (L174) ✓
+- `paused: boolean` (L190)
+- `debugOpen: boolean` (L191)
+- `craftingStation: "furnace" | "villager" | "brewing" | "enchanting" | "anvil" | "grindstone" | null` (L176)
+
+**Where `stats: Map&lt;string, number&gt;` and `advancements: Set&lt;string&gt;` would fit:**
+Between `xp: number` (L171) and `isDead: boolean` (L172). They are session-only state (not serialized, like `effects`), so no persistence concern. Early position makes them adjacent to other achievement-related state.
+
+---
+
+### 4. GAMESNAPSHOT TYPE &amp; SNAPSHOT PROJECTION
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts`  
+**Lines:** 271-318 (type definition)  
+**GameEngine.ts Lines:** 982-1026 (buildSnapshot), 1019-1026 (refreshSnapshot)
+
+**XP projection into snapshot:**
+```typescript
+xpLevel: xpLevel(state.xp),      // L1014
+xpProgress: xpProgress(state.xp) // L1015
+```
+
+**inventoryOpen projection:**
+```typescript
+inventoryOpen: state.inventoryOpen, // L1001 (ref-equal pass-through)
+```
+
+**Pattern for per-key `!==` compare:**
+The `refreshSnapshot()` method (L1019-1026) rebuilds the snapshot via `buildSnapshot()`, then compares ALL keys against the previous snapshot:
+```typescript
+const changed = (Object.keys(next) as Array&lt;keyof GameSnapshot&gt;).some(
+  (key) =&gt; next[key] !== prev[key]
+);
+```
+
+If ANY key differs by reference (`!==`), all listeners are notified. This is a blanket compare—no per-key optimization yet (unlike effects/boss, which use custom memoization at L968-980 and L944-961).
+
+---
+
+### 5. GAMEAPI TYPE &amp; ACCESSOR IMPLEMENTATIONS
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts`  
+**Lines:** 265-268
+
+```typescript
+export type GameApi = {
+  dispatch(command: Command): void;
+  serialize(): SaveData;
+};
+```
+
+**Example implementation in GameEngine.ts:**
+- **dispatch** (L356-613): Large switch on command.type, mutates state and calls emit
+- **serialize** (L623-651): Snapshots state fields into SaveData format
+- **getSnapshot** (L658): Returns the memoized GameSnapshot
+- **subscribe** (L653-656): ReactSyncExternalStore hook
+
+The GameApi is assigned in buildSnapshot at L985: `api: this` (the GameEngine itself implements the interface).
+
+---
+
+### 6. COMMAND UNION &amp; DISPATCH
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/commands.ts`  
+**Lines:** 17-44
+
+**28 command types:**
+```typescript
+selectSlot | toggleInventory | craft | swapSlots | moveStack | toggleEquipArmor | 
+unequipArmor | eatFood | drinkPotion | enchant | anvilCombine | anvilRepair | 
+anvilRename | grindstoneStrip | placeBlock | attack | toggleFlight | creativeGiveItem | 
+setGameMode | setDifficulty | unstuck | pause | resume | toggleDebug | 
+toggleCameraView | respawn | dismissVictory
+```
+
+**toggleInventory handler (GameEngine.ts L365-372):**
+```typescript
+case "toggleInventory": {
+  if (!canInteract(state.gameMode)) break;
+  state.inventoryOpen = !state.inventoryOpen;
+  if (!state.inventoryOpen) {
+    state.craftingStation = null;
+    state.openContainerIndex = null;
+  }
+  break;
+}
+```
+
+**craft handler (GameEngine.ts L374-385):**
+```typescript
+case "craft": {
+  const recipe = RECIPES.find((entry) =&gt; entry.id === command.recipeId);
+  if (!recipe || state.isDead || !canInteract(state.gameMode)) break;
+  if (recipe.station &amp;&amp; recipe.station !== state.craftingStation) break;
+  const next = inv.craft(state.inventory, recipe);
+  if (!next) break;
+  state.inventory = next;
+  if (recipe.station) this.emit({ type: "smelted" }); // Only smelted, not crafted
+  break;
+}
+```
+
+**Note:** The craft handler only emits `smelted` for station recipes; there is NO `crafted` event for workbench recipes. This is an opportunity to add one.
+
+---
+
+### 7. STEP() METHOD &amp; DT AVAILABILITY
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts`  
+**Lines:** 282-353
+
+**Method signature:**
+```typescript
+step(dt: number, input: FrameInput): void {
+```
+
+**dt usage:**
+- L295-296: `state.timers.stuckTimer = inBadState ? state.timers.stuckTimer + dt : 0;`
+- L304: `if (tickRespawnTimer(state, dt)) this.respawn();`
+- L318: `state.sleepTimer = Math.max(0, state.sleepTimer - dt);`
+- L327-349: All tick systems receive dt (tickHungerDrain, tickStatusEffects, tickWaterExposure, tickLavaExposure, tickOxygen, tickMining, tickThrownSpears, tickFishing, tickDayNight, etc.)
+
+**Movement result (L324):**
+```typescript
+const move = tickPlayerMotion(state, input, dt, this.applyDamage);
+if (move.didJump) this.emit({ type: "jumped" });
+if (move.didLand) this.emit({ type: "landed", impact: move.landImpact });
+tickHungerDrain(state, move);
+```
+
+**MoveTickResult type** (`playerMotion.ts` L21-30):
+```typescript
+export type MoveTickResult = {
+  didSprint: boolean;
+  didWalk: boolean;
+  didJump: boolean;
+  didLand: boolean;
+  landImpact: number;
+  horizontalDistance: number; // ✓ Available here
+};
+```
+
+**Tick-driven stats opportunity:**
+Any stat that accumulates per-second can read `dt` directly in step() or via the move result's `horizontalDistance` (walk/sprint distance tracking).
+
+---
+
+### 8. MOB_TEMPLATES STRUCTURE
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/mobs.ts`  
+**Lines:** 16-114
+
+**MobTemplate type (L5-14):**
+```typescript
+export type MobTemplate = {
+  speed: number;
+  hp: number;
+  detectRange: number;
+  attackDamage: number;
+  attackCooldown: number;
+  ranged?: boolean;
+  modelArgs: Parameters&lt;typeof createMobModel&gt;;
+};
+```
+
+**CRITICAL FINDING:** `MOB_TEMPLATES[kind].hostile` DOES NOT EXIST.
+
+The `hostile` property is NOT in the template. Instead, it's determined at mob creation time in `pushMob()` (spawnDirector.ts L32-57):
+```typescript
+export function pushMob(state: GameState, kind: MobKind, hostile: boolean, x: number, y: number, z: number, rng: () =&gt; number): void {
+  const template = MOB_TEMPLATES[kind];
+  const mob: MobState = {
+    // ...
+    hostile,  // ← Passed as parameter, not read from template
+    // ...
+  };
+}
+```
+
+**Hostile assignment pattern (spawnInitialMobs L86-96):**
+- Passive (false): sheep, chicken, horse, cow, pig, villager
+- Hostile (true): zombie, skeleton, spider, creeper, boss
+
+---
+
+## SUMMARY
+
+**Integration readiness:**
+- ✓ Emit choke point is solid and universal
+- ✓ GameEvent union is comprehensive (48 types)
+- ✓ GameState has clean space for `stats` and `advancements`
+- ✓ Snapshot pattern supports new fields via blanket `!==` compare
+- ✓ GameApi is minimal but stable
+- ✓ Command dispatch is auditable
+- ✓ step() and move results provide all time/distance data needed
+- ✗ MOB_TEMPLATES has no `hostile` property (determined at creation)
+- ⚠ craft handler lacks `crafted` event (only emits `smelted` for furnace recipes)</result>
+<usage><subagent_tokens>44295</subagent_tokens><tool_uses>14</tool_uses><duration_ms>87077</duration_ms></usage>
+</task-notification>
