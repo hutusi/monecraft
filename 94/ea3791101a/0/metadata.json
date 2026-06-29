@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "94ea3791101a",
+  "session_id": "c2173938-138a-4b34-8ee8-b6c8429013e2",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T12:47:52.032219Z",
+  "branch": "feat/advancements",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/engine/GameEngine.ts",
+    "components/MinecraftGame.tsx",
+    "lib/game/useMinecraftGame.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "6c9daf2245b7",
+  "checkpoint_transcript_start": 967,
+  "transcript_lines_at_start": 967,
+  "token_usage": {
+    "input_tokens": 429,
+    "cache_creation_tokens": 37221,
+    "cache_read_tokens": 9896176,
+    "output_tokens": 30382,
+    "api_call_count": 21
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T12:47:51.984902Z",
+    "agent_lines": 68,
+    "agent_removed": 14,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 68,
+    "total_lines_changed": 82,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

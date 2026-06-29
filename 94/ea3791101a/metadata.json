@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "94ea3791101a",
+  "strategy": "manual-commit",
+  "branch": "feat/advancements",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/MinecraftGame.tsx",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/94/ea3791101a/0/metadata.json",
+      "transcript": "/94/ea3791101a/0/full.jsonl",
+      "content_hash": "/94/ea3791101a/0/content_hash.txt",
+      "prompt": "/94/ea3791101a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 429,
+    "cache_creation_tokens": 37221,
+    "cache_read_tokens": 9896176,
+    "output_tokens": 30382,
+    "api_call_count": 21
+  }
+}
