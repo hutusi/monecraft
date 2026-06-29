@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "488b2773c4b9",
+  "strategy": "manual-commit",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/adding-content.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "docs/tuning.md",
+    "e2e/smoke.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/48/8b2773c4b9/0/metadata.json",
+      "transcript": "/48/8b2773c4b9/0/full.jsonl",
+      "content_hash": "/48/8b2773c4b9/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6103,
+    "cache_creation_tokens": 59092,
+    "cache_read_tokens": 17768212,
+    "output_tokens": 20885,
+    "api_call_count": 37
+  }
+}

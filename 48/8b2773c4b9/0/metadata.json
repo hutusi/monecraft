@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "488b2773c4b9",
+  "session_id": "6aff0716-f3fe-4fd7-872d-e2f69826d061",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T14:57:55.519212Z",
+  "branch": "feat/living-mobs-companions",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "e2e/smoke.e2e.ts",
+    "CHANGELOG.md",
+    "docs/save-format.md",
+    "docs/reference.md",
+    "docs/tuning.md",
+    "docs/manual.md",
+    "docs/adding-content.md",
+    "docs/testing.md"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "955ab09a8028",
+  "checkpoint_transcript_start": 1066,
+  "transcript_lines_at_start": 1066,
+  "token_usage": {
+    "input_tokens": 6103,
+    "cache_creation_tokens": 59092,
+    "cache_read_tokens": 17768212,
+    "output_tokens": 20885,
+    "api_call_count": 37
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T14:57:55.475596Z",
+    "agent_lines": 125,
+    "agent_removed": 61,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 125,
+    "total_lines_changed": 186,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
