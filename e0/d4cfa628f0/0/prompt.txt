@@ -1,0 +1,21 @@
+push and open pr
+
+---
+
+<task-notification>
+<task-id>bnczj62zx</task-id>
+<summary>Monitor event: "PR #40 CI checks (villages/professions/raids)"</summary>
+<event>CodeRabbit:PENDING e2e: verify:</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnczj62zx</task-id>
+<summary>Monitor event: "PR #40 CI checks (villages/professions/raids)"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
+
+---
+
+check the code reviews on the pr
