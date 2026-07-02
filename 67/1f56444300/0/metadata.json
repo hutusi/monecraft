@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "671f56444300",
+  "session_id": "0bbf36a0-b366-42d5-b782-1e8fcd71b3a9",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T23:19:39.775561Z",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "81e2c6794d00",
+  "token_usage": {
+    "input_tokens": 43273,
+    "cache_creation_tokens": 504495,
+    "cache_read_tokens": 66261197,
+    "output_tokens": 172040,
+    "api_call_count": 218
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}
