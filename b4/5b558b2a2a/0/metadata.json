@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b45b558b2a2a",
+  "session_id": "0bbf36a0-b366-42d5-b782-1e8fcd71b3a9",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T23:10:41.468473Z",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/generation.ts",
+    "lib/world/index.ts",
+    "lib/game/engine/systems/dungeon.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/world/generation.test.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/buriedTreasureLoot.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/bossTracking.ts",
+    "components/game/TreasureCompass.tsx",
+    "lib/game/render/minimap.ts",
+    "lib/game/buriedTreasureLoot.test.ts",
+    "lib/game/itemSources.test.ts",
+    "lib/game/fishingLoot.test.ts",
+    "lib/game/engine/systems/advancements.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "81e2c6794d00",
+  "checkpoint_transcript_start": 670,
+  "transcript_lines_at_start": 670,
+  "token_usage": {
+    "input_tokens": 19399,
+    "cache_creation_tokens": 121137,
+    "cache_read_tokens": 33807190,
+    "output_tokens": 64424,
+    "api_call_count": 89
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T23:10:41.417452Z",
+    "agent_lines": 609,
+    "agent_removed": 64,
+    "human_added": 69,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 678,
+    "total_lines_changed": 748,
+    "agent_percentage": 89.97326203208557,
+    "metric_version": 2
+  }
+}

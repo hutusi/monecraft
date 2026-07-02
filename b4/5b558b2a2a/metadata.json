@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b45b558b2a2a",
+  "strategy": "manual-commit",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/game/TreasureCompass.tsx",
+    "lib/game/bossTracking.ts",
+    "lib/game/buriedTreasureLoot.test.ts",
+    "lib/game/buriedTreasureLoot.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/dungeon.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/fishingLoot.test.ts",
+    "lib/game/itemSources.test.ts",
+    "lib/game/render/minimap.ts",
+    "lib/world/generation.test.ts",
+    "lib/world/generation.ts",
+    "lib/world/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b4/5b558b2a2a/0/metadata.json",
+      "transcript": "/b4/5b558b2a2a/0/full.jsonl",
+      "content_hash": "/b4/5b558b2a2a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 19399,
+    "cache_creation_tokens": 121137,
+    "cache_read_tokens": 33807190,
+    "output_tokens": 64424,
+    "api_call_count": 89
+  }
+}
