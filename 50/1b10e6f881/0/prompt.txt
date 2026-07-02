@@ -1,0 +1,247 @@
+what's next features do you recommend?
+
+---
+
+<task-notification>
+<task-id>ac9079bf7d834303a</task-id>
+<tool-use-id>toolu_01N2ATDY6TtX9Fdkqo7XJMs2</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/0bbf36a0-b366-42d5-b782-1e8fcd71b3a9/tasks/ac9079bf7d834303a.output</output-file>
+<status>completed</status>
+<summary>Agent "Inventory current game features" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a comprehensive picture. No dedicated ROADMAP/TODO/ideas file exists (the roadmap-keyword grep only hit incidental mentions in CHANGELOG/architecture/save-format; `docs/adding-content.md` is a contributor how-to-extend guide, not a roadmap). Here is the inventory.
+
+# Monecraft — Existing Feature Inventory
+
+## 1. Version &amp; save format
+- **Latest released version: 0.11.0** (2026-06-28). The `[Unreleased]` section on top is substantial and effectively the current state of the code.
+- **Save schema version: v16** (bumped v15→v16 in Unreleased for the `vehicles` field). Migration chain runs v1→…→v16.
+- **Worldgen version: `WORLDGEN_VERSION` 9** (bumped 8→9 in Unreleased for generated villages).
+- Client-only, localStorage; two-level save hierarchy (profiles → worlds, each world its own save blob). Zero binary assets except one bundled Monocraft font (documented exception).
+
+## 2. Major gameplay systems present (each one line)
+- **Crafting**: 74 recipes, always-available grid, recipe book grouped by category (Tools/Vehicles/Weapons/Armor/Building/Food/Materials) with have/need + "how to obtain" hints.
+- **Smelting**: Furnace station; coal/charcoal fuel economy; cooks 5 raw foods + charcoal.
+- **Ore/tool tiers**: 7 pickaxe tiers (wood→diamond) gated by tier; ores coal/sliver/ruby/gold/sapphire/diamond.
+- **Weapons/combat**: fists, knife, 8 sword tiers (to Dragon Sword), 7 throwable spear tiers (7-block reach + throw), melee with knockback.
+- **Ranged combat**: bow + arrows, projectile system (gravity, DDA collision), kiting ranged skeletons.
+- **Armor**: 6 dedicated equip slots (helmet/face mask/neck/chestplate/leggings/boots), defense + durability, renders on 3rd-person model.
+- **Durability**: all gear wears; non-stackable durable items.
+- **XP &amp; enchanting**: XP currency (kept across death); enchanting table with 11 enchantments (Sharpness, Knockback, Looting, Power, Punch, Protection, Feather Falling, Efficiency, Fortune, Unbreaking, Mending).
+- **Anvil**: combine/repair/rename gear for XP (custom names persist).
+- **Grindstone**: strip enchantments for XP refund.
+- **Status effects &amp; potions**: brewing stand + 8 potions (Swiftness, Strength, Regen, Fire Resistance, Water Breathing, Haste, Resistance, Leaping) + Poison; drink with F.
+- **Farming**: hoe→till→plant wheat, 4 growth stages, bread; seeds from grass; saplings; bone meal fertilizer; grass spread; random-tick system.
+- **Mobs — passive** (breedable): sheep, chicken, horse, cow, pig. **Tameable companions**: wolf (bone), cat (raw fish) → allies that follow/sit/fight and persist. **NPC**: villager (trade, doesn't flee).
+- **Mobs — hostile**: zombie, skeleton (ranged), spider (dark-only), creeper (explodes), raider, plus summoned **Boss** (Dragon Lord, 1000 HP). Mob-vs-mob combat via faction/allegiance system; hostiles hunt villagers.
+- **Breeding**: feed pairs → babies grow in ~90s; population caps.
+- **Explosions**: TNT (torch-lit, chains) + creeper detonation, blast-resistance-based crater primitive.
+- **Fishing**: rod, cast/bite/reel minigame, weighted catch table (fish/junk/treasure).
+- **Trading**: emerald economy, 10 villager trades split across 4 professions (farmer/blacksmith/librarian/cleric).
+- **Villages &amp; raids**: generated house clusters with resident villagers; Ominous Horn triggers 3-wave raider raid with emerald/XP reward.
+- **Vehicles**: craftable raft + ship, placed on water, rideable (Unreleased, water only — no minecarts/rails).
+- **Chests/storage**: 27-slot chests as block-entities; spill-on-break.
+- **Beds &amp; spawn**: craft/place bed, sleep to skip night, sets respawn point.
+- **Doors**: wood doors, openable, block mobs.
+- **Hunger**: 10-drumstick bar, distance/jump drain, starvation scaled by difficulty.
+- **Health/regen/death**: 10 hearts, regen gated on hunger, fall/void/lava/drowning/immersion damage, death+respawn screen.
+- **Day/night cycle**: hostile night spawning, daylight burn, dawn/dusk thresholds.
+- **Weather**: cosmetic rain/snow/clear by biome/time (not serialized; no gameplay effect).
+- **Lighting**: per-voxel sky+block light propagation, torches, dark caves, shader-gated.
+- **Caves/ores/dungeons**: cave carving, tuned ore veins, underground dungeons with lazy-filled tiered loot chests + mob spawners.
+- **Water/lava physics**: water building/immersion damage/drowning bubbles; lava pools burn on contact (worldgen-only).
+- **Biomes (5)**: plains/forest, desert, mountains (snow caps), ocean, + beaches.
+- **World types (4)**: Default, Superflat, Amplified, Islands.
+- **Game modes (4)**: Survival, Creative (fly + all-item palette), Adventure, Spectator.
+- **Difficulty (4)**: Peaceful, Easy, Normal, Hard; plus **Hardcore** permadeath toggle.
+- **Advancements &amp; statistics**: 16 advancements + ~15 tracked stats, L overlay, persist across death.
+- **Progression meta / endgame**: Cursed Totem → summon boss → Dragon Heart → Dragon Sword + victory screen.
+- **UI/UX**: minimap, F3 debug, hotbar, third-person camera (V), pixel sprites/HUD (all procedural), skins, pause menu tabs.
+- **Audio**: fully procedural (ZZFX) SFX + generative ambient music by day/night/biome.
+
+## 3. Notable ABSENT features (typical of a Minecraft-like, clearly missing here)
+- **No alternate dimensions**: no Nether, no End, no portals — single overworld only.
+- **No redstone / automation**: no redstone, pistons, hoppers, dispensers, droppers, observers, buttons, levers, pressure plates.
+- **No multiplayer / co-op**: strictly single-player, client-only, localStorage.
+- **No minecarts/rails or land/air vehicles**: vehicles are water rafts/ships only.
+- **No maps/cartography items**: there's a live minimap HUD but no craftable map item, banners, or waypoints.
+- **No shields / blocking**, no crossbows, no tridents (spears fill the throwable niche).
+- **No buckets / fluid pickup-and-place**: water and lava can't be scooped or placed; lava is worldgen-only with no item.
+- **No sculptable terrain beyond blocks**: no slabs, stairs, fences, walls, carpets, or non-full-cube building blocks (crops/saplings are painted full cubes).
+- **No hunger-saturation nuance, no eating animation timing**, no golden apples/special foods.
+- **No villager restock/leveling, no villager gifts/gossip, no iron golems, no wandering trader.**
+- **No structures beyond houses/villages/dungeons**: no strongholds, mineshafts, temples, mansions, ocean monuments, ruined portals.
+- **No ocean/aquatic content**: no fish mobs, no swimming/diving mechanics beyond drowning, no coral/kelp.
+- **No nether-tier or netherite-equivalent progression** beyond the diamond→Dragon Sword capstone.
+- **No sky content**: no phantoms, no elytra/flight items (Creative flight only), no fireworks.
+- **No signs, item frames, paintings, decorative blocks.**
+- **No experience of dropped ground items**: loot goes straight to inventory (deliberate design, not a gap per se).
+- **No hardcore-of-world sharing / world import-export**, no screenshots/photo mode.
+
+## 4. Explicit roadmap / TODO notes found
+- **No ROADMAP, TODO, ideas, or backlog file exists** anywhere in the repo.
+- The only forward-looking notes were inline in the CHANGELOG and have since been **completed**: the 0.9.0 entry said "Village structures are a possible future addition" — now shipped in Unreleased (generated villages, professions, raids). Living-world PRs were explicitly labeled "PR 1 of 2 / PR 2 of 2" (both now landed).
+- `docs/adding-content.md` is a contributor guide for *how* to extend (adding a block/item/mob/station/structure), not a list of planned features. It documents the extension seams (append `BlockId` at enum end, dedicated PRNG passes to preserve worldgen determinism, one-reader-per-seam discipline) that any next feature should follow.
+
+Key source-of-truth files for further digging (all absolute):
+- `/Users/hutusi/workspace/ai/david/monecraft/CHANGELOG.md`
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/reference.md` (feature tables)
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/manual.md`, `docs/architecture.md`, `docs/tuning.md`, `docs/adding-content.md`, `docs/save-format.md`
+- Code roots: `lib/game/` (engine/systems, items.ts, recipes.ts, mobs.ts, enchantments.ts, trades.ts), `lib/world/` (generation.ts, lighting.ts, blocks.ts)</result>
+<usage><subagent_tokens>63984</subagent_tokens><tool_uses>7</tool_uses><duration_ms>96359</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ae21795b4ae54b254</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/0bbf36a0-b366-42d5-b782-1e8fcd71b3a9/tasks/ae21795b4ae54b254.output</output-file>
+<status>completed</status>
+<summary>Agent "Check issues, PRs, recent history" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture. Here's my report.
+
+## Feature work: planned, requested, and in-flight
+
+### How this project tracks work
+There is **no active issue tracker**. The fork `hutusi/monecraft` has GitHub Issues **disabled**, and upstream `davidhu0527/monecraft` has **zero** open/closed issues and **zero** open/closed PRs (only the default GitHub label set exists there, unused). All work flows through **feature branches → PRs on the fork → `CHANGELOG.md`**. So "what's planned/in flight" lives in the CHANGELOG `[Unreleased]` section and git history, not a backlog.
+
+### Open PRs / Open Issues
+- Fork `hutusi/monecraft`: **0 open PRs**, issues disabled.
+- Upstream `davidhu0527/monecraft`: **0 open issues, 0 open PRs.**
+
+Nothing is currently in flight as an open PR — the last one (`#41`) merged 2026-07-02.
+
+### Recent work themes (from `git log` and merged PRs)
+The last ~6 weeks show a steady march of Minecraft-style systems, each shipped as its own `feat/*` branch with a matching CHANGELOG entry. Chronological themes:
+- **Water vehicles** (#41, #5x commits, most recent): rafts &amp; ships, per-world cap, own crafting category, placement audio — save schema v15→v16.
+- **Living World** (two-part, #39 + #40): tameable wolf/cat companions + mob allegiance/mob-vs-mob combat + mob persistence (v13→v14); then generated villages, villager professions, and raids with the Ominous Horn (v14→v15, `WORLDGEN_VERSION` 8→9).
+- **Advancements &amp; statistics** (#38): 16 advancements + stat counters, L-key overlay (v12→v13).
+- **Progression depth** (#35–#37): anvil, grindstone, Mending, plus 6 enchantments and 3 potions.
+- **Modes &amp; difficulty** (#31–#34): game modes (Survival/Creative/Adventure/Spectator), difficulty tiers, hardcore permadeath, tabbed pause menu.
+- **Earlier** (#27–#30): fishing-rod animations, status effects/brewing/potions, XP &amp; enchanting, crafting hints.
+
+### Closed-but-unimplemented feature requests
+**None found.** Because there's no issue tracker, there are no lingering feature requests. Every merged PR has a corresponding CHANGELOG entry, i.e. the requested work was implemented, not deferred.
+
+### Forward-looking notes embedded in code/docs (the closest thing to a roadmap)
+I checked the "future" hints scattered in the CHANGELOG and docs — and notably **most have already been built**, confirming there's no real backlog:
+- "Village _structures_ a possible future addition" (`CHANGELOG.md:105`) → **done** in PR #40.
+- "future saplings / grass spread" extension point on the random-tick system (`docs/architecture.md:51`, `CHANGELOG.md:201`) → saplings **already exist** (`lib/world/blocks.ts:67`, `lib/game/items.ts`).
+- "future interactive blocks (furnace, …)" (`lib/game/engine/systems/interact.ts:63`) → furnace **already exists** (`lib/world/blocks.ts:33`).
+- `WORLDGEN_VERSION` / save-version machinery is explicitly designed to absorb "future worldgen changes" (`lib/game/worlds.ts:11`, `docs/save-format.md:67`) — infrastructure for future features rather than a planned feature itself.
+
+The only genuinely open-ended "extension point" language left is **grass spread** (the random-tick handler exists but grass-spreading behavior itself isn't implemented yet) — that's the single remaining hinted-but-unbuilt idea I could find.
+
+### Bottom line
+Nothing is formally "requested" or queued. The `[Unreleased]` CHANGELOG section (water vehicles being the newest) represents the current release-in-progress. If you want to plan next features, the codebase's own hints point at **grass spread** as a small, pre-scaffolded candidate; larger direction would need to be decided fresh since there's no backlog or issue list to pull from.
+
+Relevant files: `/Users/hutusi/workspace/ai/david/monecraft/CHANGELOG.md`, `/Users/hutusi/workspace/ai/david/monecraft/README.md`, `/Users/hutusi/workspace/ai/david/monecraft/docs/architecture.md`, `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/randomTicks.ts`, `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/interact.ts`.</result>
+<usage><subagent_tokens>29403</subagent_tokens><tool_uses>10</tool_uses><duration_ms>91632</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aa9dee203351e08e7</task-id>
+<tool-use-id>toolu_01BFgQXLpwNmxMoGXLfC3xtC</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/0bbf36a0-b366-42d5-b782-1e8fcd71b3a9/tasks/aa9dee203351e08e7.output</output-file>
+<status>completed</status>
+<summary>Agent "Design aquatic update plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture now. Here is the implementation plan, grounded in the actual code.
+
+# Aquatic Update — Implementation Plan
+
+## Scope decision
+
+**In:** (1) two fish mobs (cod + salmon — the second variant is pure data rows), (2) kelp with random-tick growth + dried-kelp food, plus 2 decorative coral blocks (cheap to ride the same worldgen bump), (3) sunken shipwrecks with lazily-filled loot chests, (4) buried beach treasure + a `treasure_map` item rendered as a compass-style HUD pointer (reusing the boss-tracking pattern) with an X on the minimap.
+
+**Explicitly deferred:** the drowned-like hostile. It is *not* cheap after fish AI: fish AI is wander/flee only, while a hostile needs 3D water pursuit, a water-aware hostile spawn director, LOS/attack under water, and daylight-burn exceptions. Defer to a follow-up. Also deferred: full cartographic map rendering (compass + minimap X is the right scope), fish breeding/buckets.
+
+## Verified facts the plan relies on
+
+- Mob movement is **ground-clamped**: `tickMobs` sets `mob.position.set(nx, ground + mob.halfHeight, nz)` from `surfaceYAt` (mobAI.ts:328–337). Fish need a bypass branch.
+- `world.isSolid` = not Air, not Water (voxelWorld.ts:53). Wheat/sapling are **solid painted full cubes** (atlas.ts:80–87 — "Like wheat, it's a full cube painted to read as a plant"). Kelp/coral must follow this pattern; a non-solid kelp couldn't be mined (`voxelRaycast` skips non-solid cells).
+- Random ticks run handlers on `highestSolidY` tops (randomTicks.ts:76–83) — a kelp stack's top *is* the column's highest solid under non-solid water, so kelp growth fits the existing sampler unchanged.
+- Structure derive-passes must be **seed-pure**: dedicated PRNG from `world.seed`, fixed draws per attempt, validation via `terrainTopY`/`getBiome` only (generation.ts:524–563, 636–732). Note: `coalRand` and `villageRand` **both use xor `0x85ebca6b`** — new PRNGs must pick fresh constants.
+- Lazy chest fill is gated on the persisted `lootedChests` index set, filled at open **and** break (interact.ts:112, mining.ts:62, dungeon.ts). The set is just voxel indices — shipwreck/buried chests can ride the **same save field with no schema bump**.
+- `bossTracking()` already computes bearing/distance for a HUD pointer (bossTracking.ts); `BossHealthBar.tsx` is the component reference.
+- `MOB_TEMPLATES.modelArgs` is `Parameters&lt;typeof createMobModel&gt;`, so an appended optional "fish variant" arg flows through; `mobVisuals` only animates gait when `legs.length === 4`.
+- A new `MobKind` touches 7 exhaustive `Record&lt;MobKind&gt;` tables (adding-content.md:50).
+
+## Commit slices (branch `feat/aquatic-update`, each slice lint/test-green)
+
+### Slice 1 — `feat(world): kelp and coral on the ocean floor` (WORLDGEN_VERSION 9→10)
+
+1. Append `Kelp`, `CoralPink`, `CoralBlue` at the **end** of `BlockId` (after `Grindstone = 54`) in `lib/world/blocks.ts`; add `BLOCK_COLORS` + `HELD_BLOCK_COLORS` entries.
+2. Atlas paint branches in `lib/world/atlas.ts` (kelp: dark stem + frond streaks, sapling is the reference; coral: branch-noise on the base color).
+3. Lighting class in `lib/world/lighting.ts`: kelp attenuates like leaves; coral opaque. Sound rows in `lib/game/audio/materials.ts` (`GROUP_BY_BLOCK` is exhaustive — typecheck forces this).
+4. Worldgen pass `placeOceanFlora(world, cfg)` appended **after** `placeVillages` in `generateWorld` — hash-gated column scan like `placeCacti` (consumes no shared PRNG): Ocean biome + `topY` well below `seaLevel` → kelp stalk of hash-derived height (leave ≥ 3 water above so boats/fishing stay clear), occasional coral. Add `kelpChance`/`coralChance`/`kelpMaxHeight` to the frozen `GEN`.
+5. Bump `WORLDGEN_VERSION` to 10 in `lib/game/config.ts`; re-baseline all SHA-256 digests + meshing snapshot in `lib/world/generation.test.ts`; add a structural probe (kelp exists in oceans, sits on sand, always has water above, never breaches the clearance band).
+6. Items/recipes: `kelp` (kind block) + `BLOCK_TO_SLOT`, `dried_kelp` (food, hunger 2) + furnace recipe, `ITEM_SPRITE_GRIDS` grid for dried_kelp in `lib/ui/spritePixels.ts`. Coral blocks get `BLOCK_TO_SLOT` + block items (icons auto-generate).
+7. Random-tick growth: `growKelp` handler in `randomTicks.ts` (`KELP_GROWTH_CHANCE` roll → `blockChanges.set(x, y+1, z, Kelp)` if above is Water and clearance/height cap holds). Persists free via block diff. Test in `randomTicks.test.ts` (grow, cap, stop-out-of-water).
+8. Break behavior in `lib/game/engine/systems/mining.ts`: breaking kelp cascades up the stalk (all kelp above drops too) and restores **Water, not Air** when submerged — otherwise every harvest leaves an air bubble. Verify placement of kelp into a water cell works (`placeSelectedBlock` — if placement requires Air, allow replacing Water for kelp only).
+
+### Slice 2 — `feat(mobs): cod and salmon swim the oceans`
+
+1. `MobKind` union in `lib/game/types.ts` + all 7 tables: `MOB_TEMPLATES` (add `aquatic?: true` to `MobTemplate`) + `FACTION_BY_KIND: "wild"` (mobs.ts), `MOB_DROPS` (raw_fish 1, bone chance — mobLoot.ts), `MOB_XP`, `CALL_INTERVALS`, `MOB_AMBIENT_SOUNDS`/`MOB_ATTACK_SOUNDS` (bubble blips via `zz({...})`).
+2. Fish model: append an optional `variant?: "quadruped" | "fish"` parameter to `createMobModel` (`lib/game/mobModel.ts`) — no legs, flat body, tail-fin box; `mobHalfHeight` gets a fish branch (mobs.ts:184). `mobVisuals` gait guard already handles `legs.length !== 4`.
+3. Aquatic AI: early branch in `tickMobs` (`lib/game/engine/systems/mobAI.ts`) — `if (MOB_TEMPLATES[mob.kind].aquatic) { tickAquaticMob(...); continue; }`. 3D wander (direction with small y pitch, re-rolled on `turnTimer`), flee the player in 3D within `FISH_FLEE_RANGE`, candidate cell must be `BlockId.Water` else invert direction; out of water → `moveSpeed = 0` + `hp -= FISH_SUFFOCATION_HP_PER_SECOND * dt`. No `surfaceYAt` clamp. The generic wild-flee branch (mobAI.ts:308) never runs for fish because the branch exits first.
+4. Spawning: `randomWaterPointNear`/`randomWaterPoint` in `lib/game/spawn.ts` (sample columns, require water depth ≥ 2, pick a mid-depth y); `spawnAquaticGroup` in `spawnDirector.ts`; add cod/salmon groups to `spawnInitialMobs` (fungible wild population — **not persisted**, `isPersistentMob` untouched; `restoreMobs` already drops unknown kinds for old saves). Superflat has no water → spawn attempts fail gracefully (retry cap → none).
+5. Tests: fish stays confined to water / flees / suffocates on land (mobAI.test.ts pattern), drops via mobLoot.test.ts (auto), soundParams.test.ts iterates templates (auto-enforced), a headless GameEngine boot on an ocean-heavy seed asserting fish exist in water.
+
+### Slice 3 — `feat(world): sunken shipwrecks with loot` (hash re-baseline again, version stays 10)
+
+1. In `lib/world/generation.ts`, mirror the dungeon build/derive pair: `shipwreckRand` (fresh xor constant), `buildShipwrecks(world, write, sink, cfg)` — fixed draws per attempt (cx, cz, orientation, secondChest), validation seed-pure: `world.getBiome(cx,cz) === Ocean` and `terrainTopY ≤ cfg.seaLevel − 4`, clear of spawn. Hull: planks floor + wood ribs + broken mast at `terrainTopY + 1`, interior explicitly set to Water (flooded), 1–2 `BlockId.Chest`. Export `collectShipwreckSites`. Add `GEN.shipwreckCount`.
+2. Generalize the lazy fill: rename `lib/game/engine/systems/dungeon.ts` → grow `fillWorldgenChestIfUnlooted(state, idx)` choosing the table by membership (`dungeonChestIndices` → `DUNGEON_LOOT`, `shipwreckChestIndices` → `SHIPWRECK_LOOT`), family-specific seed xor; swap the two call sites (interact.ts:112, mining.ts:62). Keep marking the **same persisted set** (serialized `lootedChests` — shape unchanged, **no save bump**); optionally rename the state field to `lootedWorldgenChests` for clarity.
+3. New `lib/game/shipwreckLoot.ts` mirroring `dungeonLoot.ts` (tiered; includes `treasure_map` at ~0.4, emerald/gold/string/leather/food staples) + test.
+4. `treasure_map` item (`kind: "material"`) + a 16×16 sprite grid in `spritePixels.ts`.
+5. Engine state: `shipwreckChestIndices: Set&lt;number&gt;` (session, derived in the GameEngine constructor next to `collectDungeonSites`, GameEngine.ts:184).
+6. Re-baseline digests; probes: shipwreck chests generate, derive matches placement, all underwater; GameEngine.test.ts exploit-guard clone (no re-roll after reload).
+
+### Slice 4 — `feat(game): buried treasure and the treasure map` (final hash re-baseline)
+
+1. `buildBuriedTreasure` in generation.ts (own PRNG, fixed draws): seed-pure beach validation — `terrainTopY` within the `beachMaxAboveSea`/`beachDepthBelowSea` band of `cfg.seaLevel` **and** a neighbor column with `terrainTopY &lt; seaLevel` within r≈4 (seed-pure water proxy; never `placeBeaches`' block reads). Chest at `terrainTopY − 2`, sand written above it. `collectTreasureSites` returns `{ x, y, z, index }[]`. Add `GEN.buriedTreasureCount`.
+2. `buriedTreasureLoot.ts` table (the best tier: diamonds, emeralds, enchanted-gear odds) wired into `fillWorldgenChestIfUnlooted`; add `treasure_map` (weight ~2) to `FISHING_LOOT`.
+3. Compass HUD: generalize `bossTracking` (it's already pure bearing/distance math) → `trackTarget(player, x, z)`; `GameEngine.buildSnapshot` adds `treasure: { bearingDegrees, distanceBlocks } | null` when `inventory[selectedSlot].id === "treasure_map"`, pointing at the nearest site not in the looted set (retargets automatically — no per-item state, fully deterministic from seed). New `components/game/TreasureCompass.tsx` mirroring `BossHealthBar.tsx`, mounted in `MinecraftGame.tsx`; X marker in `lib/game/render/minimap.ts` when a site falls inside the sampled window and the map is held.
+4. Advancement: emit a `treasureUnearthed` event at the fill call site when the family is "buried"; map it to a stat in `advancements.ts` `recordEvent` + an `ADVANCEMENTS` row ("X Marks the Spot", icon `treasure_map`).
+5. Tests: probe (buried chests in the beach band, derive deterministic), snapshot-compass test through the engine (hold map → non-null bearing; loot the chest → retarget/null), loot-table integrity, fishing-table reweight.
+
+### Slice 5 — `docs: cover the aquatic update` + CHANGELOG
+
+- `docs/manual.md` (fishing for maps, kelp farming, wreck diving), `docs/reference.md` (new blocks/items/mobs), `docs/tuning.md` (tunables below), `docs/adding-content.md` (the generalized worldgen-chest fill seam + the aquatic-mob movement branch), `docs/testing.md` coverage rows, `docs/save-format.md` version-history entry, `CHANGELOG.md` [Unreleased] flagging **worldgen 9→10, no save-schema bump**.
+
+## New config.ts tunables
+
+`FISH_FLEE_RANGE` (~5), `FISH_SUFFOCATION_HP_PER_SECOND` (~2), `KELP_GROWTH_CHANCE` (~0.15), `KELP_MAX_HEIGHT` (~6), `KELP_SURFACE_CLEARANCE` (3). Worldgen counts go in the frozen `GEN` (generation.ts): `kelpChance`, `coralChance`, `shipwreckCount` (~10), `buriedTreasureCount` (~8).
+
+## Save / worldgen impact
+
+- **Save schema: stays v16.** Fish are fungible (never persisted); kelp/coral edits ride the block diff; `treasure_map` is a plain string id with no instance state (target derived from seed); shipwreck/buried chests reuse the persisted `lootedChests` index set (shape unchanged) and `blockEntities` already validates against `BlockId.Chest`. Document the field's generalized meaning in save-format.md.
+- **WORLDGEN_VERSION 9 → 10** (bumped once, in slice 1): kelp/coral/wrecks/buried chests all write generated blocks. Old worlds discard stale diffs and reboot from seed — standard policy, flagged in CHANGELOG/PR.
+
+## Test plan
+
+Per-slice as above, plus: existing integrity suites (`config.test.ts`, `spritePixels.test.ts`, `materials.test.ts`, `soundParams.test.ts`, `mobLoot.test.ts`) enforce most new data rows automatically. Hash re-baselines happen inside each worldgen slice (log-new-hash procedure per testing.md; structural probes survive re-baselines). Full gate at each slice: `bun run lint &amp;&amp; bun run typecheck &amp;&amp; bun run format:check &amp;&amp; bun test &amp;&amp; bun run build`, and `bun run test:e2e` (renderer touched: new atlas tiles, fish models, HUD compass). Manual `bun run dev` pass on an ocean seed for visuals/audio.
+
+## Risks &amp; gotchas
+
+1. **Kelp is solid** — it tops `highestSolidY`, so it must keep ≥3 water clearance (boats, `waterSurfaceRaycast`, land-spawn `isDrySurface` all stay safe: water above kelp already reads as "not dry"). Never make it non-solid — mining raycasts would pass through.
+2. **Breaking kelp must restore Water** (and cascade the stalk) or oceans fill with air pockets — small special case in mining.ts.
+3. **Buried-treasure "beach" must be seed-pure** (`terrainTopY` band + neighbor-below-sea proxy), not `placeBeaches`' post-water block reads — a cave breaching a beach column is fine because the write pass physically places the chest at the seed-pure Y.
+4. **PRNG stream discipline**: new passes go **after** `placeVillages`; fresh xor constants (coal/village already collide on `0x85ebca6b`); fixed draws per attempt whether or not placement succeeds.
+5. **Fish AI must bypass every land assumption** (`surfaceYAt` clamp, border bounce, `collidesAt` foot test) — use direct `BlockId.Water` cell checks; keep the branch before the generic flee/wander so no land logic leaks in.
+6. **Superflat/ocean-less spawns**: fish and wreck placement must fail closed (zero placements, no infinite retries), mirroring how villages already handle village-less seeds.
+7. Multiple hash re-baselines within one PR are fine, but each slice must re-baseline in the same commit as its worldgen change so every commit is test-green.
+
+### Critical Files for Implementation
+
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/generation.ts — all three worldgen passes + derive functions; the dungeon/village build-derive pattern to mirror
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/mobAI.ts — the aquatic movement branch inside `tickMobs`
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/dungeon.ts — generalizes into the shared worldgen-chest lazy fill (with interact.ts / mining.ts call sites)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/blocks.ts — appended `BlockId`s + palettes (with atlas.ts paint branches)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts — site derivation at boot, snapshot `treasure` field, step wiring</result>
+<usage><subagent_tokens>167807</subagent_tokens><tool_uses>33</tool_uses><duration_ms>473682</duration_ms></usage>
+</task-notification>
