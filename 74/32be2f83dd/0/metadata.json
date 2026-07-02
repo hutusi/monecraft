@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7432be2f83dd",
+  "session_id": "3ab63f3a-0b42-49b5-b394-ea26d901c39d",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T14:17:35.053873Z",
+  "branch": "fix/water-vehicles-review",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/soundParams.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/vehicles.ts",
+    "lib/game/audio/audioDirector.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "02c25e60b1c5",
+  "checkpoint_transcript_start": 317,
+  "transcript_lines_at_start": 317,
+  "token_usage": {
+    "input_tokens": 660,
+    "cache_creation_tokens": 15419,
+    "cache_read_tokens": 3050369,
+    "output_tokens": 8441,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T14:17:35.038306Z",
+    "agent_lines": 42,
+    "agent_removed": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 42,
+    "total_lines_changed": 45,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
