@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6209775f87b4",
+  "session_id": "3ab63f3a-0b42-49b5-b394-ea26d901c39d",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T14:23:10.393439Z",
+  "branch": "fix/water-vehicles-review",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/tuning.md",
+    "docs/manual.md",
+    "docs/reference.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "02c25e60b1c5",
+  "checkpoint_transcript_start": 438,
+  "transcript_lines_at_start": 438,
+  "token_usage": {
+    "input_tokens": 12421,
+    "cache_creation_tokens": 31530,
+    "cache_read_tokens": 3206210,
+    "output_tokens": 7773,
+    "api_call_count": 19
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T14:23:10.372578Z",
+    "agent_lines": 44,
+    "agent_removed": 34,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 44,
+    "total_lines_changed": 78,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
