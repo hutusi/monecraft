@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cf694bb35457",
+  "strategy": "manual-commit",
+  "branch": "fix/water-vehicles-review",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/vehicles.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cf/694bb35457/0/metadata.json",
+      "transcript": "/cf/694bb35457/0/full.jsonl",
+      "content_hash": "/cf/694bb35457/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 636,
+    "cache_creation_tokens": 6788,
+    "cache_read_tokens": 1109599,
+    "output_tokens": 5189,
+    "api_call_count": 9
+  }
+}

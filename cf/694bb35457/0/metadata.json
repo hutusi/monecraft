@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cf694bb35457",
+  "session_id": "3ab63f3a-0b42-49b5-b394-ea26d901c39d",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T14:11:57.765755Z",
+  "branch": "fix/water-vehicles-review",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/vehicles.ts",
+    "lib/game/engine/state.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "02c25e60b1c5",
+  "checkpoint_transcript_start": 209,
+  "transcript_lines_at_start": 209,
+  "token_usage": {
+    "input_tokens": 636,
+    "cache_creation_tokens": 6788,
+    "cache_read_tokens": 1109599,
+    "output_tokens": 5189,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T14:11:57.752833Z",
+    "agent_lines": 20,
+    "agent_removed": 22,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 20,
+    "total_lines_changed": 42,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
