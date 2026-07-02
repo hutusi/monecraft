@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "27191e69a2f4",
+  "session_id": "0bbf36a0-b366-42d5-b782-1e8fcd71b3a9",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-02T22:45:59.915757Z",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/types.ts",
+    "lib/game/mobModel.ts",
+    "lib/game/mobs.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/spawn.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/mobLoot.ts",
+    "lib/game/mobXp.ts",
+    "lib/game/audio/mobAmbience.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/engine/systems/spawnDirector.test.ts",
+    "lib/game/itemSources.test.ts",
+    "lib/game/engine/GameEngine.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "81e2c6794d00",
+  "checkpoint_transcript_start": 388,
+  "transcript_lines_at_start": 388,
+  "token_usage": {
+    "input_tokens": 9516,
+    "cache_creation_tokens": 93570,
+    "cache_read_tokens": 14020368,
+    "output_tokens": 36316,
+    "api_call_count": 51
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-02T22:45:59.884346Z",
+    "agent_lines": 334,
+    "agent_removed": 9,
+    "human_added": 60,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 394,
+    "total_lines_changed": 403,
+    "agent_percentage": 85.11166253101737,
+    "metric_version": 2
+  }
+}
