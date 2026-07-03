@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c71e0b78dce4",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T09:52:43.861824Z",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "42e3fa41fe8b",
+  "token_usage": {
+    "input_tokens": 123106,
+    "cache_creation_tokens": 1614361,
+    "cache_read_tokens": 294153529,
+    "output_tokens": 487933,
+    "api_call_count": 538
+  },
+  "session_metrics": {
+    "turn_count": 15
+  }
+}
