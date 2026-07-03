@@ -5,8 +5,7 @@
   "branch": "main",
   "checkpoints_count": 0,
   "files_touched": [
-    "CHANGELOG.md",
-    "package.json"
+    "CHANGELOG.md"
   ],
   "sessions": [
     {
@@ -17,10 +16,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 4,
-    "cache_creation_tokens": 1108,
-    "cache_read_tokens": 116666,
-    "output_tokens": 1121,
-    "api_call_count": 2
+    "input_tokens": 8,
+    "cache_creation_tokens": 5438,
+    "cache_read_tokens": 243530,
+    "output_tokens": 2750,
+    "api_call_count": 4
   }
 }
