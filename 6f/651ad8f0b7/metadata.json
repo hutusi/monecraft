@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6f651ad8f0b7",
+  "strategy": "manual-commit",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "e2e/helpers.ts",
+    "lib/game/audio/audioDirector.test.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/gameModeAdventure.test.ts",
+    "lib/game/engine/gameModeCreative.test.ts",
+    "lib/game/engine/gameModeSpectator.test.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/playerMotion.ts",
+    "lib/game/engine/systems/vehicles.ts",
+    "lib/game/engine/testSupport.ts",
+    "lib/game/input/inputController.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6f/651ad8f0b7/0/metadata.json",
+      "transcript": "/6f/651ad8f0b7/0/full.jsonl",
+      "content_hash": "/6f/651ad8f0b7/0/content_hash.txt",
+      "prompt": "/6f/651ad8f0b7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5737,
+    "cache_creation_tokens": 48007,
+    "cache_read_tokens": 8805451,
+    "output_tokens": 25269,
+    "api_call_count": 30
+  }
+}

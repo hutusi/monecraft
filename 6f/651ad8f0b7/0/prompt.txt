@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bh1ffvm2s</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/bh1ffvm2s.output</output-file>
+<status>completed</status>
+<summary>Background command "Run full Playwright e2e suite" completed (exit code 0)</summary>
+</task-notification>
