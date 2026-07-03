@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8bfc83f05b62",
+  "strategy": "manual-commit",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".prettierignore"
+  ],
+  "sessions": [
+    {
+      "metadata": "/8b/fc83f05b62/0/metadata.json",
+      "transcript": "/8b/fc83f05b62/0/full.jsonl",
+      "content_hash": "/8b/fc83f05b62/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 1863,
+    "cache_read_tokens": 942704,
+    "output_tokens": 2021,
+    "api_call_count": 3
+  }
+}
