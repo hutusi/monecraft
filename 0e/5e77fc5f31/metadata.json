@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0e5e77fc5f31",
+  "strategy": "manual-commit",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "app/menu.css",
+    "components/menu/AccountPanel.test.tsx",
+    "components/menu/AccountPanel.tsx",
+    "components/menu/ProfileSelect.tsx",
+    "docs/architecture.md",
+    "docs/online.md",
+    "docs/testing.md",
+    "lib/auth/client.ts",
+    "lib/game/cloudSaves.test.ts",
+    "lib/game/cloudSaves.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0e/5e77fc5f31/0/metadata.json",
+      "transcript": "/0e/5e77fc5f31/0/full.jsonl",
+      "content_hash": "/0e/5e77fc5f31/0/content_hash.txt",
+      "prompt": "/0e/5e77fc5f31/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 104728,
+    "cache_creation_tokens": 1477333,
+    "cache_read_tokens": 203072368,
+    "output_tokens": 387624,
+    "api_call_count": 432
+  }
+}
