@@ -3,35 +3,21 @@
   "checkpoint_id": "43701aa324f4",
   "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
   "strategy": "manual-commit",
-  "created_at": "2026-07-03T09:58:54.22295Z",
+  "created_at": "2026-07-03T09:59:59.435515Z",
   "branch": "feat/online-multiplayer",
   "checkpoints_count": 1,
-  "files_touched": [
-    "lib/game/useMinecraftGame.ts"
-  ],
+  "files_touched": [],
   "agent": "Claude Code",
   "model": "claude-opus-4-8[1m]",
   "turn_id": "42e3fa41fe8b",
   "token_usage": {
-    "input_tokens": 127235,
-    "cache_creation_tokens": 1638587,
-    "cache_read_tokens": 307316246,
-    "output_tokens": 497918,
-    "api_call_count": 552
+    "input_tokens": 127588,
+    "cache_creation_tokens": 1640231,
+    "cache_read_tokens": 311122267,
+    "output_tokens": 498739,
+    "api_call_count": 556
   },
   "session_metrics": {
     "turn_count": 15
-  },
-  "initial_attribution": {
-    "calculated_at": "2026-07-03T09:58:54.08054Z",
-    "agent_lines": 0,
-    "agent_removed": 0,
-    "human_added": 62,
-    "human_modified": 16,
-    "human_removed": 0,
-    "total_committed": 62,
-    "total_lines_changed": 88,
-    "agent_percentage": 0,
-    "metric_version": 2
   }
 }
