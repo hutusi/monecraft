@@ -1,0 +1,81 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c497724f84c9",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T04:57:45.612901Z",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/noise.ts",
+    "lib/world/noise.test.ts",
+    "lib/world/generation.ts",
+    "lib/world/voxelWorld.ts",
+    "lib/game/engine/systems/dayNight.ts",
+    "lib/game/engine/systems/weather.ts",
+    "lib/game/config.ts",
+    "lib/world/generationBaselines.ts",
+    "lib/world/generation.test.ts",
+    "e2e/determinism.e2e.ts",
+    "docs/testing.md",
+    ".github/workflows/ci.yml",
+    "docs/save-format.md",
+    "docs/architecture.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "ee1ff50da58b",
+  "token_usage": {
+    "input_tokens": 16485,
+    "cache_creation_tokens": 339725,
+    "cache_read_tokens": 10924141,
+    "output_tokens": 90621,
+    "api_call_count": 66
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-03T04:57:45.454597Z",
+    "agent_lines": 0,
+    "agent_removed": 12,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 37,
+    "total_committed": 19,
+    "total_lines_changed": 49,
+    "agent_percentage": 24.489795918367346,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 293,
+      "user_lines_removed": 37,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1,
+        "e2e/determinism.e2e.ts": 37,
+        "lib/game/config.ts": 5,
+        "lib/game/engine/systems/dayNight.ts": 4,
+        "lib/game/engine/systems/weather.ts": 1,
+        "lib/world/generation.test.ts": 17,
+        "lib/world/generation.ts": 10,
+        "lib/world/generationBaselines.ts": 34,
+        "lib/world/noise.test.ts": 102,
+        "lib/world/noise.ts": 75,
+        "lib/world/voxelWorld.ts": 7
+      },
+      "user_removed_per_file": {
+        "lib/game/config.ts": 2,
+        "lib/game/engine/systems/dayNight.ts": 1,
+        "lib/game/engine/systems/weather.ts": 5,
+        "lib/world/generation.test.ts": 13,
+        "lib/world/generation.ts": 12,
+        "lib/world/voxelWorld.ts": 4
+      }
+    }
+  ]
+}

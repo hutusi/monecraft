@@ -1,0 +1,805 @@
+implement online multiplayer, deployed on a web server (Vercel, fly.io, etc.), with users connecting via browser; support account creation and online save of records, while also supporting temporary/guest access. Mind performance, latency, and user experience, as well as local development and debugging. We can discuss the technical approach further, such as Server-authoritative model, Headless simulation core, etc, what do you think?
+
+---
+
+<task-notification>
+<task-id>a4449fee7bfa07ca2</task-id>
+<tool-use-id>toolu_01HB4KPH8KNbAJZbn9UH4SYh</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/a4449fee7bfa07ca2.output</output-file>
+<status>completed</status>
+<summary>Agent "Map repo infra and tests" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I now have a comprehensive picture. Here is the structured infrastructure report.
+
+---
+
+# Infrastructure Map: Monecraft (for adding an online multiplayer server)
+
+Single-package, client-only Next.js app. No server-side code, no networking, no database anywhere today. The engine, however, is a headless deterministic simulation with a single command entry point and full serialization — an unusually clean base for an authoritative server.
+
+## 1. package.json — dependencies &amp; scripts
+
+Path: `/Users/hutusi/workspace/ai/david/monecraft/package.json` (`"name": "minecraft-clone"`, `"version": "0.12.0"`, `"private": true`)
+
+Dependencies (runtime):
+- `next` 16.2.9, `react` 19.2.7, `react-dom` 19.2.7, `three` 0.184.0, `zzfx` ^1.3.2 (sound synth)
+
+devDependencies:
+- ESLint stack: `eslint` 10.4.1, `@eslint/js` 10.0.1, `typescript-eslint` 8.61.0, `@eslint-react/eslint-plugin` 5.8.18, `eslint-plugin-react-hooks` 7.1.1, `@next/eslint-plugin-next` 16.2.9
+- `typescript` 6.0.3, `prettier` ^3.8.4
+- Test: `@happy-dom/global-registrator` ^20.10.2, `@testing-library/{dom ^10.4.1, react ^16.3.2, user-event ^14.6.1}`, `@playwright/test` ^1.60.0, `@types/bun` ^1.3.14
+- Types: `@types/node` 25.9.3, `@types/react` 19.2.17, `@types/react-dom` 19.2.3, `@types/three` 0.184.1
+
+Scripts: `dev` (next dev), `build` (next build), `start` (next start), `lint` (eslint .), `test` (bun test), `typecheck` (next typegen &amp;&amp; tsc --noEmit), `format` / `format:check` (prettier), `test:e2e` (playwright test).
+
+Network/WebSocket/DB: NONE. No `ws`, `socket.io`, `pusher`, DB driver, or ORM. The only "persistence/IO" is browser `localStorage`/`sessionStorage` (see `lib/game/save.ts`, `profiles.ts`, `worlds.ts`, `manifest.ts`, `skinSettings.ts`, `audio/settings.ts`). Package manager is Bun; lockfile `bun.lock`, `bunfig.toml` preloads test setup.
+
+## 2. Build / deploy setup
+
+- `next.config.mjs`: minimal — only `reactStrictMode: true`. Crucially **no `output: "export"` and no `output: "standalone"`**. So the app is NOT a static export; it is a standard server-rendered Next.js app run via `next start`.
+- However it uses **no server features**: no route handlers (`find app -name route.ts` → none), no server actions (`grep "use server"` → none). Interactive components are all `"use client"` (`components/GameShell.tsx`, `MinecraftGame.tsx`, `game/ItemTooltip.tsx`, `game/AdvancementsPanel.tsx`, `lib/game/useMinecraftGame.ts`). `app/page.tsx` and `app/layout.tsx` are trivial server components that just render the client shell. In practice it's a client-only SPA served by Next; it could be statically exported today but isn't configured to.
+- No `vercel.json` / `vercel.ts`, no `Dockerfile`, no `fly.toml`, no `docker-compose`. No deploy config committed at all.
+- CI: single workflow `/.github/workflows/.github/workflows/ci.yml` → actually `/.github/workflows/ci.yml`. Triggers on push to `main` and all PRs. Bun pinned to `1.3.12` (comment explains the pin is deliberate — worldgen hashes depend on `Math.sin`; see below).
+  - Job **`verify`** runs, in order: `bun install --frozen-lockfile` → `bun run lint` → `bun run typecheck` → `bun run format:check` → `bun test` → `bun run build` (with `NEXT_TELEMETRY_DISABLED=1`).
+  - Job **`e2e`**: installs Playwright chromium and runs `bun run test:e2e`; uploads `playwright-report/` on failure.
+
+## 3. Test infrastructure
+
+Two runners, three layers (documented in `docs/testing.md`, header: "Two runners, three layers"):
+
+- **Unit / integration / component: `bun test`.** Tests are colocated as `*.test.ts[x]` next to source (81 `.test.ts` + component `.test.tsx`; e.g. `lib/game/engine/GameEngine.test.ts`, `lib/world/generation.test.ts`). Shared setup `tests/setup.ts` is preloaded via `bunfig.toml` (`preload = ["./tests/setup.ts"]`). That setup calls `GlobalRegistrator.register()` from `@happy-dom/global-registrator` (the DOM library — happy-dom, NOT jsdom) then lazily imports `@testing-library/react` `cleanup` and runs it `afterEach`. The engine itself needs no DOM.
+- **Component tests** use `@testing-library/react` + `@testing-library/user-event` on happy-dom, same `bun test` runner (e.g. `components/game/Hotbar.test.tsx`, `components/menu/WorldSelect.test.tsx`).
+- **E2E: Playwright** in `e2e/*.e2e.ts` (`playwright.config.ts`). The `.e2e.ts` suffix is required so `bun test` (which auto-collects `*.test.ts`/`*.spec.ts`) doesn't grab them. Runs against the **production build** (`webServer.command: "bun run build &amp;&amp; bun run start"`), single worker, non-parallel, chromium channel (full browser, needed for `requestPointerLock`). Tests drive the game through the `window.__monecraft` debug handle rather than pixels (`e2e/helpers.ts`).
+  - Smoke coverage (`e2e/smoke.e2e.ts`): boots without console errors and renders (`renderedTriangles() &gt; 0`), audio director wired, day clock advances; boss HUD bearing/distance; pointer-lock + WASD movement; inventory open + crafting end-to-end; advancements overlay (L key); mining the block underfoot; right-click block placement fall-through; chest open/store/persist-across-reload; inventory edits persist across reload (leave-save); V camera cycling; pause freeze/resume; skin persistence; save-from-pause-menu persistence (asserts save `version === 16`).
+  - Menu flow (`e2e/menu.e2e.ts`): fresh-install create-profile → create worlds with fixed seeds → play → switch worlds without a page reload.
+- **Coverage map** (`docs/testing.md`, "## What is covered" table): a large table mapping each area to its test file and what it pins down — e.g. "Worldgen determinism" → `lib/world/generation.test.ts` (SHA-256 digests of generated worlds per seed = the save-compat contract, plus per-world-type baselines, structural probes, meshing snapshots, village/ocean-flora/shipwreck/buried-treasure presence); "Profiles &amp; worlds" → `lib/game/{profiles,worlds,legacyMigration}.test.ts` (manifest CRUD, total readers, seed resolution, cascade delete, legacy migration).
+- **Worldgen hash re-baseline policy** (`docs/testing.md` "## The worldgen hash policy"): the rule is **"If a hash test fails after your change, your change breaks every existing save. Fix the code, never the hash."** Two legitimate reasons to re-baseline: (1) an intentional worldgen change, and (2) **a Bun version bump** — the noise functions use `Math.sin`, whose exact results are engine-defined (ECMA-262 leaves transcendentals implementation-specific), which is why CI pins the Bun version. To regenerate: temporarily log the computed hash in the failing test, run `bun test`, paste new values in the same commit. Documented examples: the deep-cave lava re-baseline (SAVE_KEY v6→v7) and the 0.7.0 dungeon re-baseline (v5→v6). **Critical caveat for multiplayer**: the doc explicitly states these hashes prove "refactor purity on the pinned engine, NOT cross-browser save portability — a player switching browsers may theoretically regenerate slightly different terrain for the same seed." A server generating a world under Node/Bun and a browser client under V8 could diverge unless worldgen is generated authoritatively server-side and shipped to clients.
+
+## 4. TypeScript setup &amp; code sharing
+
+- Single `tsconfig.json` at root. `strict: true`, `noEmit`, `target ES2022`, `module ESNext`, **`moduleResolution: "Bundler"`**, `isolatedModules`, `jsx: react-jsx`, `types: ["node","bun"]`, next plugin.
+- **Path alias: only `"@/*": ["./*"]`** (repo root). Every import uses `@/lib/...`, `@/components/...`.
+- **This is a single-package repo, NOT a workspace/monorepo.** No `workspaces` field in package.json, no `pnpm-workspace.yaml`, no `turbo.json`, no `packages/` dir. Adding a server package would require introducing a workspace (Bun workspaces) or a separate package, and the `@/*` alias + `moduleResolution: Bundler` would need adjustment for a Node server build (Bundler resolution + no route handlers means the current tsconfig targets a bundler, not a standalone Node process).
+- Good news for shared types: the domain model is already isolated in framework-free, DOM-free modules that a server could import directly:
+  - `lib/game/types.ts` — core item/armor/enchantment types
+  - `lib/game/engine/commands.ts` — the `Command` union (the single mutation vocabulary; would become the client→server message set)
+  - `lib/game/engine/state.ts` — `GameState`, `FrameInput`, `GameSnapshot`, `GameEvent`
+  - `lib/game/save.ts` + `SaveDataV1..V16` types — the serialization contract (current save schema **v16**)
+  - `lib/world/worldTypes.ts`, `lib/world/generation.ts` — world data + deterministic generation
+  - `lib/game/engine/GameEngine.ts` — headless `dispatch(Command)` / `step(dt, input)` / `serialize()` / `subscribe`/`getSnapshot`, with **injectable `rng`** and overridable world size (`GameEngineOptions`). Per `docs/architecture.md`: "The engine has no React, no DOM, no rendering — it runs (and is tested) headlessly in bun test." That is exactly what an authoritative server would run.
+
+## 5. Repo layout (2 levels) &amp; approximate LOC
+
+```
+monecraft/
+├── app/                    (Next App Router: layout, page, css, fonts)         ~46 LOC
+├── components/             (React UI)                                         ~3,631 LOC
+│   ├── game/               (HUD, panels, DebugOverlay, etc.)
+│   └── menu/               (profile/world select + create forms)
+├── lib/                    (all game logic)                                  ~33,837 LOC
+│   ├── game/               (engine/, render/, audio/, input/, + domain modules)
+│   │   └── engine/         (GameEngine, commands, state, blockChanges, systems/)
+│   ├── ui/                 (procedural pixel sprites — DOM-free)
+│   └── world/              (generation, meshing, voxelWorld, lighting, queries)
+├── e2e/                    (Playwright smoke + menu)                            ~529 LOC
+├── tests/                  (setup.ts only)                                       ~15 LOC
+├── docs/                   (7 markdown files)                                 ~2,213 LOC
+└── .github/workflows/      (ci.yml)
+```
+Also at root: `AGENTS.md` (agent guidance, single source of truth; `CLAUDE.md` just imports it), `CONTRIBUTING.md`, `README.md`, `CHANGELOG.md`. `.entire/` appears to be a tooling/log dir. The bulk of code (~34k LOC) is in `lib/`, with the engine under `lib/game/engine/` (GameEngine.ts is large — 745+ lines; `serialize()` at line 745).
+
+## 6. Conventions: CHANGELOG, docs, ESLint/Prettier
+
+- **CHANGELOG.md**: Keep-a-Changelog style. Header "All notable changes to this project are documented in this file", an `## [Unreleased]` section, then `## [x.y.z] - YYYY-MM-DD` entries with `### Added` / `### Fixed` subsections. Entries are verbose and call out save-schema and worldgen-version impact explicitly (e.g. "bumps WORLDGEN_VERSION 9→10 … schema stays v16"). Current top: `[0.12.0] - 2026-07-03`.
+- **docs/** (7 files): `architecture.md` (engine/renderer/audio/shell layers, per-frame step order, invariants), `adding-content.md`, `save-format.md`, `testing.md`, `tuning.md` (config.ts tunables), `manual.md` (player guide), `reference.md` (tables). `AGENTS.md` lists which doc tracks what and requires docs+tests+CHANGELOG ship with each change.
+- **ESLint flat config** (`eslint.config.mjs`, ESM `defineConfig`): global-ignores `.next/**`, `node_modules/**`, `next-env.d.ts`; extends `js.configs.recommended`, `tseslint.configs.recommended`, `@eslint-react` `recommended-typescript` (on `**/*.{ts,tsx}`), `reactHooks.configs.flat.recommended`, and Next's `recommended` + `core-web-vitals` rule sets; disables `@eslint-react/exhaustive-deps` (keeps the react-hooks one).
+- **Prettier** (`.prettierrc.json`): `{ printWidth: 160, trailingComma: "none" }`. `.prettierignore` excludes build/lock/report dirs. `.editorconfig`: LF, 2-space indent, final newline.
+
+## 7. Feature flags &amp; dev-mode tooling (multiplayer-debugging relevance)
+
+- **No env-based feature flags exist.** `grep` for `NEXT_PUBLIC`, `process.env`, `__DEV__`, `featureFlag`, `debugMode` across `lib/`/`components/`/`app/` returns nothing in source. Config is a frozen `GEN`/`config.ts` constants object, not runtime-toggleable.
+- **`window.__monecraft` debug handle** — the most useful hook for multiplayer debugging. Installed in `lib/game/useMinecraftGame.ts:284` (`window.__monecraft = { engine, renderer, input, audio }`), removed on unmount (line 385), typed at line 79. The entire Playwright suite drives the game through it (read/mutate `engine.state`, call `engine.dispatch(command)`, `engine.serialize()`). A multiplayer layer could snapshot/inject state through this same handle.
+- **F3 Debug overlay** — `components/game/DebugOverlay.tsx` (position, FPS via local rAF, daylight, passive/hostile mob counts), toggled by the `toggleDebug` command. `DebugInfo` comes from the engine snapshot.
+- **Creative / cheat-style commands** already in the `Command` union (`lib/game/engine/commands.ts`) — directly reusable as server admin/debug ops: `creativeGiveItem`, `setGameMode`, `setDifficulty`, `toggleFlight`, `unstuck`, `toggleDebug`, `respawn`, plus every gameplay command. The engine has four game modes (`survival`/`creative`/`adventure`/`spectator`) and four difficulties, all switchable in-game.
+- **Determinism / RNG**: `GameEngine` takes an **injectable `rng`** (`GameEngineOptions`), and loot/generation take injectable rng too (`rollMobDrops`, `rollBlockDrops`, `generateWorld`). This is what makes deterministic server-authoritative simulation feasible — but note the `step(dt, input)` loop runs on **variable-dt frames with bounded catch-up substeps of ≤50 ms** (`useMinecraftGame.ts` rAF loop), NOT a fixed timestep. For lockstep/authoritative multiplayer you would want a fixed tick; the substep clamp exists but the sim is fed real frame deltas today.
+
+## Key takeaways for a multiplayer server component
+
+- Strong foundation: a headless, framework-free, fully-serializable engine (`lib/game/engine/`) with a single `dispatch(Command)` mutation door, injectable RNG, and versioned save format (v16). Commands (`commands.ts`) are a natural client→server protocol; `GameState`/`GameSnapshot`/`GameEvent` (`state.ts`) and `SaveData` (`save.ts`) are ready-made wire/state types.
+- Gaps to fill: (1) no workspace/monorepo — need to introduce one (Bun workspaces) or a sibling package to share `lib/` types with a server, and the `@/*` + `Bundler` moduleResolution tsconfig assumes a bundler, not a Node server; (2) no server runtime/deploy config at all (no Dockerfile/fly.toml/vercel.json) — the current Next app is client-only and could even be static-exported; (3) determinism is engine-pinned via `Math.sin` (documented in `docs/testing.md`), so a Node/Bun server and a browser client can diverge on worldgen for the same seed — worldgen should be authoritative/server-shipped, or the divergence risk explicitly handled; (4) the sim runs on variable-dt frames, not a fixed tick.
+- No CHANGELOG or docs mention of any prior multiplayer/networking work — this would be greenfield. `docs/architecture.md` and `AGENTS.md` both describe the project as "single-player, browser-based, client-only, saves to localStorage."</result>
+<usage><subagent_tokens>65618</subagent_tokens><tool_uses>20</tool_uses><duration_ms>177372</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a9ec045b27c888edf</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/a9ec045b27c888edf.output</output-file>
+<status>completed</status>
+<summary>Agent "Map save system and app shell" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture. Here is the structured report.
+
+---
+
+# Monecraft — Persistence &amp; App-Shell Map (for online multiplayer + accounts + cloud saves + guest access)
+
+## 0. Headline: there is ZERO server-side code today
+
+Confirmed by exhaustive search:
+- No `'use server'` anywhere; no `app/api/` directory; no `route.ts`; no `middleware.ts`.
+- No `vercel.json` / `vercel.ts`. `next.config.mjs` is 6 lines (`reactStrictMode: true` only).
+- No `fetch` / `WebSocket` / `EventSource` / `axios` / `socket.io` in `lib/`, `app/`, or `components/`.
+- CI (`.github/workflows/ci.yml`) is lint/typecheck/test/build + Playwright only — no deploy step.
+- The whole game is client-only. `"use client"` sits on `components/GameShell.tsx`, `components/MinecraftGame.tsx`, `lib/game/useMinecraftGame.ts`. An explicit comment in `useMinecraftGame.ts:76-79` exposes `window.__monecraft` because it's a "single-player client game — nothing to protect."
+
+This is a greenfield backend. Everything below is what multiplayer must plug into.
+
+---
+
+## 1. Save format
+
+**Schema:** `SaveData` = **version 16**, defined `lib/game/types.ts:353` (`export type SaveData = Omit&lt;SaveDataV15,"version"&gt; &amp; {...}`; the full V1→V15 chain is above it). Worldgen baseline = **`WORLDGEN_VERSION = 10`** (`lib/game/config.ts:353`).
+
+Produced by `GameEngine.serialize()` (`lib/game/engine/GameEngine.ts:745-778`). Fields:
+- `seed`, `worldType`, `gameMode`, `difficulty`, `hardcore`, `gameOver`
+- `changes: Array&lt;[blockIndex, blockId]&gt;` — the **block diff vs generated terrain** (`types.ts:147`); edits that revert to baseline are pruned
+- `inventorySlots: SavedSlot[]` (36 slots; `{id,count,durability?,enchantments?,customName?}`), `equippedArmor`, `selectedSlot`
+- `player {x,y,z}`, `dayClock`, `hearts`, `hunger`, `spawnPoint`
+- `blockEntities` (chest contents keyed by voxel index), `lootedChests` (worldgen loot chest indices)
+- `effects`, `xp`, `stats`, `advancements`, `mobs` (only tamed pets + villagers), `vehicles` (≤`MAX_VEHICLES`=64)
+- `villagesSeeded: true` (serialize adds this at `GameEngine.ts:776` — a boot flag, not in the docs list)
+
+**Encoding/size:** plain `JSON.stringify` — `writeSave` is literally `storage.setItem(key, JSON.stringify(data))` (`lib/game/save.ts:307-309`). **No compression, no RLE, no base64.** Size is dominated by `changes` (one `[int,int]` pair per player-edited voxel). Light is never serialized (derived cache, rebaked by `computeFullLight`, `GameEngine.ts:201`). So a lightly-edited world is a few KB; a heavily terraformed one can grow unboundedly as raw JSON — relevant for cloud-sync payload limits.
+
+**Save/load/autosave code map:**
+- `readSave(saveKey, storage=localStorage)` / `writeSave(...)` — `lib/game/save.ts:227` / `:307`
+- Restore validators (all in `save.ts`): `restoreSlot`, `restoreInventorySlots`, `restoreEquippedArmor`, `restoreEffects`, `restoreStats`, `restoreMobs`, `restoreVehicles`, `restorePlayerPosition`, `restoreGameMode/Difficulty/Hardcore/GameOver`, etc.
+- Engine restore on boot: `GameEngine` constructor `lib/game/engine/GameEngine.ts:175-201` (regenerates from seed, then `blockChanges.applySavedChanges(save.changes)`)
+- **Autosave** — all in `lib/game/useMinecraftGame.ts`: `persistGame()` helper (`:83`); `setInterval(autoSave, AUTOSAVE_INTERVAL_MS)` (`:281`, `AUTOSAVE_INTERVAL_MS=15000` from `config.ts:336`); `beforeunload` (`:282`); unmount save (`:384`); hardcore game-over immediate persist (`:319`); `quitToWorlds` synchronous save (`:509`)
+- Manual controls: `saveNow`/`loadNow`/`resetNow` (`useMinecraftGame.ts:480-505`), wired to `PauseMenu` buttons
+
+**Migration:** `readSave` runs a linear chain `migrateSaveV1toV2 … migrateSaveV15toV16` (`save.ts:53-224`, invoked `:264-279`). Most steps are pure version bumps; **V1→V2** (40→36 slots, repack) and **V11→V12** (armor to dedicated storage) do real transforms. Unknown/future versions → `null` (treated as no save). **Worldgen** migration is orthogonal and per-world: if a world's stored `worldgenVersion` ≠ current `WORLDGEN_VERSION`, its block-diffs are discarded and it reboots from seed (`lib/game/worlds.ts`, see `sanitizeWorld:107`).
+
+**Every storage function takes an injectable `Storage` param** — this is the natural seam to redirect at a cloud backend.
+
+---
+
+## 2. localStorage / sessionStorage usage (complete inventory)
+
+| Key | Where defined | What | Read/write module |
+|---|---|---|---|
+| `minecraft_profiles_v1` | `lib/game/profiles.ts:29` | profile list + `activeProfileId` | `profiles.ts` via `manifest.ts` |
+| `minecraft_worlds_v1` | `lib/game/worlds.ts:51` | world index manifest (`WorldMeta[]`) | `worlds.ts` via `manifest.ts` |
+| `minecraft_world_save_&lt;worldId&gt;` | prefix `worlds.ts:52` | one `SaveData` blob per world | `save.ts` (`readSave`/`writeSave`) |
+| `minecraft_audio_v1` | `lib/game/audio/settings.ts:4` | global audio `{master,music,muted}` | `audio/settings.ts` |
+| `minecraft_skin_v1` | `lib/game/skinSettings.ts:4` | **legacy** global skin; now read only by migration | `skinSettings.ts` |
+| `minecraft_save_v7` (`SAVE_KEY`) | `lib/game/config.ts:341` | **legacy** single-world save; read once by migration | `legacyMigration.ts` |
+| `monecraft_active_session` (sessionStorage) | `components/GameShell.tsx:27` | tab resume pointer `{profileId,worldId}` | `GameShell.tsx:29-50` |
+
+Shared manifest read/write helpers: `lib/game/manifest.ts` (`readManifestRaw`/`writeManifest`). Direct `localStorage.removeItem` calls: `useMinecraftGame.ts:496` (reset world), `worlds.ts:192/207` (delete world/cascade), `legacyMigration.ts:42`. All readers are "total" (drop malformed, never throw).
+
+---
+
+## 3. App shell &amp; component tree
+
+**Boot chain:** `app/layout.tsx` (RootLayout — imports `base/hud/ui/menu.css` + `pixelFont`, `app/fonts/`) → `app/page.tsx` (`HomePage` → `&lt;GameShell/&gt;`).
+
+`components/GameShell.tsx` is the state machine: `profile-select → world-select → play` (`Screen` type at `:20`). On mount (`:57`): `installUiTiles()`, `migrateLegacySave()`, reads the sessionStorage resume pointer. `play` mounts `MinecraftGame` **keyed by `world.id:reloadNonce`** (`:81`) so Load/Reset/world-switch remount the engine subtree with no page reload.
+
+```
+GameShell (client, screen state machine)
+├─ ProfileSelect        components/menu/ProfileSelect.tsx   ← accounts surface
+│   ├─ CreateProfileForm   (name + skin picker)             ← guest/account create
+│   └─ MenuScreen          (logo/title frame)
+├─ WorldSelect          components/menu/WorldSelect.tsx     ← world list / cloud-save surface
+│   ├─ CreateWorldForm     (name, seed, worldType, gameMode, difficulty, hardcore)
+│   └─ MenuScreen
+└─ MinecraftGame        components/MinecraftGame.tsx        ← the game (see §5)
+    └─ useMinecraftGame  lib/game/useMinecraftGame.ts       ← React↔engine handoff
+```
+
+**World creation:** `CreateWorldForm` (`components/menu/CreateWorldForm.tsx`) collects name, **seed text input** (blank = random), worldType, gameMode, difficulty, hardcore → `createWorld(profileId, name, seed, {...})` (`lib/game/worlds.ts:134`). Seed resolution: `resolveSeed` (`worlds.ts:79`, blank→random, numeric→clamped, text→FNV hash). **World load:** `WorldSelect.onPlay` → `touchWorld()` + write session pointer + switch to `play`.
+
+**React → engine handoff** (`lib/game/useMinecraftGame.ts`, "the thin React shell around the headless engine"):
+- `attachMount` callback ref (`:172`) constructs `new GameEngine({ save: readSave(...), seed, worldType, gameMode, difficulty, hardcore })` — engine boots on canvas mount.
+- Big effect (`:240-400`) owns lifecycle: `GameRenderer.create(node)` (`lib/game/render/GameRenderer.ts`), `createInputController(...)`, `createAudioDirector()`, `createMinimapRenderer(...)`, autosave interval, and the **rAF loop** (`clock`, `:297`) that fixed-steps the sim and drains `engine.consumeEvents()`.
+- UI reads engine state via `useSyncExternalStore(subscribe, getSnapshot)` (`:202`); UI intents go back as `engine.dispatch(command)`.
+
+**Engine boundary** (`lib/game/engine/GameEngine.ts`) — framework-agnostic, no DOM/React: `constructor(GameEngineOptions)` (`:175`), `step(dt, FrameInput)` (`:361`), `dispatch(Command)` (`:452`), `applyLook(dyaw,dpitch)` (`:738`), `serialize()` (`:745`), `subscribe/getSnapshot` (`:792/797`), `consumeEvents()` (`:800`). Command union is 28 intents in `lib/game/engine/commands.ts:18-45` (selectSlot, craft, placeBlock, attack, setGameMode, respawn, etc.). This dispatch/step/serialize triple is the clean seam a networked/authoritative-server model would wrap.
+
+---
+
+## 4. Input flow
+
+All DOM input lives in `lib/game/input/inputController.ts` (`createInputController`, owns every `window`/`document` listener; disposed on unmount).
+- **Pointer lock:** acquired on `dblclick` → `canvas.requestPointerLock()` (`:154-161`); `pointerlockchange` (`:170-178`) sets `input.pointerLocked` and dispatches `pause` on lock loss. Re-lock also in `useMinecraftGame.requestPointerLock` (`:404`).
+- **Mouse look:** `mousemove` → `engine.applyLook(-movementX*SENS, -movementY*SENS)` (`:50-53`, `MOUSE_SENSITIVITY=0.0021`).
+- **Keyboard/mouse → player:** continuous state (`keys: Set`, `leftMouseHeld`, `capsActive`, `pointerLocked`) is exposed as `input.input` (a `FrameInput`) and read every tick by `gameEngine.step(dt, input.input)` (`useMinecraftGame.ts:305`). Discrete actions dispatch commands (Digit→selectSlot, KeyI→toggleInventory, KeyE/right-click→placeBlock, left-click→attack, double-tap Space→toggleFlight, Shift+U→unstuck, F3→toggleDebug, KeyV→camera, Escape handling). `uiBlocked()` (`:45`) gates gameplay input when a menu/inventory/death overlay is open.
+
+Multiplayer implication: input is already funneled through a single controller producing engine commands + a per-frame `FrameInput` — a networked transport would intercept exactly here.
+
+---
+
+## 5. In-game UI surfaces (what multiplayer touches)
+
+All rendered by `components/MinecraftGame.tsx` (`components/game/`): `Hotbar`, `StatusBars` (hearts/hunger/armor/oxygen), `XpBar`, `InventoryPanel` (+ crafting, plus enchanting/anvil/grindstone columns, `CreativeInventoryTab`, chest `container`), `AdvancementsPanel`, `PauseMenu` (tabs: Game / Options / Controls), `DeathScreen`, `GameOverScreen`, `VictoryScreen`, `SleepOverlay`, `BossHealthBar`, `TreasureCompass`, `ActiveEffects`, `DebugOverlay`, minimap, crosshair, caps indicator, "Double-click to play" hint, and a `hud-toast` for `saveMessage`.
+
+**Text-entry / chat status:** there is **no chat and no command console**. The only text inputs anywhere are: the anvil rename field (inside `InventoryPanel`), and the menu name/seed inputs (`CreateWorldForm`, `CreateProfileForm`, rename forms). Toast-style messaging exists (`flashMessage` in `useMinecraftGame.ts:222`) — a natural spot to surface player-join/leave/chat later, but a real chat UI would be net-new.
+
+**Menu surfaces multiplayer must extend:** `ProfileSelect` (→ accounts + guest), `WorldSelect` (→ cloud world list, "join server"), `CreateWorldForm`, and `PauseMenu` "Save &amp; Quit to Worlds" (`PauseMenu.tsx` / `useMinecraftGame.quitToWorlds:506`).
+
+---
+
+## 6. config.ts tunables (grouped; see `docs/tuning.md`)
+
+- **Tick rate:** fixed timestep is **not** in config — it's `MAX_STEP_SECONDS = 0.05` (50 ms ⇒ **20 tps**) with `MAX_SUBSTEPS = 5` catch-up, defined inline in the rAF loop (`useMinecraftGame.ts:294-295`). `AUTOSAVE_INTERVAL_MS = 15000` (`config.ts:336`).
+- **Player physics:** `GRAVITY 26`, `JUMP_VELOCITY 8.2`, `WALK_SPEED 4.8`, `SPRINT_SPEED 12.8`, `CROUCH_SPEED 2.1`, `FLY_SPEED 11`, `PLAYER_HEIGHT 1.8`, `EYE_HEIGHT 1.62`, `PLAYER_HALF_WIDTH 0.3` (`config.ts:4-29`). Read by `systems/playerMotion.ts`.
+- **Day length / spawn:** `DAY_CYCLE_SECONDS 240` (4 min); `HOSTILE_SPAWN_BELOW_DAYLIGHT 0.28`, `HOSTILE_CAP 16`, `HOSTILE_SPAWN_MIN_RADIUS 16`, `PASSIVE_CAP 24`, `AQUATIC_CAP 24`, `HOSTILE_SPAWN_INTERVAL_SECONDS 10` (`config.ts:185-211`, `:287`).
+- Plus: player stats/hazards (hearts/hunger/oxygen/lava/water), status effects, mining/combat/ranged, boss, raids, explosions, breeding/pets, fishing, XP/enchanting/anvil/grindstone, weather. Worldgen numbers are **not** here — they live in the hash-pinned `GEN` object in `lib/world/generation.ts`.
+- **Rendering (fixed constants, not user settings):** `RENDER_RADIUS 90`, `RENDER_GRID 20`, `THIRD_PERSON_DISTANCE 4` (`config.ts:356-361`).
+
+---
+
+## 7. Settings / options
+
+- **Audio:** `AudioSettings {master, music, muted}`, `readAudioSettings`/`writeAudioSettings` (`lib/game/audio/settings.ts`), global key `minecraft_audio_v1`; UI = `PauseMenu` **Options** tab (two 0–100 sliders + mute) wired via `useMinecraftGame.updateAudioSettings:152`.
+- **Appearance (skin):** per-profile, `setProfileSkin` (`profiles.ts:102`); UI = `PauseMenu` Options tab swatch grid + `CreateProfileForm`. Renderer updated live via `rendererRef.current?.setPlayerSkin(...)` (`useMinecraftGame.ts:165`).
+- **Game mode &amp; difficulty:** switchable in-game via `PauseMenu` **Game** tab → `setGameMode`/`setDifficulty` dispatch (locked when hardcore).
+- **No render-distance / graphics options UI exists** — those are compile-time constants.
+
+---
+
+## Multiplayer-relevant seams (summary for planning)
+
+1. **Injectable `Storage` everywhere** (`profiles.ts`, `worlds.ts`, `save.ts`, `manifest.ts`, `audio/settings.ts`, `skinSettings.ts`) — the cleanest place to swap localStorage for a cloud-backed async store (note: current signatures are synchronous `Storage`, so async cloud sync needs an adapter/hydration layer, not a drop-in).
+2. **Headless deterministic engine** (`GameEngine`: seed-based worldgen + block-diff saves + `dispatch/step/serialize`) is well-suited to server authority; the command union (`commands.ts`) is the intent wire format.
+3. **Profiles already model "a player identity + skin"** (`profiles.ts`) — guest vs account maps onto this; `activeProfileId` and the sessionStorage tab pointer (`GameShell`) are the identity plumbing to generalize.
+4. **Saves are raw JSON, unbounded, one blob per world** (`minecraft_world_save_&lt;id&gt;`) — cloud-save cost/size and conflict-resolution (autosave every 15 s + on unload) need a strategy.
+5. **No transport, no chat, no server** — all net-new; toast infra (`flashMessage`) and the menu/pause surfaces are the UI attach points.</result>
+<usage><subagent_tokens>113732</subagent_tokens><tool_uses>33</tool_uses><duration_ms>243614</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>aa098dfe852682d5e</task-id>
+<tool-use-id>toolu_011RARGhNA33hYup6apGuWKJ</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/aa098dfe852682d5e.output</output-file>
+<status>completed</status>
+<summary>Agent "Map engine/simulation coupling" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I don't have write access (read-only search agent), so I'll present the complete assessment directly. I have everything needed.
+
+---
+
+# Headless Simulation Core Extraction — Feasibility Assessment
+
+## Headline
+
+**This engine is already a headless simulation core.** It was architected headless-first: the entire simulation lives in `lib/game/engine/` + `lib/world/`, runs under `bun test` with no DOM, and the docs state it explicitly (`docs/architecture.md:16`, `GameEngine.ts:151-156`, `state.ts` header). Rendering (three.js), audio (WebAudio), input (DOM listeners), and React are strictly separated observer layers. **Extraction to Node/Bun is low-effort mechanically; the real work is not decoupling from the browser — it's that the state model is single-player-shaped.**
+
+---
+
+## 1. Directory map of the engine
+
+```
+lib/world/                        VOXEL DATA + WORLDGEN (2,405 LOC, 10 src files)
+  voxelWorld.ts   VoxelWorld: flat Uint8Array blocks + parallel Uint8Array light
+  blocks.ts       BlockId, BiomeId, WORLD_SIZE_* (512×512×150), palettes
+  generation.ts   generateWorld(): deterministic terrain/caves/ores/trees/structures/dungeons
+  lighting.ts     computeFullLight()/applyEdit() — derived cache, never serialized
+  queries.ts      voxelRaycast (DDA), collidesAt, hasSupportUnderPlayer  [pure math]
+  doors.ts        multi-cell door state machine
+  meshing.ts      buildGeometryRegion() → THREE.BufferGeometry   [RENDER-ONLY]
+  atlas.ts        createBlockAtlasTexture()                       [RENDER + DOM]
+  index.ts        barrel
+
+lib/game/engine/                  SIMULATION CORE (5,549 LOC, 28 src files)
+  GameEngine.ts   owns GameState; step(dt,input); dispatch(Command); serialize(); subscribe/getSnapshot
+  state.ts        GameState, FrameInput, GameSnapshot, GameEvent, all entity types
+  commands.ts     Command union — the single write-door
+  blockChanges.ts delta tracker (edits vs worldgen baseline) — the save-diff seam
+  projectiles.ts  arrow spawning
+  systems/        one module per mechanic, each a pure function over GameState:
+    playerMotion  playerStats  playerLife  dayNight  weather  mining  combat
+    mobAI  spawnDirector  projectileAI  spears  fishing  breeding  vehicles
+    interact  explosion  randomTicks  raid  dungeon  treeGrowth  statusEffects
+    xp  advancements
+
+lib/game/ (root)                  SHARED GAMEPLAY DATA/RULES (5,424 LOC)
+  inventory, items, recipes, mobs, mobLoot, mobXp, enchantments, anvil, grindstone,
+  trades, difficulties, gameModes, config, spawn, save, worlds, profiles,
+  bossTracking, dungeonLoot, fishingLoot, etc.   [almost all pure]
+
+lib/game/render/  (3,082 LOC, 23 files)  THREE.js — observer layer   [THREE-COUPLED]
+lib/game/audio/   (2,596 LOC)            WebAudio/ZZFX — observer     [BROWSER-COUPLED]
+lib/game/input/   (210 LOC)              DOM listeners                [BROWSER-COUPLED]
+lib/ui/           (1,550 LOC)            procedural sprites           [pure + thin canvas]
+components/, app/                        React shell / Next.js
+```
+
+**Size ratio:** simulation (engine + world + gameplay data) ≈ **13,400 LOC** vs presentation (render + audio + input + ui) ≈ **7,400 LOC**. The sim is the larger, denser half and is already isolated.
+
+---
+
+## 2. Game loop / step-tick pipeline
+
+- **The engine is NOT frame-coupled.** `GameEngine.step(dt, input)` is a plain function of `dt` seconds (`GameEngine.ts:361`). The `requestAnimationFrame` loop lives **only** in the React hook `lib/game/useMinecraftGame.ts:297-374`, which does bounded catch-up substepping: accumulate wall-time, then `while (pending&gt;0) step(min(pending, 0.05))` — `MAX_STEP_SECONDS=0.05` (20 Hz cap), `MAX_SUBSTEPS=5`. A server replaces this with a `setInterval`/timer driving the same `step(dt)`; nothing in the engine changes.
+- **Step order** (`GameEngine.step`, documented at `docs/architecture.md:41-56`, code at `GameEngine.ts:361-449`):
+  0. pause gate (freeze + snapshot, return)
+  1. stuck detection / auto-unstuck
+  2. death check + respawn countdown (while dead: only mobs, TNT, projectiles tick)
+  3. sleep gate (freeze during fade, then skip to morning)
+  4. player OR mounted-vehicle motion (`playerMotion`/`vehicles`)
+  5. hunger / regen / water / lava / oxygen / starvation (`playerStats`)
+  6. status effects tick
+  7. mining progress + block break/place (`mining`)
+  8. thrown spears, fishing
+  9. day-night clock → weather (transient, seed+dayClock)
+  10. random block ticks (crop growth)
+  11. hostile / aquatic / dungeon-spawner directors (`spawnDirector`)
+  12. mob AI (`mobAI`)
+  13. primed TNT, projectiles (`projectileAI`)
+  14. breeding, raid
+  15. debug readout → `refreshSnapshot()`
+- **Determinism:** the sim's own randomness is an injectable `rng` (`GameEngine.ts:177`, default `Math.random`) threaded through mob AI, spawns, loot, fishing, breeding. Worldgen is fully deterministic (see §4). So the engine is deterministic **if** you inject a seeded PRNG — the seam already exists, but the default is `Math.random`. There is no wall-clock (`Date.now`/`performance.now`) or frame counter inside the engine; all time flows through `dt`.
+
+---
+
+## 3. Coupling to browser APIs — module classification
+
+I grepped `window`, `document`, `requestAnimationFrame`, `performance.now`, `localStorage`, `AudioContext`, `navigator`, canvas/`createElement`, `Math.random`, and `three` imports across the simulation dirs.
+
+**Findings inside `lib/game/engine/` + `lib/world/` + `lib/game/*` (the sim):**
+- `window`, `requestAnimationFrame`, `performance.now`, `localStorage`, `AudioContext`, `navigator`: **zero** usages (all matches were the word "window" in comments about fishing/weather time windows).
+- `document.createElement`: **one** — `lib/world/atlas.ts:40` (block-atlas texture, a render-support module, not needed headless).
+- `Math.random`: only as the **default** for injectable seams (`GameEngine.ts:177,179`, `spawn.ts`, `worlds.ts`, `manifest.ts` id-gen).
+- `three` import: present in the engine, but **only `THREE.Vector3` is used in simulation logic** — 186 uses, all pure math. The non-Vector3 THREE symbols (`Mesh`, `BoxGeometry`, `BufferGeometry`, `CanvasTexture`, materials) appear **only** in render-support files: `lib/world/meshing.ts`, `lib/world/atlas.ts`, `lib/game/mobModel.ts`, and `lib/game/types.ts` (a `MobModel` type). No engine `systems/*` file constructs GPU objects.
+
+### Classification table
+
+| Module / dir | three.js? | DOM/browser? | Class | Headless-ready? |
+|---|---|---|---|---|
+| `engine/GameEngine.ts` | `Vector3` only | none | **pure*** | Yes (swap 1 import) |
+| `engine/state.ts` | `Vector3` types | none | **pure*** | Yes |
+| `engine/commands.ts`, `blockChanges.ts`, `projectiles.ts` | Vector3 / none | none | **pure*** | Yes |
+| `engine/systems/*` (all 23) | `Vector3` only | none | **pure*** | Yes |
+| `world/voxelWorld.ts`, `blocks.ts`, `generation.ts`, `lighting.ts`, `doors.ts` | none | none | **pure** | Yes |
+| `world/queries.ts` | `Vector3` only | none | **pure*** | Yes |
+| `world/meshing.ts` | BufferGeometry | none | **three-coupled** | Render-only (skip) |
+| `world/atlas.ts` | CanvasTexture | `document.createElement` | **browser+three** | Render-only (skip) |
+| `game/` rules (inventory, items, recipes, mobs, loot, enchant, anvil, difficulties, gameModes, config, spawn, bossTracking…) | mostly none; `spawn.ts` Vector3 | none | **pure** | Yes |
+| `game/save.ts` | none | `localStorage` **default arg** | **pure (injectable)** | Yes — pass a server `Storage` |
+| `game/mobModel.ts`, `render/*` | yes | canvas | **three-coupled** | Client-only (skip) |
+| `game/audio/*` | no | `AudioContext` | **browser-coupled** | Client-only (skip) |
+| `game/input/inputController.ts` | no | full DOM | **browser-coupled** | Replace with net input |
+| `useMinecraftGame.ts`, `components/*`, `app/*` | via renderer | React/DOM | **browser-coupled** | Client-only |
+
+\* "pure\*" = pure logic whose only external dependency is `THREE.Vector3` (a headless-safe math class; three.js runs fine in Node — only its WebGL renderer needs a canvas). You can extract as-is, or replace with a ~50-line Vector3 to drop the heavy dependency.
+
+**Bottom line:** to run the sim headless you import `GameEngine`, `lib/world` (minus `meshing`/`atlas`), and the `lib/game` rule modules — and you touch **nothing** browser-specific except swapping the default `Storage` in `save.ts` and injecting a seeded `rng`.
+
+---
+
+## 4. Worldgen
+
+- **Fully deterministic and seeded.** `generateWorld(world, worldType)` (`lib/world/generation.ts:154`) runs terrain → caves → ores → lava → trees → structures → villages → dungeons, each pass using its **own named mulberry32 PRNG** derived from `world.seed` (`0x6d2b79f5` mulberry constant at `generation.ts:157`; separate streams `coalRand`, `dungeonRand`, `villageRand`, `shipwreckRand`, `treasureRand` so passes stay byte-identical). Terrain height uses `smoothNoise2D(x,z,seed)` (`generation.ts:141`).
+- **Byte-identical output per seed is a hard save-format contract**, pinned by hash tests in `generation.test.ts` (`docs/architecture.md:130`). This is gold for multiplayer: a joining client regenerates the identical baseline from `seed` alone, so you only ship the **block diff**, not 37 MB.
+- **NOT chunked / not on-demand.** The whole world is generated at engine construction (`GameEngine.ts:185`). World is fixed **512×512×150 = 39.3 M voxels ≈ 37 MB `Uint8Array`** for blocks + an equal-size light array, all baked at boot (`computeFullLight`, `GameEngine.ts:201`). There is no chunk streaming, no partial load, no interest management. Dungeon/shipwreck/treasure/village sites are re-derived from seed at boot (`collect*Sites`).
+
+---
+
+## 5. Player action flow &amp; physics
+
+Flow: **DOM event → `inputController` → `engine.dispatch(Command)` or `engine.applyLook(dYaw,dPitch)` → system module mutates `GameState`.**
+- Continuous movement is a `FrameInput` (`state.ts:307`): `{ keys: Set&lt;string&gt;, capsActive, leftMouseHeld, pointerLocked }` read every `step`. Keys are raw KeyboardEvent codes (`"KeyW"`,`"Space"`,`"KeyC"` — see `playerMotion.ts:77-80`). Discrete actions (`attack`, `placeBlock`, `selectSlot`, `eatFood`, `craft`…) are `Command`s dispatched immediately (`inputController.ts`).
+- **Physics/collision** is in `systems/playerMotion.ts` — swept axis-by-axis collision via `collidesAt` (`lib/world/queries.ts`), gravity/jump/fly/noclip, fall damage, void damage, world-border clamp. **Fully separable from camera and pointer-lock**: it reads only `FrameInput.keys` + `player.yaw/pitch` and mutates `player.position/velocity`. The camera boom, pointer-lock, and mouse sensitivity all live in the render/input layers, never here.
+- **Aim is implicit:** `attack` and `placeBlock` resolve against `player.yaw/pitch` at execution time (raycast from the eye) — the commands carry **no target coordinates**. For an authoritative server this is actually ideal (server raycasts against its own authoritative world), but it requires each player's `yaw/pitch` to be current before the command runs — i.e. `applyLook` deltas must be networked alongside commands.
+
+---
+
+## 6. Entities / mobs
+
+- **16 mob kinds** (`MobKind`, `types.ts:89`): sheep, chicken, horse, cow, pig, wolf, cat, cod, salmon, zombie, skeleton, spider, creeper, raider, villager, boss.
+- Simulated as a **flat `state.mobs: MobState[]`** (`state.ts:29`, no three.js objects — visuals reconciled by id in the renderer). Projectiles, thrown spears, vehicles, primed TNT are parallel entity lists/maps.
+- **AI** (`systems/mobAI.ts`): wander/aggro/flee, line-of-sight melee, ranged kiting (skeletons/boss), daylight burn, a faction enmity table (wild/hostile/ally/villager/raider), pet following, boss summon/spread. Movement is surface-following via `surfaceYAt`; no A* pathfinding.
+- **Spawning** (`systems/spawnDirector.ts`): interval-based night hostile director, aquatic director, dungeon-spawner director, all gated by difficulty and a shared `HOSTILE_CAP`, spawning **near the player**.
+- **Determinism:** mob AI, spawns, breeding, and loot all consume the injected `deps.rng` (`mobAI.ts:211-342`, `GameEngine.ts:1028-1036`) — deterministic given a seeded rng, otherwise `Math.random`. Mobs are **session-only / partially persisted** (tamed pets + villagers persist via save v14/v15; wild mobs are re-seeded each boot).
+- **Single-target assumption:** mob AI, spawn distances, and random ticks all key on the singular `state.player`. This is the core multiplayer refactor (see §Hardest).
+
+---
+
+## 7. Existing seams multiplayer can hook into
+
+This codebase has unusually clean seams — several map almost 1:1 onto netcode:
+
+1. **Command pattern** (`commands.ts`, `GameEngine.dispatch`): "every state mutation triggered by the UI or input controller goes through `GameEngine.dispatch` with one of these — the single auditable entry point into the simulation." This is your **client→server RPC channel**. Commands are small, near-JSON-serializable discriminated unions. `applyLook(dYaw,dPitch)` is the one out-of-band input (mouse deltas) — fold it into a command or a per-tick input packet.
+2. **Event bus** (`GameEngine.emit` / `consumeEvents()` returning `GameEvent[]`, `state.ts:388-448`): ~60 one-shot event types, most already carrying coordinates (`blockPlaced`, `blockBroken`, `mobDied`, `mobSpawned`, `arrowHit`, `explosion`, `bossDefeated`…). This is your **server→client broadcast stream** — the renderer and audio already consume it exactly this way, so clients would too.
+3. **`blockChanges` delta tracker** (`blockChanges.ts`): tracked edits against the worldgen baseline, with reverted edits dropping out. Combined with deterministic seed-based worldgen, a joining client syncs with `{seed, worldType, blockDiff}` instead of 37 MB — **the world-state replication seam already exists** (it's the save format).
+4. **Snapshot / `useSyncExternalStore`** (`buildSnapshot`, `subscribe`, `getSnapshot`): a ref-stable immutable projection rebuilt only on visible change. This is a ready-made **per-client state-delta projector** (today it's HUD-shaped and single-player; you'd add per-player projections).
+5. **Injectable everything:** `rng`, `worldSize`, and `save`'s `Storage` are all constructor/param injectable (`GameEngineOptions`, `save.ts:227`). Deterministic seeded rng + server storage drop in with no code change.
+6. **`GameApi` facade** (`state.ts:322`): `{ dispatch, serialize, advancementState }` — a clean, narrow interface the transport can wrap.
+
+**There is no existing networking code, multiplayer stub, or peer/socket abstraction anywhere** (grep for websocket/socket/webrtc/peer/multiplayer/netcode = 0 hits). But the command+event+delta architecture means you'd be adding transport around an already-clean core, not surgically decoupling one.
+
+---
+
+## Top 5 hardest coupling points for headless extraction
+
+Ranked by real effort. Note: browser decoupling is *not* in the top 5 — it's already done.
+
+1. **Single-player state shape (by far the biggest).** `GameState` has one `player`, one `inventory`, one `hearts/hunger/oxygen/xp/effects`, one `mining` target, one `fishing`, one `mountedVehicleId`, one `openContainerIndex` (`state.ts:182-276`). Mob AI, spawn directors, random ticks, and weather all reference the singular `state.player`. Multiplayer requires a `players: Map&lt;id, PlayerState+inventory+stats+mining+…&gt;` and rewriting every system that reads `state.player` to loop over players (proximity spawning, "nearest player" aggro, per-player interest). This is a structural refactor of the whole `systems/` layer and the save format.
+
+2. **Whole-world in-memory arrays, no chunking.** 37 MB blocks + 37 MB light baked at boot (`GameEngine.ts:185-201`), fixed 512³-ish. Fine for one browser tab; heavy for a server hosting many concurrent worlds, and there's no chunk granularity for per-client interest management or partial network sync. You'd want chunked storage + streaming, which touches `voxelWorld`, `lighting` (currently a whole-field bake/flood), and `meshing`.
+
+3. **Determinism default is `Math.random`.** The `rng` seam exists, but for server-authoritative fairness (or lockstep) you must inject a single seeded PRNG stream and audit that *every* nondeterministic call routes through it. Spot-checked calls do (`mobAI`, `spawnDirector`, loot, `dispatch` rotten-flesh roll `GameEngine.ts:539`), but this needs a full sweep. Also `manifest.ts` id-gen and `worlds.ts` seed resolution use `Math.random` directly.
+
+4. **Implicit-aim commands need synced look state.** `attack`/`placeBlock` raycast from `player.yaw/pitch` with no target coords (`GameEngine.ts:648-671`, `dispatch placeBlock:625`). The server must apply each client's latest `applyLook` before executing that client's action command, and reconcile ordering — straightforward but a protocol design point, and it means `applyLook` (currently a direct mutator, not a Command) should become part of the networked input.
+
+5. **`three` dependency in the sim + input key-code coupling.** Minor but real: the engine imports `import * as THREE from "three"` for `Vector3` only. Three.js loads in Node, so it *works*, but you're pulling a large GPU library into a server process — worth replacing with a tiny `Vector3` for footprint. Separately, `FrameInput.keys` uses raw browser key codes (`"KeyW"`); the server input packet should carry an abstract movement intent (`forward/strafe/jump/crouch/sprint` booleans) rather than DOM `event.code` strings, and `playerMotion.ts:77-80` decodes them.
+
+---
+
+## Verdict
+
+Extracting a headless core to run `step(dt)` on a Bun/Node server is **a few hours** of mechanical work (import `GameEngine` + `lib/world` sans `meshing`/`atlas` + `lib/game` rules, inject a seeded rng and a server `Storage`, drive `step` from a timer, wire `dispatch`/`consumeEvents` to a socket). The engine is genuinely DOM-free and tested that way. **The multiplayer effort is essentially all in #1 (multi-player state model) and #2 (chunked/interest-managed world), not in browser decoupling** — the command/event/delta seams for netcode are already present and idiomatic.
+
+Key files to start from: `lib/game/engine/GameEngine.ts`, `lib/game/engine/state.ts`, `lib/game/engine/commands.ts`, `lib/game/engine/blockChanges.ts`, `lib/world/voxelWorld.ts`, `lib/world/generation.ts`, `lib/game/save.ts`, and the step-order/invariants sections of `docs/architecture.md`.</result>
+<usage><subagent_tokens>114428</subagent_tokens><tool_uses>22</tool_uses><duration_ms>301805</duration_ms></usage>
+</task-notification>
+
+---
+
+let me re-slect them
+
+---
+
+let me re-select them
+
+---
+
+<task-notification>
+<task-id>abbfef181d32bd3d5</task-id>
+<tool-use-id>toolu_01Hqz41hMweyya25J25yLEp4</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/abbfef181d32bd3d5.output</output-file>
+<status>completed</status>
+<summary>Agent "Design multiplayer implementation plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All exploration done. Here is the implementation plan.
+
+---
+
+# Monecraft Online Multiplayer — Implementation Plan
+
+Repo: `/Users/hutusi/workspace/ai/david/monecraft` · Target: 2–8 player private co-op rooms, hybrid authority, Vercel (web/auth/data) + Fly.io (Bun realtime server) + Neon Postgres. Six phases, each an independent branch/PR with a green verify gate (`bun run lint`, `typecheck`, `format:check`, `bun test`, `build`, plus e2e where relevant), and docs + tests + CHANGELOG shipping with each phase.
+
+---
+
+## Phase map (the spine)
+
+| Phase | Branch | Landing point (user-visible state at merge) |
+|---|---|---|
+| 1 | `mp/1-deterministic-foundations` | SP game identical in feel; worldgen now bit-portable (WORLDGEN_VERSION 11); input is abstract intents; tick loop extracted. Cross-engine determinism e2e green. |
+| 2 | `mp/2-multiplayer-engine` | Engine holds `players: Map`; save v17. SP still the only mode; all existing e2e pass unchanged. |
+| 3 | `mp/3-accounts-cloud-saves` | Sign-in (guest → upgrade), Neon Postgres, SP cloud-save sync, world CRUD API, invite/ticket API. No realtime yet. |
+| 4 | `mp/4-game-server-protocol` | `server/` Bun room server deployed to Fly, protocol v1, join tickets, Postgres persistence. Headless-tested; no browser UI yet. |
+| 5 | `mp/5-client-online-play` | "Play online": create/join MP worlds via invite link, remote avatars, chat, connection HUD. Two-client Playwright e2e. |
+| 6 | `mp/6-hardening-ops` | Reconnect/resync, backpressure kicks, latency sim, command-log capture, owner kick, soak script, metrics. GA of v1. |
+
+Phases 1 and 2 are pure-refactor phases with zero product change — they are the risk sponge. Phases 3 and 4 are independent of each other (3 = Vercel side, 4 = Fly side) and could proceed in parallel after 2; 5 needs both.
+
+---
+
+## Phase 1 — Deterministic foundations (worldgen portability, TickDriver, input intents)
+
+**Goal.** Remove every cross-engine nondeterminism from the sim path and every DOM-ism from the engine's input surface, so the identical engine source can run on Bun (server) and Chromium (client) and produce byte-identical worlds and compatible behavior. No networking.
+
+### 1a. Bit-portable worldgen (prerequisite, constraint 7)
+
+The offenders in `lib/world/generation.ts`:
+- `hash2D` (line 136): `Math.sin(x*127.1 + z*311.7) * 43758.5453123` — engine-defined.
+- `smoothNoise2D` (lines 142–148): four `Math.sin`/`Math.cos` waves — engine-defined.
+- `carveCaves` random-walk (lines ~290–291): `Math.sin(yaw)`, `Math.sin(pitch)` on arbitrary floats.
+- Audit pass for any other transcendental in sim-affecting paths: `grep -nE 'Math\.(sin|cos|tan|atan|exp|pow|log)' lib/world lib/game/engine lib/game/spawn.ts lib/game/engine/systems/dayNight.ts lib/game/engine/systems/weather.ts`. Known additional hits: `daylightAt` (dayNight) and `weather.ts` if they use trig — both derived per-tick from `dayClock`, so make them portable too (daylight gates hostile spawn/burn on the server; weather is cosmetic but free to fix with the same helper). `playerMotion.ts` trig (`forwardFromYaw`, `lookDirection`) is fine to leave: it only affects the local frame's motion, never seed-determined bytes — but note it in docs.
+
+New file **`lib/world/noise.ts`**:
+- `hashU32(x: number): number` — integer avalanche hash (`Math.imul`, xor-shift; only int32 ops).
+- `hash2D(x: number, z: number, seed: number): number` → [0,1) via integer hash of `(x|0, z|0, seed|0)` divided by 2^32. IEEE-754 add/sub/mul/div are correctly rounded per ECMA-262, so this is bit-identical everywhere.
+- `valueNoise2D(x: number, z: number, seed: number): number` — integer-lattice value noise: `Math.floor` to cell, `hash2D` at 4 corners, smoothstep (polynomial, portable) bilinear blend. Compose 3–4 octaves in `smoothNoise2D`'s replacement, tuned so output range/frequency approximates the old `[-6.3, 6.3]`-ish band (the structural probes in `generation.test.ts` — flat is level, amplified higher-relief, islands flood with dry spawn, villages find flat land — are the acceptance tests for "close enough").
+- `portableSin(x)/portableCos(x)` — range-reduce with `Math.floor` then a fixed minimax polynomial (only +,*, portable). Used by `carveCaves`' walk and `daylightAt`. Unit-test max error &lt; 1e-3 (plenty for cave direction and a 0.04–1.0 daylight curve).
+
+Changes: `generation.ts` swaps to `noise.ts` imports; **`lib/game/config.ts` `WORLDGEN_VERSION` 10 → 11**; re-baseline all SHA-256 digests in `lib/world/generation.test.ts` per the documented policy (deliberate worldgen change, case 1). Move the digest constants into a new **`lib/world/generationBaselines.ts`** (exported `Record&lt;worldKey, sha256&gt;`) consumed by both `generation.test.ts` and the new e2e.
+
+**Cross-engine determinism e2e** — new `e2e/determinism.e2e.ts`: boot the seeded fixture world, then in-page compute `crypto.subtle.digest("SHA-256", window.__monecraft.engine.state.world.blocks)` and compare against the imported baseline (test file imports `generationBaselines.ts` at Node level and passes the expected hex into `page.evaluate`). This proves Chromium ≡ Bun for the pinned seed. Also relax the CI comment: the Bun pin is no longer load-bearing for worldgen (keep the pin anyway for reproducibility).
+
+### 1b. TickDriver extraction
+
+Decision (within the stated latitude "engine or a shared TickDriver"): **the SP client keeps its current variable-dt rAF stepping — feel-identical, e2e-identical — and the fixed 20 Hz tick is the server's driver.** The engine is already dt-agnostic; forcing SP to 20 Hz would add ~25 ms input latency and 20 Hz position chop with no benefit until client prediction exists (explicitly out of v1).
+
+New **`lib/game/engine/tickDriver.ts`**:
+- `MAX_STEP_SECONDS = 0.05`, `MAX_SUBSTEPS = 5`, `TICK_SECONDS = 0.05`, `TICK_RATE = 20` (constants move here from `useMinecraftGame.ts:294-305`).
+- `createAccumulator({ maxStepSeconds, maxSubsteps })` → `{ advance(nowMs, step: (dt) =&gt; void): number }` — the exact catch-up logic lifted from the hook (returns frameSeconds for `audio.sync`).
+- `createFixedTicker({ tickSeconds, now, setTimeout, onTick })` — drift-corrected chained `setTimeout` (schedules against an absolute next-tick target, not a naive `setInterval`), used only by the server in phase 4. Pure/injectable so it's unit-testable with a fake clock.
+- `useMinecraftGame.ts` swaps its inline loop for `createAccumulator`. Behavior byte-identical; add a unit test for the accumulator (slow-frame catch-up, drop-beyond-cap).
+
+### 1c. Input intents (DOM key codes out of the engine)
+
+`lib/game/engine/state.ts`: replace `FrameInput` with:
+
+```ts
+export type MoveIntents = { forward: boolean; back: boolean; left: boolean; right: boolean;
+                            jump: boolean; sprint: boolean; crouch: boolean };
+export type FrameInput = { move: MoveIntents; mineHeld: boolean };
+export const IDLE_INPUT: FrameInput = { move: {...all false}, mineHeld: false };
+```
+
+- `systems/playerMotion.ts:77-91`: `keys.has("KeyW")` → `input.move.forward`, etc.; `sprinting = move.sprint &amp;&amp; forwardInput &gt; 0 &amp;&amp; !crouching` (CapsLock resolution moves into the input controller).
+- `capsActive` leaves the engine: `inputController` owns it; the HUD caps indicator reads a new `sprintHeld` React state exposed by the hook from the controller (snapshot field `capsActive` renamed `sprintActive`, fed from `input.move.sprint` in `step` — smallest-diff option; either is fine, pick one and update `StatusBars`/HUD test).
+- `pointerLocked` leaves the engine: `inputController` only reports `mineHeld = leftMouseHeld &amp;&amp; pointerLocked` (audit `systems/mining.ts` for `input.pointerLocked`/`leftMouseHeld` reads).
+- `applyLook(dYaw, dPitch)` stays as the local-look mutator (client-authoritative in MP too); no change yet.
+- `inputController.ts` becomes the single DOM→intent mapper (future keybinding config lands here for free).
+
+**Tests:** update `playerMotion`/`GameEngine`/`inputController` tests to build `FrameInput` via a small `intents({forward:true,...})` helper (add to a shared test util so 40+ call sites are one-line changes). **Docs:** `architecture.md` (input section, TickDriver), `testing.md` (worldgen policy update: cross-engine determinism now guaranteed and e2e-pinned; re-baseline recorded), `save-format.md` (WORLDGEN_VERSION 11 entry — old worlds discard diffs and reboot from seed), CHANGELOG.
+
+**Risks:** value-noise terrain diverges enough to fail structural probes (mitigate: tune octave amplitudes until probes pass; probes, not hashes, define acceptance); a missed transcendental somewhere in the seed-determined path (mitigate: the grep audit + the cross-engine e2e catches it); users lose block edits on the v11 re-roll (accepted per policy; flag in CHANGELOG).
+
+**Verification:** full gate + `bun run test:e2e` (all existing + new determinism spec). Manual: play a world, confirm terrain still looks sane in all four world types.
+
+---
+
+## Phase 2 — Multi-player engine core (players map, save v17)
+
+**Goal.** `GameState.player` → `GameState.players: Map&lt;PlayerId, PlayerState&gt;` with every per-avatar concern moved inside, all 23 systems converted, per-player command attribution — while SP behavior and the existing e2e suite stay bit-for-bit compatible.
+
+### State shape (`lib/game/engine/state.ts`)
+
+```ts
+export type PlayerId = string;                 // "local" in SP; userId in MP
+export const LOCAL_PLAYER_ID: PlayerId = "local";
+
+export type PlayerState = {
+  id: PlayerId; name: string; skinId: SkinId;
+  position: THREE.Vector3; velocity: THREE.Vector3;
+  yaw: number; pitch: number; onGround: boolean;
+  gameMode: GameMode; isFlying: boolean;
+  inventory: InventorySlot[]; equippedArmor: EquippedArmor; selectedSlot: number;
+  hearts: number; hunger: number; oxygen: number;
+  effects: Map&lt;EffectId, number&gt;; xp: number;
+  stats: Map&lt;string, number&gt;; advancements: Set&lt;string&gt;;
+  isDead: boolean; respawnTimer: number; gameOver: boolean;   // per-player permadeath in MP
+  sleeping: boolean;                                          // in-bed flag (see sleep below)
+  spawnPoint: {x,y,z} | null;
+  mining: MiningState; fishing: FishingState | null;
+  mountedVehicleId: number | null;
+  inventoryOpen: boolean; advancementsOpen: boolean;
+  craftingStation: ...; activeVillagerProfession: ...; openContainerIndex: number | null;
+  input: FrameInput;                                          // latest intents (set per frame/packet)
+  timers: PlayerTimers;                                       // split of GameTimers, below
+};
+```
+
+`GameTimers` splits: **PlayerTimers** = void/regen/waterExposure/waterDamage/lavaBurn/lavaDamage/drown/starvation/sprint-walk-jump budgets/effectRegen/effectPoison/stuck/spearThrowCooldown/bowCooldown. **WorldTimers** (stay on `GameState.timers`) = hostileSpawn/aquaticSpawn/spawner/randomTick/breed. `daylightHudTimer`/`debugHudTimer` are presentation → keep on world timers (harmless) or move next to snapshot code.
+
+`GameState` gains `players: Map&lt;PlayerId, PlayerState&gt;` and `primaryPlayerId: PlayerId`, and **keeps `player`, `inventory`, `hearts`, `hunger`, `xp`, `effects`, `stats`, `advancements`, `selectedSlot`, `equippedArmor`, `isDead`, `mining`, `fishing`, `mountedVehicleId`, `openContainerIndex`, `spawnPoint`, `gameMode`, `isFlying`, `inventoryOpen`, `oxygen` as accessor properties delegating to `players.get(primaryPlayerId)`** (defined once via `Object.defineProperties` in a new `lib/game/engine/players.ts` `createGameStatePlayerAliases(state)`). This is deliberate and permanent, not transitional: it keeps `window.__monecraft.engine.state.player.position` and every existing e2e assertion (`e2e/helpers.ts:74`, `smoke.e2e.ts` mutating `state.player.yaw`) working, and keeps SP call sites readable. Systems, however, are converted to explicit player params — the aliases are for the shell/tests/console only. Document the invariant: *engine systems must never read the aliases.*
+
+`MobState.owner?: "player"` → `owner?: PlayerId`; `VehicleState.rider: "player" | null` → `rider: PlayerId | null` (save v17 migrates `"player"` → the wrapped player's id).
+
+### Engine surface (`lib/game/engine/GameEngine.ts`)
+
+- `dispatch(command: Command, playerId: PlayerId = state.primaryPlayerId)` — every `state.inventory`/`state.hearts`/... read in the big switch becomes `p = mustGetPlayer(state, playerId)`. `GameApi` unchanged for the UI; engine adds `apiFor(playerId): GameApi` (SP uses `apiFor(LOCAL_PLAYER_ID)`, which is what `buildSnapshot` publishes).
+- `step(dt: number)` — input moves off the signature: `setPlayerInput(playerId, input: FrameInput)` stores into `PlayerState.input`; the hook calls it right before `step`. Per-step loop: for each player → stuck check, death/respawn tick, motion (`tickPlayerMotion(state, p, dt, ...)`), stats/hazards/status effects, mining, fishing, look-derived systems; then world systems once (dayNight, weather, randomTicks, spawn directors, mobs, TNT, projectiles, breeding, raid, vehicles).
+- `emit` gains attribution where the shell/audio needs it: `GameEvent` gets an optional `playerId` on player-scoped events (`died`, `respawned`, `playerHurt`, `ateFood`, `jumped`, `landed`, `attackSwung`, `xpGained`, `advancementUnlocked`, fishing/sleep/anvil/enchant events…). SP shell filters/ignores it. `observeProgress` folds into the *acting player's* stats.
+- `applyDamage`/`applyEnvironmentalDamage`/`applyPoisonDamage` become curried per player: `applyDamageTo(playerId)(amount)`; `mobTickDeps` carries `players` + `applyDamageTo`.
+- Snapshot: `buildSnapshot()` projects the **primary** player (unchanged fields); MP viewers each run their own client engine so per-viewer projection on one engine is only needed server-side — and the server never builds snapshots: add `GameEngineOptions.headless?: boolean` that skips `refreshSnapshot` entirely (also a small perf win; the server drains events instead).
+- `addPlayer(spec: {id, name, skinId, restore?: SavedPlayer}): PlayerState` / `removePlayer(id): SavedPlayer` (serialize-on-leave). Fresh players spawn via `findSpawnOnLand`.
+
+### System-by-system
+
+- **`systems/mobAI.ts`** — `nearestTargetablePlayer(state, mob)` replaces the singular reads at lines 153–160, 176–178, 250, 279–342, 411, 430: filter `!isDead &amp;&amp; mobsThreaten(p.gameMode)`, pick nearest by XZ distance; aggro/kiting/boss spread/knockback (`playerVelocity` write at :430) all use the chosen target. Fish flee the nearest player. `creditPlayer` for pet kills = pet's `owner`.
+- **`systems/spawnDirector.ts`** — `spawnInitialMobs` centers on world spawn (unchanged); night director loops players (`tickHostileSpawnDirector`): each interval pick a random player as spawn center (round-robin), global `HOSTILE_CAP × hostileCapScale × ceil(players/2)` cap so 8 players don't get 8× mobs but also don't starve; aquatic director likewise. Spawner activation (:250): *any* player within `SPAWNER_ACTIVATION_RADIUS`.
+- **`systems/randomTicks.ts`** — sample columns around each player, per-player budget = `RANDOM_TICK_SAMPLES / players.size` (bounded below), so total work is constant.
+- **Sleep** — per-player `sleeping` set by bed interaction (`systems/interact.ts`); when **every non-dead, non-spectator player** sleeps, the existing global `sleepTimer` fade engages and `wakeToMorning()` clears all `sleeping` flags. SP: one player ⇒ identical observable behavior (same code path). A sleeping player is immobilized (motion skipped) and can `wake` (new Command `{type:"wakeUp"}` dispatched by moving/Esc) — needed so one AFK-in-bed player doesn't hold the fade hostage; in SP the instant-fade means this is unreachable, preserving behavior.
+- **Pause** — `GameEngineOptions.authority: "local" | "server"` (default `"local"`). `dispatch("pause")` sets `state.paused` only under `"local"`; under `"server"` it's ignored (personal menus don't freeze the world — that's a client/UI concern in phase 5). The step-0 pause gate is unchanged for SP.
+- **Death/respawn** — `tickRespawnTimer`/`respawn()` per player; while a player is dead only *their* per-player systems skip; the world keeps ticking (SP-visible difference: in SP today "only mobs tick while dead" — keep the SP semantics by gating world systems on `authority === "local" &amp;&amp; primary.isDead` to preserve the existing e2e/death behavior exactly; on the server everything always ticks).
+- **Hardcore in MP** — per-player permadeath: death flips that player to spectator with `gameOver=true`; world-level `gameOver` (the existing flag) = all players gameOver (drives SP boot-into-spectator unchanged).
+- **`systems/interact.ts`, `mining.ts`, `combat.ts`, `fishing.ts`, `spears.ts`, `vehicles.ts`, `projectileAI.ts`** — take `player: PlayerState` explicitly; raycasts read that player's yaw/pitch/eye. `ProjectileState.fromPlayer: boolean` → `ownerPlayerId: PlayerId | null` (hit filter: player arrows hit mobs, mob arrows hit any player, nobody hits the firer).
+- **`systems/weather.ts`** — biome read uses the primary player locally; under `authority:"server"` skip (cosmetic, derived client-side from replicated `dayClock` + seed — free because it's a pure function).
+
+### Save v17 (`lib/game/types.ts`, `lib/game/save.ts`)
+
+`SaveDataV17 = Omit&lt;SaveDataV16, playerFields&gt; &amp; { version: 17; players: SavedPlayer[] }` where `SavedPlayer` = `{ id, name?, skinId?, position, inventorySlots, equippedArmor, selectedSlot, hearts, hunger, effects, xp, stats, advancements, spawnPoint, gameMode, gameOver }`. World-level fields stay top-level: seed, worldType, difficulty, hardcore, changes, blockEntities, lootedChests, mobs, vehicles, dayClock, villagesSeeded. `migrateSaveV16toV17` wraps the flat single-player fields into `players: [{ id: "local", ... }]` and rewrites mob `owner:"player"`/vehicle rider drops. `serialize()` emits v17; `readSave` chains …v16→v17. Round-trip + migration tests in `save.test.ts`; docs/save-format.md gets the v17 entry.
+
+**Docs:** rewrite `architecture.md` engine section (players map, authority, aliases invariant); `save-format.md` v17; `testing.md` (multi-player test helper: `addTestPlayer(engine, id)`); CHANGELOG. **New tests:** a `GameEngine.multiplayer.test.ts` — two players, mob targets nearer one, per-player death doesn't kill the other's session, per-player inventory isolation, all-asleep skips night, save round-trips two players.
+
+**Risks (biggest of the project):** ~13.4k LOC blast radius. Mitigations: the alias layer keeps shell/e2e compiling from day one; convert systems in dependency order (playerStats/playerLife → motion → mining/combat/interact → mobAI/spawnDirector → the rest), each with its tests green before the next; forbid alias use inside `lib/game/engine/systems/` with a lint restriction (`no-restricted-syntax` on `state.player` within that dir) once conversion completes.
+
+**Verification:** full gate; **all existing e2e pass unchanged** (this is the phase's acceptance bar); new MP engine tests.
+
+---
+
+## Phase 3 — Accounts, Postgres, cloud saves, invites (Vercel side)
+
+**Goal.** Identity + persistence + the join-ticket mint. Still no realtime.
+
+### Data layer — Drizzle ORM (justification: TS-strict inferred types matching this codebase's style, runs identically under Bun (game server, phase 4) and Next route handlers, SQL-file migrations committed to the repo, no runtime codegen; a minimal-SQL layer would re-implement half of it for two consumers)
+
+New `db/` package-in-repo (single package, no workspace):
+- `db/schema.ts` — better-auth core tables (`user` with `additionalFields: { skinId }` + anonymous-plugin `isAnonymous`, `session`, `account`, `verification`) plus:
+  - `worlds`: `id uuid pk, ownerId → user.id, kind text check in ('sp-cloud','mp'), name text, seed bigint, worldType text, gameMode text, difficulty text, hardcore bool, worldgenVersion int, saveVersion int, saveBlob bytea /* gzipped SaveData JSON */, createdAt, updatedAt`
+  - `worldMembers`: `worldId, userId, role text ('owner'|'member'), joinedAt, pk(worldId,userId)`
+  - `worldInvites`: `id uuid pk, worldId, token text unique /* 128-bit base64url */, createdBy, expiresAt timestamptz null, maxUses int null, uses int default 0`
+- `db/index.ts` — driver: `drizzle(postgres(DATABASE_URL))` via `postgres` (works on Bun and Node); tests use **PGlite** driver so `bun test` needs no daemon.
+- `drizzle.config.ts`, `db/migrations/*` committed.
+
+### Auth — better-auth, self-hosted
+
+- `lib/auth/server.ts` — `betterAuth({ database: drizzleAdapter(db), plugins: [anonymous({ onLinkAccount })], emailAndPassword: {...}, socialProviders: {...optional GitHub/Google} })`. `onLinkAccount` re-parents worlds/memberships from the anonymous user to the upgraded one (better-auth anonymous plugin's account-linking hook — verify exact hook name against the pinned better-auth version at implementation time; this is the flow to integration-test hardest).
+- `lib/auth/client.ts` — React client (`createAuthClient`), guest session created lazily on first "Play online"/"Sign in" (`authClient.signIn.anonymous()`), never on plain SP play (offline-first stays intact).
+- `app/api/auth/[...all]/route.ts` — handler mount.
+
+### Route handlers (all `app/api/...`, cookie-session guarded)
+
+- `worlds/route.ts` — GET (owned + member-of), POST create (`kind`, name, seed/worldType/gameMode/difficulty/hardcore).
+- `worlds/[id]/route.ts` — GET/PATCH (rename)/DELETE (owner only).
+- `worlds/[id]/save/route.ts` — GET/PUT gzipped SP save blob; LWW on `updatedAt` (client sends its base `updatedAt`; stale PUT returns 409 with server copy — client picks newer, per constraint 5).
+- `worlds/[id]/invites/route.ts` — POST create invite (owner).
+- `invite/[token]/route.ts` — GET resolve (world name/owner), POST accept → `worldMembers` insert.
+- `worlds/[id]/ticket/route.ts` — POST mint **join ticket**: HS256 JWT via Web Crypto (`lib/net/tickets.ts`, shared with the server), claims `{ sub: userId, wid, name, skinId, role, pv: PROTOCOL_VERSION, iat, exp: iat+60s }`, signed with `GAME_TICKET_SECRET`. Membership required.
+
+### Client
+
+- `components/menu/AccountPanel.tsx` — sign in / sign up / continue-as-guest / upgrade-account; badge in `MenuScreen`.
+- `lib/game/cloudSaves.ts` — SP sync: on world save (piggyback the existing 15 s autosave path, debounced to ~60 s + on quit) push gzipped blob if signed in; world-select merges local + cloud lists (cloud rows materialize as `WorldMeta` with a `cloudId`; play downloads blob → localStorage → normal boot). Gzip via `CompressionStream` (Chromium/modern-only is fine; feature-detect and skip sync otherwise).
+- `.env.example` (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GAME_TICKET_SECRET`, `NEXT_PUBLIC_GAME_SERVER_URL`), `docker-compose.yml` (postgres:16-alpine) for dev.
+
+**Tests:** ticket sign/verify round-trip + expiry (`lib/net/tickets.test.ts`); schema/CRUD against PGlite; invite accept idempotency; LWW conflict path; AccountPanel component tests. **Docs:** new `docs/online.md` (accounts, cloud saves, env setup); architecture.md gains the web/API layer diagram; CHANGELOG.
+
+**Risks:** better-auth anonymous→upgrade linking semantics (verify against the pinned version; integration-test the re-parenting); Vercel 4.5 MB body limit vs save blobs (gzipped diffs are ~hundreds of KB — assert size and warn at 3 MB).
+
+**Verification:** full gate (PGlite-backed tests keep CI daemon-free); manual: guest → create world → upgrade to email → world survives; SP save syncs and restores on a second browser.
+
+---
+
+## Phase 4 — Game server + protocol (Fly side)
+
+**Goal.** A single Bun process hosting N rooms, each an authoritative `GameEngine`, speaking protocol v1 over WebSocket, persisting to Postgres. Fully testable headlessly.
+
+### Shared protocol — `lib/net/` (client + server both import via `@/`)
+
+- `lib/net/protocol.ts` — `export const PROTOCOL_VERSION = 1;` message unions + total validators (hand-rolled, `save.ts` house style — no zod dep needed):
+
+**C2S:** `hello {ticket, protocol}` · `pose {seq, x,y,z, yaw,pitch, onGround, tick}` (20 Hz) · `cmd {seq, cmd: Command, pose: {x,y,z,yaw,pitch}}` (pose = client-claimed eye pose at click time; server applies it — sanity-checked — before dispatch, so aimed raycasts resolve server-side without changing `Command` shapes) · `chat {text}` · `ping {id, tMs}` · `resync {}`
+
+**S2C:** `welcome {protocol, playerId, worldId, seed, worldType, gameMode, difficulty, hardcore, dayClock, tick, players: [{id,name,skinId,x,y,z,yaw}]}` · **world sync** (one binary frame: gzipped JSON `WorldSync {changes, blockEntities, lootedChests, mobs, vehicles, containersOpenable, dayClock, tick}` — join payload per constraint 1) · `tick {n, ev: AttributedGameEvent[], pp: [id,x,y,z,yaw,pitch,flags][], mp: [mobId,x,y,z,yaw,hp][] /* deadband: only mobs that moved &gt; 0.05 or hp changed; 10 Hz (every 2nd tick) */, day?: dayClock /* every 20 ticks */, self?: SelfDelta}` · `mobsKeyframe {full list}` (every ~5 s, drift correction) · `playerJoined {id,name,skinId}` / `playerLeft {id,reason}` · `container {index, slots}` (to players with it open) · `chat {from,name,text}` · `pong {id, tMs, serverTick}` · `forcePose {x,y,z,yaw,pitch}` (position-sanity correction) · `kick {code, reason}`.
+
+`SelfDelta` (private, per client, only-when-changed): `{inv?, armor?, selectedSlot?, hearts?, hunger?, oxygen?, xp?, effects?, stats‑digest?, advancements?, isDead?, respawnSeconds?, sleeping?}` — the server-authoritative mirror of everything the SP snapshot shows.
+
+**Close codes:** 4000 bad ticket · 4001 protocol mismatch · 4002 room full (&gt;8) · 4003 kicked · 4004 idle timeout · 4005 server shutdown · 4008 slow client/backpressure.
+
+Binary path: v1 is JSON (`pose`/`tick` included) except the gzipped world-sync frame; the envelope discriminant `t` and versioned `hello` leave room to move `pose`/`tick.pp/mp` to packed ArrayBuffers later without renegotiating anything else.
+
+- `lib/net/codec.ts` — encode/decode + gzip (`Bun.gzipSync` server / `DecompressionStream` client). `lib/net/clock.ts` — RTT/serverTick estimator (EWMA over pings every 2 s).
+
+### Server — `server/`
+
+```
+server/index.ts        Bun.serve: GET /health, GET /rooms (ADMIN_TOKEN), WS upgrade on /ws
+server/config.ts       env: PORT, DATABASE_URL, GAME_TICKET_SECRET, ADMIN_TOKEN, MAX_ROOMS, region
+server/auth.ts         verifyTicket (lib/net/tickets)
+server/roomRegistry.ts Map&lt;worldId, Room&gt;; getOrLoad(worldId) → Postgres row → Room; evict
+server/room.ts         Room class (below)
+server/connection.ts   per-socket FSM: awaiting-hello (5s deadline) → joined; rate limits
+server/persistence.ts  load/store world rows (drizzle, db/schema); in-memory adapter for tests/e2e
+server/remoteMotion.ts (or lib/game/engine/systems/remotePlayers.ts) — see below
+server/Dockerfile      FROM oven/bun:1.3.12 (pin = CI); COPY repo; CMD ["bun","server/index.ts"]
+server/fly.toml        single region, internal_port 8080, http checks /health, min_machines_running=1, auto_stop off
+```
+
+**tsconfig handling:** the root `tsconfig.json` already includes `**/*.ts` and Bun natively honors its `paths` (`@/*`), so `server/` needs *no* build step and *no* second tsconfig — `bun server/index.ts` just runs. `next build` never sees `server/` (nothing under `app/` imports it); `tsc --noEmit` typechecks it in the existing gate. Add an ESLint `no-restricted-imports` guard: `server/**` may not import from `components/`, `lib/game/render/`, `lib/game/audio/`, `lib/ui/`, `lib/game/input/`.
+
+**Room lifecycle (`room.ts`):**
+- Construct: `new GameEngine({ save: parsedBlob ?? null, seed, worldType, difficulty, hardcore, authority: "server", headless: true })`; `createFixedTicker(TICK_SECONDS)` drives `step`.
+- Per tick: apply queued pose packets through **`applyRemotePoses(state, player, samples)`** — the server-side replacement for `tickPlayerMotion` (skipped under `authority:"server"`): clamp horizontal speed to `SPRINT_SPEED × maxSpeedEffect × 1.25`, vertical to terminal velocity, reject &gt;10-block jumps (snap back + `forcePose`), derive `onGround`/landing vy from sample deltas and feed a synthesized `MoveTickResult` into the unchanged hunger/stat/fall-damage pipeline; then `engine.step(dt)`; then drain `consumeEvents()` → attribute → broadcast `tick` (with per-client `self` deltas computed by diffing each player's server state against the last-sent shadow).
+- Persistence: `serialize()` → gzip → `UPDATE worlds SET saveBlob, updatedAt` every 60 s, on last player leaving, and on SIGTERM drain (broadcast `kick 4005`, persist all, exit) — Fly deploys are crash-safe to ≤60 s loss.
+- Idle: empty for 5 min → persist + `clearTicker` + registry eviction. `MAX_ROOMS` (start 6) → join beyond it answers `kick 4002` variant "server full".
+- Backpressure: before non-essential sends check `ws.getBufferedAmount()`; &gt; 256 KB → drop `pp`/`mp` for that client this tick; &gt; 1 MB sustained 5 s → `kick 4008`.
+- Chat: rate-limit 3 msg/s, 256 chars, broadcast; not an engine concern.
+
+**Engine deltas this phase:** `authority: "server"` gates (skip pause honor — already in phase 2; skip `tickPlayerMotion` in favor of `applyRemotePoses`; skip weather); `headless` snapshot skip (phase 2). Events already carry coords/attribution.
+
+**Fly deploy:** `fly launch` config committed; secrets `DATABASE_URL` (Neon), `GAME_TICKET_SECRET` (same value as Vercel), `ADMIN_TOKEN`. Single region (pick nearest owner base, e.g. `nrt`/`sjc`). Vercel↔Fly never talk at runtime (tickets are stateless HS256) except both → Neon.
+
+**Tests:** protocol validator round-trips + garbage rejection (`lib/net/protocol.test.ts`); fixed-ticker drift test; `server/room.test.ts` with fake sockets (`interface ClientSink { send(frame): void; close(code): void }`) + in-memory persistence — two fake clients join, block edit propagates as event, speedhack pose gets `forcePose`, idle eviction persists, per-client `self` delta on craft; one real-socket smoke test via `Bun.serve` on an ephemeral port. **Docs:** new `docs/protocol.md` (full message catalog, close codes, versioning rules), `docs/online.md` server ops section (Fly deploy, health/rooms), architecture.md server layer; CHANGELOG.
+
+**Risks:** single-threaded Bun process — 6 rooms × engine step must fit well inside 50 ms (expected: SP engine steps in low single-digit ms; **measure** — `/rooms` reports p95 tick duration per room, and `MAX_ROOMS` is tuned from data, not hope); `getBufferedAmount`/WS behavior differences in Bun (integration-test on the pinned Bun); three.js import weight on server (only `Vector3` used — fine, but confirm cold-start).
+
+**Verification:** full gate; deploy to Fly staging; connect with a scratch `bun run scripts/netProbe.ts` (tiny CLI client: hello→welcome→world→pose→edit echo).
+
+---
+
+## Phase 5 — Client online play (NetworkSession, avatars, chat, menus)
+
+**Goal.** Browser plays on the server: create/join MP worlds, see other players, chat. SP path untouched.
+
+### Session abstraction
+
+- `lib/game/session.ts` — `type GameSession = { engine: GameEngine; api: GameApi; start(node): void; dispose(): void; kind: "local" | "online"; net?: NetStatus }`; `createLocalSession(world, profile)` wraps today's construction (readSave/writeSave/autosave move here from `useMinecraftGame.ts`).
+- `lib/net/NetworkSession.ts` — the mirror of `GameApi` (constraint G): owns the WebSocket, and a **replica engine**: `new GameEngine({ seed, worldType, …, authority: "local", replica: true })` — new `replica: true` option: world generated from seed, join-payload diffs applied via `blockChanges.applySavedChanges`, light baked once; `step` runs *only* local-player motion + presentation systems (mining progress for the crack overlay, camera, timers), skipping mobAI/spawn/randomTicks/dayNight/breeding/raid (all replicated). Renderer, audio, minimap, and HUD consume this replica's `GameState`/snapshot **unchanged** — zero renderer surgery, which is the point of reusing the engine as the replicated store.
+  - Outbound: rAF loop still steps local motion at frame rate; a 20 Hz timer sends `pose`; `dispatch(cmd)` routes: **local-only** commands (`toggleInventory`, `toggleAdvancements`, `toggleDebug`, `toggleCameraView`, `pause`/`resume` → local UI overlay only, `respawn` UI-side) apply to the replica; **networked** commands (`selectSlot` — optimistically local *and* sent, `craft`, `swapSlots`, `moveStack`, armor, eat/drink, enchant/anvil/grindstone, `placeBlock`, `attack`, `setGameMode`/`setDifficulty` owner-only, `unstuck`) go up as `cmd` envelopes with the current pose.
+  - Inbound: `welcome`/world-sync boot; `tick.ev` → replay onto replica (block events mutate `world` + `worldMeshDirty`; other events forwarded to the existing renderer/audio event drain); `tick.pp`/`tick.mp` → interpolation buffers; `self` → overwrite replica player fields → snapshot refresh; `mobsKeyframe` → reconcile `state.mobs` by id; `container` → replica containers map; `day` → dayClock (weather derives locally, free).
+- `lib/net/interpolation.ts` — per-entity ring buffer of `{tMs, pose}`; sample at `estimatedServerTime − 125 ms` (constraint G's 100–150 ms), lerp position/slerp yaw; unit-tested pure.
+- Mining/breaking is server-confirmed (crack overlay local-cosmetic; the break lands on the event ~1 RTT later). Accepted v1 latency; the `cmd`+pose envelope already carries what full prediction will need later.
+
+### Rendering remote players
+
+- `lib/game/render/remotePlayerVisuals.ts` — keyed by `playerId`, reusing `playerModel.ts`/`playerPose.ts` (already built for third-person self) + `setPlayerSkin` palettes from each player's `skinId`, plus a name-tag sprite (canvas texture, same procedural-asset policy). Gait from interpolated horizontal speed, exactly like `mobVisuals`.
+
+### Shell/UX
+
+- `GameShell.tsx`: world-select gains an **Online** section (owned + member MP worlds from the API) with "Create online world" and "Copy invite link"; `app/join/[token]/page.tsx` resolves the invite (guest auto-session if signed out) → accept → jump into the world. Play flow: mint ticket (`POST /api/worlds/[id]/ticket`) → `NetworkSession.connect(NEXT_PUBLIC_GAME_SERVER_URL, ticket)`.
+- `useMinecraftGame.ts` accepts a `session` (built by the shell) instead of constructing the engine; SP save/autosave lives only in `LocalSession` (MP: server persists; no localStorage writes).
+- `components/game/ChatPanel.tsx` — Enter/T opens input (exits pointer lock), bottom-left fading log, toast-adjacent styling; hidden in SP. Piped through `NetworkSession`, never the engine.
+- `components/game/ConnectionStatus.tsx` — ping badge; "Reconnecting…" banner; on final failure a modal → back to worlds (graceful disconnect→offline messaging).
+- Pause menu in MP: opens (personal), world keeps running; "Save &amp; Quit" → "Leave world".
+
+**Tests:** NetworkSession unit tests against a fake socket (command routing table, self-delta application, event replay marks mesh dirty); interpolation math; ChatPanel/ConnectionStatus component tests. **e2e `e2e/multiplayer.e2e.ts`:** Playwright `webServer` gains the game server (`bun server/index.ts` with `PERSISTENCE=memory`) alongside `next start`; CI e2e job gains a `services: postgres` container for the Next/auth side. Two browser contexts: guest A creates an online world + invite; guest B joins via link; assert via `window.__monecraft` that (a) both see 2 players, (b) A places a block and B's `state.world` contains it within 2 s, (c) chat round-trips. **Docs:** `manual.md` (playing online, chat, invites), `online.md` client section, architecture.md session layer; CHANGELOG.
+
+**Risks:** the replica-mode system gating list drifting from the server list (mitigate: one shared `SYSTEM_SCHEDULE` table in `GameEngine.step` with `runsOn: "authority" | "replica" | "both"` flags — makes the split declarative and testable); two `webServer` entries + DB in CI e2e flakiness (mitigate: `PERSISTENCE=memory` server needs no DB; only auth does).
+
+**Verification:** full gate + all e2e (SP suites + MP spec); manual two-browser session across a real Fly deploy.
+
+---
+
+## Phase 6 — Hardening, reconnect, ops (GA)
+
+- **Reconnect/resync:** on socket drop keep the replica; auto-retry (1 s/2 s/4 s/8 s ×5) with a fresh ticket; on reconnect send `resync` → server replies world-sync + keyframe (full, gzipped — fine at this scale); banner UX. e2e: kill/restore the server-side socket, assert seamless resume.
+- **Latency simulation knob:** `NetworkSession.setSimulatedLatency(ms)` (delay queues both directions), exposed as `window.__monecraft.net` in dev + `NEXT_PUBLIC_NET_LATENCY_MS`; used manually and by an e2e sanity case.
+- **Command log / replay:** Room keeps a ring buffer of `{tick, playerId, cmd}` (+ pose checkpoints every 100 ticks); `GET /rooms/:id/log` (ADMIN_TOKEN) dumps it; `server/scripts/replay.ts` feeds a log into a fresh engine to reproduce server states offline — the MP debugging story.
+- **Owner controls:** C2S `kickPlayer {playerId}` (owner role from ticket) → `kick 4003`; invite revocation UI.
+- **Soak/load:** `server/scripts/loadSim.ts` — N synthetic ws clients walking randomly; record tick p95 + bandwidth; tune `MAX_ROOMS`, deadbands.
+- **Ops:** `/health` wired to Fly checks; `/rooms` gains tick-duration and buffered-bytes stats; document runbook in `docs/online.md`.
+- **Bandwidth reality-check (targets, from estimates):** C2S pose ≈ 1.2 KB/s; S2C per client ≈ 7 KB/s player poses (7 others @20 Hz) + ≤ 25 KB/s mobs worst-case (64 @10 Hz, deadband typically cuts to &lt; 5 KB/s) + bursty events ⇒ ~10–35 KB/s ≈ 80–280 kbps JSON; join payload ≈ 0.2–1.5 MB gzipped. All comfortably v1; binary packing is the pre-planned escape hatch.
+- Docs/tuning.md gains net constants (rates, deadbands, buffers); CHANGELOG; version bump to 0.13.0.
+
+**Verification:** full gate + full e2e incl. reconnect spec; soak script report attached to the PR.
+
+---
+
+## Riskiest assumptions (flagged)
+
+1. **IEEE-754 cross-engine determinism of the sim** beyond worldgen: v1 only *requires* worldgen bytes to match (server is authoritative for everything else; client motion is client-authoritative), so this is contained — but if later phases assume replica physics ≡ server physics, transcendentals in `playerMotion` become relevant. Documented, not needed for v1.
+2. **Phase 2 blast radius** — the players-map refactor touches nearly every system and test. The alias layer + system-by-system conversion + "existing e2e must pass" bar is the containment strategy, but this phase will dominate the schedule.
+3. **better-auth anonymous→upgrade data re-parenting** — the whole "guest keeps worlds" promise hangs on one plugin hook; integration-test it first, before building UI on top.
+4. **Single-threaded Bun room budget** — 6–10 engines × ≤50 ms ticks on one core is *probably* fine (SP steps at 60 fps in a browser next to rendering) but must be measured before raising `MAX_ROOMS`; the fallback (multiple Fly machines with room→machine affinity via the ticket mint) does not change the protocol.
+5. **Value-noise terrain quality** — probes pin structure, not beauty; budget a tuning loop.
+
+## Where I'd push back (briefly, not relitigating)
+
+- **Client-claimed pose on command envelopes** is the weakest anti-cheat point of the hybrid model (a modified client can aim-bot/reach-hack). Acceptable for private invite-only co-op; the envelope shape is exactly what server-side rewind validation would consume later, so nothing is wasted.
+- **`kind: 'sp-cloud' | 'mp'` as disjoint world kinds** invites future "convert my SP world to online" requests; the schema (one `saveBlob`, same v17 format) already permits a one-way kind flip — recommend explicitly allowing owner-initiated SP→MP conversion in v1.5 rather than designing it out.
+
+### Critical Files for Implementation
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts — authority/headless/replica options, dispatch attribution, per-player step loop, save v17 serialize
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts — `players: Map&lt;PlayerId, PlayerState&gt;`, FrameInput intents, event attribution
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/generation.ts — portable noise swap (with new lib/world/noise.ts), WORLDGEN_VERSION 11 re-baseline
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts — TickDriver extraction, session abstraction seam (lib/game/session.ts + lib/net/NetworkSession.ts hang off it)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/save.ts — v16→v17 migration and per-player serialization shared by client saves and server room persistence</result>
+<usage><subagent_tokens>140625</subagent_tokens><tool_uses>19</tool_uses><duration_ms>625638</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bd2adsogb</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/bd2adsogb.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the determinism e2e spec (builds and starts prod server)" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+why not commit then continue to implement next module? I think it is better to commit on each task then all commits on this branch, what do you think?

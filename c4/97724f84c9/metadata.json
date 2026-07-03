@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c497724f84c9",
+  "strategy": "manual-commit",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/save-format.md",
+    "docs/testing.md",
+    "e2e/determinism.e2e.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/systems/dayNight.ts",
+    "lib/game/engine/systems/weather.ts",
+    "lib/world/generation.test.ts",
+    "lib/world/generation.ts",
+    "lib/world/generationBaselines.ts",
+    "lib/world/noise.test.ts",
+    "lib/world/noise.ts",
+    "lib/world/voxelWorld.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c4/97724f84c9/0/metadata.json",
+      "transcript": "/c4/97724f84c9/0/full.jsonl",
+      "content_hash": "/c4/97724f84c9/0/content_hash.txt",
+      "prompt": "/c4/97724f84c9/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 16485,
+    "cache_creation_tokens": 339725,
+    "cache_read_tokens": 10924141,
+    "output_tokens": 90621,
+    "api_call_count": 66
+  }
+}
