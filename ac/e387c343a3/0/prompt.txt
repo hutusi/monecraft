@@ -1,0 +1,148 @@
+let's cut a new version, what do you think?
+
+---
+
+let's cut a new version, what do you think?
+
+---
+
+<task-notification>
+<task-id>af236cde13bd8db85</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/386ca73e-2f44-4d9f-ad4a-9e78bd2f63e0/tasks/af236cde13bd8db85.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore version and changelog state" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I now have everything needed. Here is the complete versioning-state report.
+
+## 1. Package version
+
+`/Users/hutusi/workspace/ai/david/monecraft/package.json` line 3:
+```json
+"version": "0.11.0"
+```
+(package `name` is `minecraft-clone`, `private: true`.)
+
+## 2. CHANGELOG.md
+
+Path: `/Users/hutusi/workspace/ai/david/monecraft/CHANGELOG.md` (79,893 bytes).
+
+**Format:** Follows the *Keep a Changelog* structure but does **not** explicitly cite it or Semantic Versioning. Header (lines 1-3) is just:
+```
+# Changelog
+All notable changes to this project are documented in this file.
+```
+It uses `## [Unreleased]`, dated version headers like `## [0.11.0] - 2026-06-28`, and `### Added` / `### Changed` / `### Fixed` subsections. Version numbers follow SemVer-style numbering (…, 0.9.0, 0.10.0, 0.11.0), but there is no "adheres to Semantic Versioning" statement and no reference link section at the bottom for the `[Unreleased]`/`[x.y.z]` anchors.
+
+**Most recent released entry:** `## [0.11.0] - 2026-06-28` (line 26). That release shipped at save schema **v12** (armor-storage fix, `migrateSaveV11toV12`) and `WORLDGEN_VERSION` **8**. Prior release: `## [0.10.0] - 2026-06-21` (line 64); `## [0.9.0] - 2026-06-14` (line 103).
+
+**Unreleased section** (lines 5-24) — only an `### Added` subsection, five top-level entries. Summarized (each nearly verbatim on its bullet):
+
+- **The aquatic update** (line 9-13): bumps `WORLDGEN_VERSION` **9→10** with **no save-schema change — schema stays v16**. Sub-items: **Kelp &amp; coral** (new `BlockId`s appended 55-57); **Cod &amp; salmon** aquatic mobs (fungible, never persisted, cap `AQUATIC_CAP` 24); **Shipwrecks** (share persisted `lootedChests` field, no save bump); **Buried treasure &amp; the treasure map** (stateless — no save field; new `treasureUnearthed` event / advancement / statistic).
+- **Rafts and ships** (line 14): craftable water vehicles. Save schema bumps **v15 → v16** with an additive `vehicles` field; `WORLDGEN_VERSION` stays 9; `MAX_VEHICLES` cap 64.
+- **Generated villages, villager professions &amp; raids** (Living World, PR 2 of 2) (lines 15-18): **Villages** bump `WORLDGEN_VERSION` **8→9**; **Villager professions** bump save schema **v14→v15** (additive `profession` on `SavedMob`); **Raids** transient (`RAID_WAVE_COUNT` 3), no save bump beyond the additive Ominous Horn item.
+- **Tameable companions &amp; a living mob world** (Living World, PR 1 of 2) (lines 19-20): wolves/cats, taming (`TAME_CHANCE`). Save schema bumps **v13 → v14** (additive persisted pets — first persisted mobs), `WORLDGEN_VERSION` stays 8. Adds reusable mob-allegiance/faction and mob-persistence foundations.
+- **Advancements &amp; statistics** (lines 21-24): running statistics + 16 advancements. Save schema bumps **v12 → v13** (additive), `WORLDGEN_VERSION` stays 8. Declarative registry in `lib/game/engine/systems/advancements.ts`.
+
+Net effect of Unreleased vs. last release (0.11.0): save schema **v12 → v16**, and `WORLDGEN_VERSION` **8 → 10**.
+
+## 3. Where the version number appears (release-relevant)
+
+- **`package.json` line 3** — `"version": "0.11.0"`. The app/package version. This is the only human-facing "0.x.0" release number and is fully decoupled from the internal versions below.
+- **`CHANGELOG.md`** — the `[Unreleased]` header (line 5) plus dated release headers. On release you'd rename `[Unreleased]` to the new version + date.
+- **`README.md`** — no version number anywhere. The only match (line 55) is a link to `docs/save-format.md`. No badge, no version string.
+- **No in-game / UI version string.** Grepping `app/` and `components/` for version/footer/copyright text found nothing — the version is not displayed in the app or written into any save format.
+
+Distinct internal version axes (NOT the package version — normally not touched by a package-version release, but they were bumped by the unreleased work):
+
+- **`lib/game/config.ts` line 353** — `export const WORLDGEN_VERSION = 10;` (worldgen-determinism version; per-world block-diffs are discarded on mismatch).
+- **`lib/game/config.ts` line 341** — `export const SAVE_KEY = "minecraft_save_v7";` — legacy single-world localStorage key, now superseded by per-world keys (kept only for legacy migration).
+- **`lib/game/worlds.ts`** line 51 `WORLDS_KEY = "minecraft_worlds_v1"`, line 52 `WORLD_SAVE_PREFIX = "minecraft_world_save_"`. The `WorldsManifest`/`ProfilesManifest` envelopes are all `version: 1` (`lib/game/worlds.ts`, `lib/game/profiles.ts`).
+
+## 4. Save schema version
+
+- **Current save schema: v16.** Defined in `/Users/hutusi/workspace/ai/david/monecraft/lib/game/types.ts` lines 353-356: `export type SaveData = Omit&lt;SaveDataV15, "version"&gt; &amp; { version: 16; vehicles?: SavedVehicle[]; }`. The full versioned chain `SaveDataV1`…`SaveDataV16` runs across lines 145-356 (each `version: N` literal), and the migration ladder `migrateSaveV1toV2`…`migrateSaveV15toV16` is in `lib/game/save.ts` (up to `return { ...save, version: 16 }` at line 223).
+- **Documented** in `/Users/hutusi/workspace/ai/david/monecraft/docs/save-format.md` line 5: "`SaveData` (version 16) in `lib/game/types.ts`", with the per-version history at lines 41-68.
+- **Distinct from the package version.** Save schema (v16) and `WORLDGEN_VERSION` (10) are independent internal contracts; the package/app version is `0.11.0`. They increment on different triggers (save-shape change vs. worldgen-baseline change vs. release).
+
+### One doc inconsistency worth flagging for the release
+
+`docs/save-format.md` line 78 still states `WORLDGEN_VERSION` is "`lib/game/config.ts`, currently 9", but the actual constant is now **10** (`lib/game/config.ts:353`, raised by the unreleased aquatic update). The save-format.md "Unreleased" note at line 43 does correctly describe the 9→10 bump, so line 78's inline "currently 9" is stale and should be updated to 10 when you cut the release.</result>
+<usage><subagent_tokens>44954</subagent_tokens><tool_uses>11</tool_uses><duration_ms>98893</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a704f88f844e771b9</task-id>
+<tool-use-id>toolu_01QCDsKyy5FZSLyAfu14NHh4</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/386ca73e-2f44-4d9f-ad4a-9e78bd2f63e0/tasks/a704f88f844e771b9.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore release process conventions" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Investigation complete. All findings below are from read-only commands. Nothing was modified.
+
+## 1. Tags &amp; naming convention
+
+`git tag --list --sort=-creatordate` returns 9 tags:
+
+```
+v0.11.0  v0.10.0  v0.9.0  v0.8.0  v0.6.0  v0.5.0  v0.4.0  v0.3.0  v0.2.0
+```
+
+- Convention: `vMAJOR.MINOR.PATCH`, `v`-prefixed, semver. Every release has only ever bumped the **minor** — patch is always `.0`, no patch releases, no `v1.0.0` yet.
+- **Latest tag `v0.11.0` → commit `0a7695d51e3145af77a51c0fe14f264a043fec45`** ("chore(release): v0.11.0", 2026-06-28 21:49 +0800). It is an **annotated** tag (Tagger: John Hu &lt;huziyong@gmail.com&gt;).
+- Tag object types (`git cat-file -t`): `v0.5.0`–`v0.11.0` are **annotated** (`tag`); the three oldest `v0.2.0`/`v0.3.0`/`v0.4.0` are **lightweight** (`commit`). So the current practice is annotated tags.
+- All tags are pushed to `origin` (`git ls-remote --tags origin` lists them).
+- **Gaps:** `v0.7.0` and `v0.1.0` appear as released sections in CHANGELOG.md but were **never git-tagged** (confirmed: `NO v0.7.0 TAG`, `NO v0.1.0 TAG`). `v0.7.0` was cut only as commit `6dd9cdd` "docs: dungeons, save v5, changelog 0.7.0".
+
+## 2. How past version bumps were done
+
+Each tag sits on a dedicated release commit. Message style evolved:
+- Current (v0.6.0, v0.8.0–v0.11.0): `chore(release): vX.Y.0` (v0.8.0 lacks the `v`: `chore(release): 0.8.0`).
+- Older (v0.2.0–v0.5.0): `Release vX.Y.0 with changelog`.
+
+A typical release commit touches **exactly 2 files**. `git show --stat 0a7695d` (most recent, v0.11.0):
+
+```
+CHANGELOG.md | 2 ++
+package.json | 2 +-
+2 files changed, 3 insertions(+), 1 deletion(-)
+```
+
+The full diff of `0a7695d` shows the entire mechanical change:
+- CHANGELOG.md: inserts a `## [0.11.0] - 2026-06-28` header right under `## [Unreleased]` (the accumulated entries stay put, effectively renaming Unreleased → the new version).
+- package.json: `"version": "0.10.0"` → `"0.11.0"`.
+
+Identical 2-file, +2/-1 CHANGELOG pattern confirmed across `4967a33` (v0.10.0), `6aee3af` (v0.9.0), `c380ae1` (v0.8.0), `4665adf` (v0.6.0). The commit **body** narrates the batch of work since the previous tag and notes save-schema/worldgen impacts; recent ones carry an `Entire-Checkpoint:` trailer. No `Co-Authored-By` trailers.
+
+## 3. Release automation — none
+
+- `package.json` scripts (lines 5–15): `dev, build, start, lint, test, typecheck, format, format:check, test:e2e`. **No `release`, `version`, or `bump` script.**
+- No standard-version / changesets / semantic-release config anywhere (no `.changeset/`, no config files, not in devDependencies).
+- Only workflow is `/Users/hutusi/workspace/ai/david/monecraft/.github/workflows/ci.yml` — two jobs (`verify`: lint/typecheck/format:check/test/build; `e2e`: playwright), triggered on push-to-main and PR. **No publish/release/tag workflow.**
+
+Releases are cut **manually**: edit CHANGELOG + package.json, commit as `chore(release): vX.Y.0`, then `git tag` (annotated) and push.
+
+## 4. Documented release/versioning policy — effectively none
+
+No file documents a release process. Relevant references:
+- `AGENTS.md` and `CONTRIBUTING.md` only require a `CHANGELOG.md` entry to ship with each change and to flag save-format/worldgen impact. AGENTS.md line 29 mandates **Conventional Commit** messages (matches release-commit style); CONTRIBUTING.md line 29 says "**no** Conventional-Commit prefixes" — a contradiction, and the actual git history follows Conventional Commits.
+- `CHANGELOG.md` follows the "Keep a Changelog" format: a top `## [Unreleased]` section with `### Added / Changed / Fixed` subsections, then dated `## [x.y.z] - YYYY-MM-DD` sections.
+- `README.md` line 4 has a release badge: `github/v/tag/hutusi/monecraft?label=release&amp;sort=semver` linking to `/tags` — so the GitHub tag *is* the canonical "release" surface.
+- `docs/testing.md` line 74 notes CI pins the Bun version because a bump can force re-baselining worldgen hashes (relevant if a release coincides with a toolchain bump).
+
+## 5. Current branch state — ready, release not yet cut
+
+- `git status`: on `main`, **working tree clean**, **up to date with `origin/main`** (no unpushed commits: `git log origin/main..main` is empty).
+- HEAD = `47aa7a9` "Merge pull request #42 from hutusi/feat/aquatic-update".
+- Remotes: `origin` = `git@github.com:hutusi/monecraft.git` (your fork), `upstream` = `git@github.com:davidhu0527/monecraft.git`.
+- **39 commits since `v0.11.0`** (`git rev-list --count v0.11.0..HEAD`), all already written up under `## [Unreleased]` in CHANGELOG.md. That batch = aquatic update, water vehicles (rafts/ships), generated villages + villager professions + raids, tameable companions, advancements &amp; statistics.
+- `package.json` still reads `"version": "0.11.0"` — not yet bumped.
+- Unreleased work advanced `WORLDGEN_VERSION` 8 → 10 and the save schema v12 → v16 (per the `[Unreleased]` notes), i.e. a substantial batch — consistent with the historical cadence of a minor bump to **v0.12.0**.
+- Other local branches exist (`feat/aquatic-update` already merged into main; several `entire/*` session-carry branches) — none represent unmerged release-relevant work.
+
+### To replicate the established process for the next release
+Following the exact historical pattern (manual, 2-file commit + annotated tag), the next release would be **v0.12.0**: rename `## [Unreleased]` → `## [0.12.0] - 2026-07-03` in CHANGELOG.md, bump `package.json` to `0.12.0`, commit as `chore(release): v0.12.0`, then `git tag -a v0.12.0`, and push commit + tag to `origin`. (I have not done any of this — read-only investigation only.)</result>
+<usage><subagent_tokens>40357</subagent_tokens><tool_uses>19</tool_uses><duration_ms>125749</duration_ms></usage>
+</task-notification>
