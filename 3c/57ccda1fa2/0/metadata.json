@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3c57ccda1fa2",
+  "session_id": "0bbf36a0-b366-42d5-b782-1e8fcd71b3a9",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T01:20:42.163775Z",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/dungeonLoot.ts",
+    "lib/game/shipwreckLoot.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "3b516590bb5c",
+  "token_usage": {
+    "input_tokens": 47499,
+    "cache_creation_tokens": 1042612,
+    "cache_read_tokens": 78406226,
+    "output_tokens": 191766,
+    "api_call_count": 243
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-03T01:20:42.114067Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 70,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 70,
+    "total_lines_changed": 89,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

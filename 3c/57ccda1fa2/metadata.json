@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3c57ccda1fa2",
+  "strategy": "manual-commit",
+  "branch": "feat/aquatic-update",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/dungeonLoot.ts",
+    "lib/game/shipwreckLoot.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3c/57ccda1fa2/0/metadata.json",
+      "transcript": "/3c/57ccda1fa2/0/full.jsonl",
+      "content_hash": "/3c/57ccda1fa2/0/content_hash.txt",
+      "prompt": "/3c/57ccda1fa2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 47499,
+    "cache_creation_tokens": 1042612,
+    "cache_read_tokens": 78406226,
+    "output_tokens": 191766,
+    "api_call_count": 243
+  }
+}
