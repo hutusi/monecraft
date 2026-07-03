@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f3625665d58f",
+  "strategy": "manual-commit",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f3/625665d58f/0/metadata.json",
+      "transcript": "/f3/625665d58f/0/full.jsonl",
+      "content_hash": "/f3/625665d58f/0/content_hash.txt",
+      "prompt": "/f3/625665d58f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 13627,
+    "cache_creation_tokens": 88619,
+    "cache_read_tokens": 19319462,
+    "output_tokens": 44764,
+    "api_call_count": 53
+  }
+}

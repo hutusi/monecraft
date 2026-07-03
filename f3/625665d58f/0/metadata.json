@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f3625665d58f",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T05:44:04.728181Z",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/GameEngine.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "fb07a1d659b5",
+  "checkpoint_transcript_start": 781,
+  "transcript_lines_at_start": 781,
+  "token_usage": {
+    "input_tokens": 13627,
+    "cache_creation_tokens": 88619,
+    "cache_read_tokens": 19319462,
+    "output_tokens": 44764,
+    "api_call_count": 53
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-03T05:44:04.686791Z",
+    "agent_lines": 19,
+    "agent_removed": 23,
+    "human_added": 113,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 152,
+    "total_lines_changed": 279,
+    "agent_percentage": 15.053763440860216,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 272,
+      "agent_lines_removed": 38,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    }
+  ]
+}

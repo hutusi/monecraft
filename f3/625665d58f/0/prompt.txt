@@ -1,0 +1,5 @@
+Check the background e2e run for the input-intents slice; if green, run the final verify gate, commit the input-intents slice, and report Phase 1 status to the user. If it failed, diagnose and fix.
+
+---
+
+I am thinking of the continue phase's slices all commit on this branch, and change the branch's name, then open one pr.
