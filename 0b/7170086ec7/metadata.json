@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0b7170086ec7",
+  "strategy": "manual-commit",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "eslint.config.mjs",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "scripts/netProbe.ts",
+    "server/Dockerfile",
+    "server/fly.toml",
+    "server/index.ts",
+    "server/persistence.ts",
+    "server/room.test.ts",
+    "server/room.ts",
+    "server/roomRegistry.ts",
+    "server/server.e2e-smoke.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0b/7170086ec7/0/metadata.json",
+      "transcript": "/0b/7170086ec7/0/full.jsonl",
+      "content_hash": "/0b/7170086ec7/0/content_hash.txt",
+      "prompt": "/0b/7170086ec7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 121662,
+    "cache_creation_tokens": 1576281,
+    "cache_read_tokens": 265146921,
+    "output_tokens": 458796,
+    "api_call_count": 506
+  }
+}

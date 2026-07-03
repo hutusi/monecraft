@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0b7170086ec7",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T09:36:51.033057Z",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "eslint.config.mjs",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "scripts/netProbe.ts",
+    "server/Dockerfile",
+    "server/fly.toml",
+    "server/index.ts",
+    "server/persistence.ts",
+    "server/room.test.ts",
+    "server/room.ts",
+    "server/roomRegistry.ts",
+    "server/server.e2e-smoke.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "42e3fa41fe8b",
+  "token_usage": {
+    "input_tokens": 121662,
+    "cache_creation_tokens": 1576281,
+    "cache_read_tokens": 265146921,
+    "output_tokens": 458796,
+    "api_call_count": 506
+  },
+  "session_metrics": {
+    "turn_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-03T09:36:50.904769Z",
+    "agent_lines": 1245,
+    "agent_removed": 18,
+    "human_added": 131,
+    "human_modified": 13,
+    "human_removed": 0,
+    "total_committed": 1389,
+    "total_lines_changed": 1410,
+    "agent_percentage": 89.57446808510639,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1258,
+      "agent_lines_removed": 18,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    }
+  ]
+}
