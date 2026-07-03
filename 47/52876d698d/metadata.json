@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4752876d698d",
+  "strategy": "manual-commit",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "CHANGELOG.md",
+    "README.md",
+    "db/index.ts",
+    "db/testDb.ts",
+    "docs/architecture.md",
+    "docs/manual.md",
+    "docs/online.md",
+    "docs/testing.md",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/useMinecraftGame.ts",
+    "next.config.mjs",
+    "package.json",
+    "playwright.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/47/52876d698d/0/metadata.json",
+      "transcript": "/47/52876d698d/0/full.jsonl",
+      "content_hash": "/47/52876d698d/0/content_hash.txt",
+      "prompt": "/47/52876d698d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 167202,
+    "cache_creation_tokens": 2056004,
+    "cache_read_tokens": 366308174,
+    "output_tokens": 593236,
+    "api_call_count": 715
+  }
+}
