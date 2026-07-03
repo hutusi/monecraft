@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "af877f5e894f",
+  "strategy": "manual-commit",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "lib/game/engine/tickDriver.test.ts",
+    "lib/game/engine/tickDriver.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/af/877f5e894f/0/metadata.json",
+      "transcript": "/af/877f5e894f/0/full.jsonl",
+      "content_hash": "/af/877f5e894f/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 716,
+    "cache_creation_tokens": 19090,
+    "cache_read_tokens": 3320684,
+    "output_tokens": 16563,
+    "api_call_count": 13
+  }
+}

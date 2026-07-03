@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "af877f5e894f",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T05:03:10.149106Z",
+  "branch": "mp/1-deterministic-foundations",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/tickDriver.ts",
+    "lib/game/engine/tickDriver.test.ts",
+    "lib/game/useMinecraftGame.ts",
+    "docs/architecture.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "ee1ff50da58b",
+  "checkpoint_transcript_start": 488,
+  "transcript_lines_at_start": 488,
+  "token_usage": {
+    "input_tokens": 716,
+    "cache_creation_tokens": 19090,
+    "cache_read_tokens": 3320684,
+    "output_tokens": 16563,
+    "api_call_count": 13
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-03T05:03:10.119973Z",
+    "agent_lines": 268,
+    "agent_removed": 20,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 268,
+    "total_lines_changed": 288,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
