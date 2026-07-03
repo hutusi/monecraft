@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0c1f10799d05",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-03T13:53:32.932638Z",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "313ecfa32569",
+  "token_usage": {
+    "input_tokens": 195121,
+    "cache_creation_tokens": 2938339,
+    "cache_read_tokens": 471014170,
+    "output_tokens": 776807,
+    "api_call_count": 995
+  },
+  "session_metrics": {
+    "turn_count": 20
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    }
+  ]
+}
