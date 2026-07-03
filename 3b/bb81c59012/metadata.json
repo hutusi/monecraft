@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3bbb81c59012",
+  "strategy": "manual-commit",
+  "branch": "feat/online-multiplayer",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/3b/bb81c59012/0/metadata.json",
+      "transcript": "/3b/bb81c59012/0/full.jsonl",
+      "content_hash": "/3b/bb81c59012/0/content_hash.txt",
+      "prompt": "/3b/bb81c59012/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 188268,
+    "cache_creation_tokens": 2438766,
+    "cache_read_tokens": 414720197,
+    "output_tokens": 701944,
+    "api_call_count": 872
+  }
+}
