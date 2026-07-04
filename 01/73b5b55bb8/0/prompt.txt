@@ -1,0 +1,25 @@
+push it
+
+---
+
+how may phases do we left? only phase 3?
+
+---
+
+check the code reviews and ci status on the pr
+
+---
+
+continue
+
+---
+
+ok, go ahead
+
+---
+
+push
+
+---
+
+I am thinking plan and implement phase 3 in a new session, what do you think?
