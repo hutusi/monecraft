@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "33eb58d442bd",
+  "session_id": "9d9fe046-f715-4a3d-bf2a-9bd98356707e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T12:35:20.061288Z",
+  "branch": "fix/account-menu-onboarding",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/api/worlds/[id]/ticket/route.ts",
+    "lib/online/onlineClient.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "90060944b266",
+  "token_usage": {
+    "input_tokens": 33658,
+    "cache_creation_tokens": 385651,
+    "cache_read_tokens": 19972685,
+    "output_tokens": 155243,
+    "api_call_count": 103
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T12:35:20.021763Z",
+    "agent_lines": 12,
+    "agent_removed": 3,
+    "human_added": 112,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 124,
+    "total_lines_changed": 127,
+    "agent_percentage": 11.811023622047244,
+    "metric_version": 2
+  }
+}
