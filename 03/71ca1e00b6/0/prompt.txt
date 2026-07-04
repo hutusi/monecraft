@@ -1,0 +1,372 @@
+implement the MP v2 plan, what do you think?
+
+---
+
+<task-notification>
+<task-id>a4954067963be482a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/06215f56-7610-4968-9d54-f273e7775740/tasks/a4954067963be482a.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify Phase 1 replication seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything needed. Here are the verification results.
+
+## Verification Results — MP v2 Phase 1 seams
+
+Note two path drifts up front: `vehicles.ts` is at `lib/game/engine/systems/vehicles.ts` (not `lib/game/systems/`), and the renderer is at `lib/game/render/GameRenderer.ts` (not `lib/game/engine/`).
+
+### Claim 1 — Boarding gate — TRUE (line drifted slightly)
+`/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:859` (claim said 857-859; the comment is 857-858, the gate is 859):
+```
+857  // Vehicles are single-player-only in multiplayer v1: a mounted player's
+858  // pose is server-driven, which fights the client-owned pose stream.
+859  if (this.authority !== "server" &amp;&amp; !this.replica &amp;&amp; tryBoardAimedVehicle(state, player)) break;
+```
+Gates on BOTH `authority !== "server"` AND `!this.replica`. So boarding is skipped on the server authority and on any replica.
+
+### Claim 2 — Mob-replication skeleton — DRIFTED
+- `collectMobPoses`: TRUE — `server/room.ts:472` `private collectMobPoses(keyframe: boolean): MobPose[]`.
+- `MobPose` type: DRIFTED — it is NOT defined in `server/room.ts`. It is defined in `/Users/hutusi/workspace/ai/david/monecraft/lib/net/protocol.ts:113` (`export type MobPose = { id; kind; hostile; x; y; z; yaw; hp; moveSpeed }`) and merely imported into `server/room.ts:24`.
+- `upsertReplicaMob`: TRUE — `/Users/hutusi/workspace/ai/david/monecraft/lib/net/NetworkSession.ts:248` `function upsertReplicaMob(pose: MobPose): MobState`. Also creates a per-mob interpolation buffer (line 280-284) — the pattern to copy for vehicles/arrows.
+
+### Claim 3 — `applyWorldSync` ignores `sync.vehicles` — TRUE
+`/Users/hutusi/workspace/ai/david/monecraft/lib/net/NetworkSession.ts:231-246`. The function handles `changes`, `dayClock`, `tick`, `containers`, `blockEntities`, `lootedChests`, `liveMobs`, `players` — and never touches vehicles or projectiles:
+```
+243  mobBuffers.clear();
+244  for (const pose of sync.liveMobs) upsertReplicaMob(pose);
+245  applyRoster(sync.players);
+```
+Worth flagging: the wire type ALREADY carries vehicles — `protocol.ts:108` `vehicles: SavedVehicle[];` inside `WorldSync` (line 99). So the field is transmitted but dropped on the client. No `projectiles` field exists in `WorldSync`.
+
+### Claim 4 — Renderer consumes `state.vehicles`/`state.projectiles` — TRUE (path drifted)
+`/Users/hutusi/workspace/ai/david/monecraft/lib/game/render/GameRenderer.ts`:
+```
+215  this.vehicleVisuals.sync(state.vehicles);
+216  this.spearVisuals.sync(state.thrownSpears);
+217  this.projectileVisuals.sync(state.projectiles);
+```
+Read directly from engine state, no network indirection.
+
+### Claim 5 — `SelfDelta`, `PROTOCOL_VERSION`, door lock — TRUE
+`SelfDelta` at `/Users/hutusi/workspace/ai/david/monecraft/lib/net/protocol.ts:122-135`:
+```
+export type SelfDelta = {
+  inventorySlots?: SavedPlayer["inventorySlots"];
+  equippedArmor?: SavedPlayer["equippedArmor"];
+  selectedSlot?: number;
+  hearts?: number;
+  hunger?: number;
+  oxygen?: number;
+  xp?: number;
+  effects?: SavedPlayer["effects"];
+  isDead?: boolean;
+  respawnSeconds?: number;
+  gameMode?: string;
+  sleeping?: boolean;
+};
+```
+`PROTOCOL_VERSION = 1` at `protocol.ts:20`. Version-locked at the door in `/Users/hutusi/workspace/ai/david/monecraft/server/index.ts`:
+```
+93  if (message.protocol !== PROTOCOL_VERSION) return ws.close(CLOSE_PROTOCOL_MISMATCH, `server speaks v${PROTOCOL_VERSION}`);
+95  if (!claims || claims.pv !== PROTOCOL_VERSION) return ws.close(CLOSE_BAD_TICKET, "invalid ticket");
+```
+Two-layer check: the join message's `protocol` field and the signed ticket's `claims.pv` must both equal `PROTOCOL_VERSION`. (`room.ts:234` echoes `protocol: PROTOCOL_VERSION` in the welcome.)
+
+### Claim 6 — Replica `step()` + `applyRemotePose` mounted reject — TRUE
+Replica loop at `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:519-524`:
+```
+519  if (this.replica) {
+520    if (primary &amp;&amp; !primary.isDead &amp;&amp; state.sleepTimer &lt;= 0) {
+521      tickPlayerMotion(state, primary, primary.input, dt, () =&gt; {});
+522      tickMining(state, primary, primary.input, dt, this.emit, this.rng, { cosmetic: true });
+523    }
+```
+Only local-player motion + cosmetic mining run in a replica; the leading comment (513-518) explicitly lists projectiles/vehicles/mobs as replicated-in, never simulated.
+Mounted reject at `GameEngine.ts:448-449`:
+```
+448  // A mounted player's pose belongs to the vehicle (server-side); ignore the stream.
+449  if (player.mountedVehicleId !== null) return { accepted: false };
+```
+
+### Claim 7 — `restoreVehicle` + `tickVehicles` — TRUE (path drifted)
+`/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/vehicles.ts:55`:
+```
+export function restoreVehicle(state: GameState, kind: VehicleKind, x: number, y: number, z: number, yaw: number): void
+```
+`tickVehicles` at line 238 `export function tickVehicles(state: GameState, player: PlayerState, input: FrameInput, dt: number): void`. It has two branches:
+- Mounted-player motion (240-257): reads `input.move`, turns/moves the vehicle, `canOccupy` revert, then `syncPlayerToVehicle(player, mounted)`.
+- Ship step-on (259-272): loops unridden ships, projects player offset into the ship's local frame, and `mountVehicle` when within `spec.halfWidth/halfLength` and `|Δy| &lt;= 1.2`.
+
+Both signatures are single-player-shaped (one `player`), which is the seam MP v2 must generalize.
+
+### Claim 8 — `buildSelfDelta` diffed against `conn.shadow` — TRUE
+`conn.shadow` type at `/Users/hutusi/workspace/ai/david/monecraft/server/room.ts:63-75` (fields: inventory, equippedArmor, selectedSlot, hearts, hunger, oxygen, xp, isDead, respawnSeconds, gameMode, sleeping, effectsKey). `buildSelfDelta` at `server/room.ts:502-536`:
+```
+502  private buildSelfDelta(conn: ClientConn): { self: SelfDelta } | null {
+...
+507    const previous = conn.shadow;
+508    const delta: SelfDelta = {};
+509    if (!previous || previous.inventory !== player.inventory) delta.inventorySlots = ...
+...       (one line per field; oxygen uses a 0.24 abs threshold, effects via effectsKey)
+521    conn.shadow = { ...new snapshot... };
+535    return Object.keys(delta).length &gt; 0 ? { self: delta } : null;
+```
+Reference/primitive compares against the prior shadow, emits only changed fields, then overwrites the shadow. Note `room.ts:334` resets `conn.shadow = null` (forces a full resend next tick) — relevant if vehicle self-state is later folded into this same diff.
+
+---
+### Summary table
+| # | Claim | Verdict | Current location |
+|---|-------|---------|------------------|
+| 1 | Boarding gate skips server/replica | TRUE | GameEngine.ts:859 |
+| 2 | collectMobPoses / MobPose / upsertReplicaMob | DRIFTED | room.ts:472 / **protocol.ts:113** (not room.ts) / NetworkSession.ts:248 |
+| 3 | applyWorldSync ignores vehicles | TRUE | NetworkSession.ts:231-246 (field exists protocol.ts:108) |
+| 4 | Renderer consumes vehicles/projectiles | TRUE | render/GameRenderer.ts:215,217 |
+| 5 | SelfDelta / PROTOCOL_VERSION / door lock | TRUE | protocol.ts:122, :20; server/index.ts:93,95 |
+| 6 | Replica step tickPlayerMotion / mounted reject | TRUE | GameEngine.ts:519-524; :448-449 |
+| 7 | restoreVehicle / tickVehicles | TRUE | engine/systems/vehicles.ts:55; :238 |
+| 8 | buildSelfDelta vs conn.shadow | TRUE | room.ts:502-536; shadow type :63-75 |
+
+The only substantive drift is Claim 2's `MobPose` (defined in `protocol.ts`, not `room.ts`). Claims 4 and 7 are content-TRUE but the plan's file paths are stale. Everything else matches, with line numbers essentially as claimed.</result>
+<usage><subagent_tokens>30311</subagent_tokens><tool_uses>25</tool_uses><duration_ms>115461</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a121c9454bb4a9bcb</task-id>
+<tool-use-id>toolu_01XTJtdVVVKNcHwJzvoLhmgr</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/06215f56-7610-4968-9d54-f273e7775740/tasks/a121c9454bb4a9bcb.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify Phase 3+4 kick/cloud seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All files read. Here is the verification against each claim. All line numbers are current.
+
+## PHASE 3 — owner kick + roster
+
+**1. `server/room.ts` owner-gates, `Room.kick`, `conn.role` source — TRUE (minor drift on "cases")**
+- Owner gate is at **line 306**, exact pattern present. It is not a dedicated `switch` case for `setDifficulty` but a guard inside the `"cmd"` case (lines 302-321):
+  `if ((message.cmd.type === "setDifficulty" || message.cmd.type === "setGameMode") &amp;&amp; conn.role !== "owner") return;`
+- `Room.kick` at **line 252** (JSDoc line 251):
+  `kick(playerId: string): boolean {` — body lines 252-258: gets `this.clients.get(playerId)`, returns `false` if absent, else `conn.sink.close(CLOSE_KICKED, "removed by the world owner")`, then `this.leave(playerId)`, returns `true`. Note: `leave` already broadcasts `playerLeft` (line 268).
+- `conn.role` is set in `join()` at **line 220** (`role: claims.role`), where `claims: TicketClaims`. `TicketClaims.role` is defined in `lib/net/tickets.ts` **line 26** (`role: "owner" | "member"`) and validated in `verifyTicket` at line 85. So the role comes from the signed ticket claims.
+
+**2. `WelcomeMessage` — DRIFTED (no `role` field), but `claims.role` exists — TRUE**
+- `WelcomeMessage` type: `lib/net/protocol.ts` **lines 80-92**. Fields: `t, protocol, playerId, worldId, seed, worldType, difficulty, hardcore, dayClock, tick, players: RosterEntry[]`. **No `role` field.** `RosterEntry` (line 78) also has no role.
+- WELCOME is built/sent in `server/room.ts` `join()` at **lines 231-245** (`encodeServerMessage({ t: "welcome", ... players: this.roster() })`).
+- `claims.role` **exists** (`tickets.ts:26`; consumed at `room.ts:220`). To surface the viewer's role in WELCOME you'd add a field there and read `claims.role`.
+
+**3. `ClientMessage` union + `readClientMessage` — TRUE**
+- Union at **line 74**: `HelloMessage | PoseMessage | CmdMessage | ChatMessage | PingMessage | ResyncMessage`.
+- `readClientMessage` at **lines 256-284**: total validator, `switch (m.t)` with cases `hello`(261), `pose`(262-267), `cmd`(268-274), `chat`(275-276), `ping`(277-278), `resync`(279-280), `default: return null`. Each case hand-checks fields with `isStr/isNum/isBool` and returns a typed literal. A `KickMessage` would slot in as a new union member plus a new case (e.g. validating `isStr(m.playerId)`). No kick message exists today.
+
+**4. `NetworkSession.ts` players/names tracking + subscribe API — DRIFTED (no roster subscription)**
+- `names` map: **line 123** (`const names = new Map&lt;string, string&gt;()`), populated in `upsertRemotePlayer` **lines 208-213** (`names.set(id, name)`), read by `playerName(id)` at **line 489**. Remote players live in the replica `state.players` (added at line 211 via `engine.addPlayer`).
+- Roster changes flow through `applyRoster` (215-225), `playerJoined` (375-380), `playerLeft` (381-386) — but these mutate engine state directly; **there is no `subscribeRoster` callback.**
+- Subscription pattern (the shape RosterPanel would copy): **lines 478-485**:
+  `subscribeChat(listener) { chatListeners.add(listener); return () =&gt; chatListeners.delete(listener); }` and `subscribeStatus(listener) { statusListeners.add(listener); return () =&gt; statusListeners.delete(listener); }`. Backing `Set`s declared at lines 111-112; chat fires at line 394, status at line 116. A roster subscription does **not** exist yet and must be added (new `Set`, new `subscribeRoster`, fire it in `applyRoster`/`playerJoined`/`playerLeft`).
+
+**5. `ChatPanel` / `ConnectionStatus` structure + render site — TRUE**
+- `ChatPanel` (`components/game/ChatPanel.tsx`): props `{ session: NetworkSession; locked: boolean; onOpenChange?: (open: boolean) =&gt; void }` (**line 16**); subscribe effect **lines 27-36**: `return session.subscribeChat((entry) =&gt; { ... })` (the returned unsubscribe is the cleanup).
+- `ConnectionStatus` (`components/game/ConnectionStatus.tsx`): props `{ session: NetworkSession; onLeave: () =&gt; void }` (**line 11**); effect **lines 15-22**: `const unsubscribe = session.subscribeStatus(setStatus); const timer = setInterval(...); return () =&gt; { unsubscribe(); clearInterval(timer); }`.
+- Render site: `components/MinecraftGame.tsx` **lines 156-157**, both behind an `online`-only conditional:
+  `{online &amp;&amp; &lt;ChatPanel session={online} locked={locked} /&gt;}`
+  `{online &amp;&amp; &lt;ConnectionStatus session={online} onLeave={quitToWorlds} /&gt;}`
+  (`online?: NetworkSession` prop at line 31.) A `RosterPanel` would render the same way here.
+
+## PHASE 4 — SP cloud-save autosync
+
+**6. `lib/game/cloudSaves.ts` pushSave/pullSave — TRUE (built)**
+- `pushSave(cloudWorldId, save, storage)` **lines 50-71**: gzips via `gzipJson` (37-40), PUTs to `/api/worlds/${id}/save` with headers `content-type: application/gzip`, `x-save-version`, `x-base-updated-at` (stale guard). Returns `"conflict"` on **HTTP 409** (line 63), `"error"` on other non-ok, else `"saved"` and advances the stamp cursor.
+- `pullSave(cloudWorldId, storage)` **lines 74-85**: GETs the blob, `gunzipJson&lt;SaveData&gt;`, writes the `x-updated-at` stamp, returns `SaveData | null`.
+- `PushResult = "saved" | "conflict" | "error"` (line 47). Transport module explicitly documented as not yet wired into autosave (header comment lines 11-13).
+
+**7. `lib/game/worlds.ts` WorldMeta + createWorld + sanitizer — TRUE, but no `cloudId` — FALSE**
+- `WorldMeta` type **lines 21-36**: `id, profileId, name, seed, worldType, gameMode, difficulty, hardcore, worldgenVersion, createdAt, lastPlayedAt`. **No `cloudId` field** (and no cloud/kind fields at all).
+- `createWorld` **lines 134-162**. Sanitizer `sanitizeWorld` **lines 88-111**: it constructs a **fresh object with only the known keys**, so unknown/extra fields on a raw entry are silently dropped (tolerated) rather than rejected — the whole entry is only nulled if `id`/`profileId`/`seed` are missing/invalid. `readWorlds` (114-120) maps every entry through it and filters nulls. Adding `cloudId` means extending WorldMeta + copying it through both `sanitizeWorld` and `createWorld`.
+
+**8. `useMinecraftGame.ts` save calls guarded by `if (!online)` — TRUE (drift: calls are `persistGame`, not raw `writeSave`; 302 is the interval, not a save)**
+`writeSave` is only called inside `persistGame` (line 87). The hook's save sites:
+- **Line 300** (`autoSave`): `if (!online) persistGame(gameEngine, saveKey, flashMessage);` — guarded. Line **302** is `setInterval(autoSave, ...)` (registration, not a save).
+- **Line 329** (gameOver): `if (event.type === "gameOver" &amp;&amp; !online) persistGame(...)` — guarded.
+- **Line 395** (unmount cleanup): `else if (!online) persistGame(gameEngine, saveKey, () =&gt; {});` — guarded.
+- **Line 524** (`quitToWorlds`): `if (engine &amp;&amp; !onlineRef.current) persistGame(...)` — guarded.
+- Also `saveNow` (493-496) and `resetNow`/`loadNow` gate on `onlineRef.current`. All persistence is skipped when `online` is set. For an sp-cloud autosync you'd hook alongside/inside these (they're SP-only today).
+
+**9. `GameShell.tsx` "Joining…" modal / connect gate — TRUE (drift: it sets `play-online`, not `play`)**
+- States `connecting` (**line 80**) and `connectError` (**line 81**); `joiningRef` guard (line 84).
+- `playOnline` async flow **lines 87-111**: sets `connecting`, mints ticket, `connectNetworkSession`, then on success calls **`setScreen({ name: "play-online", profileId, world, session })`** at **line 104** (not `setScreen('play')` — the SP-cloud pull gate would instead resolve to `{ name: "play", ... }`, screen defined lines 23-27).
+- Modal region **lines 193-207**: the "Joining" modal at 193-197 (`Joining "{connecting}"…`, `role="status"`) and the `connectError` alertdialog at 198-207. This is the reusable async gate for a cloud pull.
+
+**10. `WorldSelect.tsx` online listing + `createOnlineWorld` kind — DRIFTED (kind not distinguished in UI; POST hardcodes `"mp"`)**
+- `listOnlineWorlds()` called via `refreshOnline` at **line 51** (`if (onlineUsed()) void listOnlineWorlds().then(setOnlineWorlds)`), effect line 53. Online Worlds `&lt;section&gt;` **lines 181-241**; list maps `onlineWorlds.map` at **line 188**.
+- **`kind` (mp vs sp-cloud) is NOT distinguished** in this UI. The card subtitle (line 193) branches only on `world.role` (`"Your world"` vs `"Joined"`). The data carries it: `OnlineWorld = WorldSummary` and `WorldSummary.kind: "sp-cloud" | "mp"` exists at `lib/online/worldsService.ts` **line 21** (populated line 39) — but WorldSelect never reads `world.kind`. A cloud-SP entry would render identically to an MP one today.
+- `lib/online/onlineClient.ts` `createOnlineWorld` **lines 24-44**: it **does send a kind, hardcoded to `"mp"`** at **line 36**: `body: JSON.stringify({ ...input, kind: "mp" })`. The server accepts either (`worldsService.createWorld` validates `input.kind` is `"sp-cloud" | "mp"`, line 85), so to create an sp-cloud world you'd parameterize this hardcoded `"mp"`.
+
+Summary of non-TRUE items: **2** (WelcomeMessage lacks `role`), **4** (no roster subscription exists — chat/status pattern is the template to copy), **7** (no `cloudId` field), **9** (sets `play-online` not `play`), **10** (UI ignores `kind`; POST hardcodes `"mp"`). Everything else matches the plan's claims at the cited locations.</result>
+<usage><subagent_tokens>79625</subagent_tokens><tool_uses>16</tool_uses><duration_ms>128149</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a32f352c0d1433c22</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/06215f56-7610-4968-9d54-f273e7775740/tasks/a32f352c0d1433c22.output</output-file>
+<status>completed</status>
+<summary>Agent "Verify Phase 2 attribution seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything needed. Here is the verification report.
+
+Note on paths: the plan's paths are systematically off by one directory. The real locations are `lib/game/engine/systems/...` (not `lib/game/systems/...`), `lib/game/engine/state.ts` (not `lib/game/state.ts`), and `lib/game/engine/players.ts` (matches). `spawnArrow` also lives in a different file than claimed. Details per item below.
+
+---
+
+## 1. `emit` / `observeProgress` — TRUE
+
+`/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts`
+
+- `emit` at line **1150** (matches ~1150):
+  ```ts
+  private emit = (event: GameEvent): void =&gt; {
+    this.events.push(event);
+    if (event.type !== "advancementUnlocked") this.observeProgress(event);
+  };
+  ```
+- `observeProgress` at line **1166** (matches ~1166):
+  ```ts
+  private observeProgress(event: GameEvent): void {
+    const primary = this.state.players.get(this.state.primaryPlayerId);
+    if (!primary) return;
+    recordEvent(primary, event);
+    for (const id of evaluateAdvancements(primary)) {
+      primary.advancements.add(id);
+      this.emit({ type: "advancementUnlocked", id, name: ADVANCEMENTS_BY_ID[id].title });
+    }
+  }
+  ```
+- Resolves a "primary" player: **TRUE** (line 1167, `state.players.get(state.primaryPlayerId)`), calls `recordEvent` (1169) and `evaluateAdvancements` (1170).
+- Recursion guard: **TRUE** — line **1154** `if (event.type !== "advancementUnlocked") this.observeProgress(event);` (plus the leading comment at 1152-1153).
+
+## 2. `removeMobAt` unused `creditTo` — TRUE
+
+Signature at line **1296** (matches ~1296):
+```ts
+private removeMobAt = (index: number, lootingLevel = 0, credit = true, creditTo?: PlayerState): void =&gt; {
+```
+XP machinery wired: line **1302** `const receiver = creditTo ?? state.players.get(state.primaryPlayerId) ?? null;` and line **1312** `if (credit &amp;&amp; mob.ageTimer &lt;= 0) awardXp(receiver, xpForMob(mob.kind), this.emit);`.
+
+All callers (grep confirmed) — **none pass `creditTo`**:
+- `GameEngine.ts:572` `tickThrownSpears(state, dt, this.removeMobAt, this.emit)` (passed as callback)
+- `GameEngine.ts:883` `tryAttackMob(..., this.removeMobAt, ...)` (callback)
+- `GameEngine.ts:1378` `removeMobAt: this.removeMobAt` (raid deps)
+- `projectileAI.ts:124` `deps.removeMobAt(hitMobIndex)` — 1 arg
+- `mobAI.ts:511` `deps.removeMobAt(i, 0, CREDITED_FACTIONS.has(dead.faction))` — 3 args, no `creditTo`
+- `spears.ts:93` `removeMobAt(hitIndex)` — 1 arg
+
+Confirmed: `creditTo` is referenced only inside the body; **zero callers ever pass it**, so it always resolves to primary. TRUE.
+
+## 3. `recordEvent` / `evaluateAdvancements` — DRIFTED (nuance)
+
+`/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/advancements.ts` (path drift: `engine/systems`, not `systems`).
+- Line **71**: `export function recordEvent(player: PlayerState, event: GameEvent): void {` — operates on a single `PlayerState` but **mutates** it (`bump(player, ...)` writes `player.stats`), so not strictly "pure".
+- Line **245**: `export function evaluateAdvancements(player: PlayerState): string[] {` — **pure/read-only**: reads `player.stats`/`player.advancements`, returns ids, does NOT add to `player.advancements` (the caller `observeProgress` does that at 1171).
+
+Both are per-`PlayerState` (not whole-engine), which is the load-bearing point for the plan. TRUE that they're single-player-scoped; FALSE that both are "pure" (recordEvent mutates).
+
+## 4. Melee `attack` handler — TRUE
+
+`GameEngine.ts` line **869** (`case "attack"`), holds `player`, calls at line **879**:
+```ts
+const hitKind = tryAttackMob(
+  state,
+  player,
+  weaponDamage(player) + strengthBonus(player) + sharpnessBonus(heldWeapon),
+  this.removeMobAt,      // line 883 — passed WITHOUT creditTo
+  weaponReach(player),
+  knockbackBonus(heldWeapon),
+  lootingLevel(heldWeapon)
+);
+```
+`player` is in scope and could be threaded as killer/`creditTo`, but `this.removeMobAt` is passed bare (883).
+
+## 5. Projectiles — DRIFTED (owner absent; locations off)
+
+- `ProjectileState` at `lib/game/engine/state.ts:146` — **no** `owner`/`ownerPlayerId`; only `fromPlayer: boolean` (line 155). **FALSE** (no owner).
+- `ThrownSpearState` at `lib/game/engine/state.ts:166` — fields `id, itemId, position, velocity, damage, age, stuckTimer`; **no owner field at all**. **FALSE**.
+- `spawnArrow`: **DRIFTED** — not in `projectileAI.ts:9` (that line is the `removeMobAt` dep type). Actual: `lib/game/engine/projectiles.ts:23` `export function spawnArrow(state, originX, originY, originZ, dir, opts: SpawnArrowOptions)`. `SpawnArrowOptions` (lines 4-10) has `speed, damage, knockback, fromPlayer, ttl` — no owner.
+- Spear throw: **DRIFTED** — `spears.ts:53` is `tickThrownSpears(state, dt, removeMobAt, emit)`, the per-tick sweep, not the throw/creation. (Throw creation is `tryThrowSelectedSpear`, invoked from `GameEngine.ts:847`.)
+- `mobAI.ts:226`: **DRIFTED** — line 226 is the `MobTickDeps.removeMobAt` type declaration, not projectile-vs-mob death. The actual projectile-vs-mob death is `projectileAI.ts:124` `if (mob.hp &lt;= 0) deps.removeMobAt(hitMobIndex);` (1 arg, no credit).
+- `mobAI.ts:504`: **TRUE** — explosion/mob-vs-mob post-loop death sweep at lines 504-512; death call at line **511** `if (dead.hp &lt;= 0) deps.removeMobAt(i, 0, CREDITED_FACTIONS.has(dead.faction));` (passes `credit` from victim faction, no `creditTo`).
+
+Spear death removal itself: `spears.ts:93` `if (mob.hp &lt;= 0) removeMobAt(hitIndex);` (1 arg).
+
+## 6. Pet follow ally branch — TRUE
+
+`lib/game/engine/systems/mobAI.ts` lines **345-361** (matches ~345-361):
+```ts
+} else if (mob.faction === "ally") {
+  // A pet with no enemy nearby follows its owner: recalled (teleported) when it
+  // strays too far, jogging to catch up otherwise, and milling about up close.
+  if (anchor &amp;&amp; distanceToPlayer &gt; PET_TELEPORT_DISTANCE) {
+    const tx = anchor.position.x + (deps.rng() - 0.5) * 2;
+    const tz = anchor.position.z + (deps.rng() - 0.5) * 2;
+    mob.position.set(tx, deps.surfaceYAt(tx, tz) + mob.halfHeight, tz);
+    ...
+  }
+  if (distanceToPlayer &gt; PET_FOLLOW_MAX) { ... }
+  ...
+}
+```
+Targets **`anchor`**, which is `nearestPlayerTo(state, mob.position.x, mob.position.z)` (assigned at line **306**), **not** `mob.owner`. So a pet follows the nearest player, ignoring its actual owner — even though `mob.owner?: PlayerId` exists (`state.ts:107`). TRUE that it uses anchor/nearest player rather than `mob.owner`.
+
+Helpers (`lib/game/engine/players.ts` — path matches):
+- Line **68**: `export function getPlayer(state: GameState, id: PlayerId): PlayerState | undefined` — TRUE.
+- Line **87**: `export function nearestPlayerTo(state: GameState, x: number, z: number): PlayerState | null` — TRUE. (Also `nearestTargetablePlayer` at 123 and `mustGetPlayer` at 72.)
+
+## 7. `SelfDelta` / stats save — TRUE
+
+`lib/net/protocol.ts` line **122**:
+```ts
+export type SelfDelta = {
+  inventorySlots?: SavedPlayer["inventorySlots"];
+  equippedArmor?: SavedPlayer["equippedArmor"];
+  selectedSlot?: number;
+  hearts?: number;
+  hunger?: number;
+  oxygen?: number;
+  xp?: number;
+  effects?: SavedPlayer["effects"];
+  isDead?: boolean;
+  respawnSeconds?: number;
+  gameMode?: string;
+  sleeping?: boolean;
+};
+```
+No `advancements`/`stats` fields today — extension point confirmed. TRUE.
+
+`lib/game/save.ts`:
+- Line **506**: `export function serializeStats(stats: Map&lt;string, number&gt;): SavedStat[]`
+- Line **515**: `export function restoreStats(save: SavedPlayer): SavedStat[]`
+(Both TRUE, ~506 matches. Bonus: `restoreAdvancements(save: SavedPlayer): string[]` at line 527.)
+
+---
+
+### Summary table
+
+| # | Claim | Verdict | Real location |
+|---|-------|---------|---------------|
+| 1 | emit ~1150 / observeProgress ~1166 + guard | TRUE | GameEngine.ts 1150 / 1166 / 1154 |
+| 2 | removeMobAt unused `creditTo`, zero callers | TRUE | GameEngine.ts 1296; no caller passes it |
+| 3 | recordEvent/evaluateAdvancements per-PlayerState | DRIFTED | advancements.ts 71 (mutates) / 245 (pure); path `engine/systems` |
+| 4 | attack handler holds player, passes removeMobAt bare | TRUE | GameEngine.ts 869 / 879-887 |
+| 5 | ProjectileState/ThrownSpearState owner; spawnArrow ~pAI:9; mobAI:226 death | DRIFTED/FALSE | state.ts 146/166 (no owner); spawnArrow in projectiles.ts:23; pvm death in projectileAI.ts:124; mobAI:226 is a type |
+| 6 | pet ally branch uses anchor not owner; getPlayer/nearestPlayerTo | TRUE | mobAI.ts 345-361; players.ts 68 / 87 |
+| 7 | SelfDelta fields; serializeStats/restoreStats | TRUE | protocol.ts 122; save.ts 506 / 515 |
+
+Key gotchas for the plan: (a) every `systems/` and `state.ts` path needs an extra `engine/` segment; (b) `spawnArrow` is in `projectiles.ts`, not `projectileAI.ts`; (c) `ThrownSpearState` has no owner-carrying field at all (arrows at least carry `fromPlayer`), so spear kill-credit needs a new field; (d) `mobAI.ts:226` is a dep type, not a death site — the projectile-vs-mob death is in `projectileAI.ts:124`.</result>
+<usage><subagent_tokens>36128</subagent_tokens><tool_uses>27</tool_uses><duration_ms>150541</duration_ms></usage>
+</task-notification>
+
+---
+
+let me re-select

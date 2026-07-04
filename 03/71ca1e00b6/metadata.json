@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0371ca1e00b6",
+  "strategy": "manual-commit",
+  "branch": "feat/mp-v2",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/online.md",
+    "docs/protocol.md",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/net/NetworkSession.test.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/protocol.test.ts",
+    "lib/net/protocol.ts",
+    "server/room.test.ts",
+    "server/room.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/03/71ca1e00b6/0/metadata.json",
+      "transcript": "/03/71ca1e00b6/0/full.jsonl",
+      "content_hash": "/03/71ca1e00b6/0/content_hash.txt",
+      "prompt": "/03/71ca1e00b6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18990,
+    "cache_creation_tokens": 315114,
+    "cache_read_tokens": 15819085,
+    "output_tokens": 94808,
+    "api_call_count": 90
+  }
+}
