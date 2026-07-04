@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "bbf57fcc80bb",
+  "session_id": "b817669a-a873-441f-8f32-85f90414f618",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T21:53:43.748346Z",
+  "branch": "feat/account-only-online",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app/join/[token]/page.tsx",
+    "components/menu/WorldSelect.test.tsx",
+    "components/menu/WorldSelect.tsx",
+    "e2e/cloudSaves.e2e.ts",
+    "e2e/multiplayer.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "d1bda7784ea8",
+  "token_usage": {
+    "input_tokens": 23249,
+    "cache_creation_tokens": 730744,
+    "cache_read_tokens": 41914099,
+    "output_tokens": 165900,
+    "api_call_count": 175
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T21:53:43.699086Z",
+    "agent_lines": 39,
+    "agent_removed": 12,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 39,
+    "total_lines_changed": 51,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 39,
+      "agent_lines_removed": 12
+    }
+  ]
+}
