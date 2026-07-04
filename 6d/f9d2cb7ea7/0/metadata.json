@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6df9d2cb7ea7",
+  "session_id": "06215f56-7610-4968-9d54-f273e7775740",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T04:51:11.558034Z",
+  "branch": "feat/mp-v2",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "app/hud.css",
+    "components/MinecraftGame.tsx",
+    "components/game/RosterPanel.test.tsx",
+    "components/game/RosterPanel.tsx",
+    "docs/architecture.md",
+    "docs/manual.md",
+    "docs/online.md",
+    "docs/protocol.md",
+    "lib/net/NetworkSession.test.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/protocol.test.ts",
+    "lib/net/protocol.ts",
+    "server/room.test.ts",
+    "server/room.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "e47020e7d3d4",
+  "checkpoint_transcript_start": 964,
+  "transcript_lines_at_start": 964,
+  "token_usage": {
+    "input_tokens": 6075,
+    "cache_creation_tokens": 57254,
+    "cache_read_tokens": 27373639,
+    "output_tokens": 38409,
+    "api_call_count": 62
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T04:51:11.485065Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 278,
+    "human_modified": 11,
+    "human_removed": 0,
+    "total_committed": 278,
+    "total_lines_changed": 289,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
