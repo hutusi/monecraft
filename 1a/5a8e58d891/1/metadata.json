@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "1a5a8e58d891",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T05:40:24.523305Z",
+  "branch": "feat/mp-v2",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/GameShell.tsx",
+    "components/menu/WorldSelect.tsx",
+    "lib/game/cloudSaves.test.ts",
+    "lib/game/cloudSaves.ts",
+    "lib/online/onlineClient.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "b4019f2bed58",
+  "token_usage": {
+    "input_tokens": 205634,
+    "cache_creation_tokens": 4219506,
+    "cache_read_tokens": 546426173,
+    "output_tokens": 901164,
+    "api_call_count": 1126
+  },
+  "session_metrics": {
+    "turn_count": 48
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T05:40:24.245448Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 405,
+    "human_modified": 22,
+    "human_removed": 0,
+    "total_committed": 405,
+    "total_lines_changed": 447,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
