@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "076cd594d8c8",
+  "strategy": "manual-commit",
+  "branch": "fix/account-menu-onboarding",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "db/ddl.ts",
+    "db/migrations/0001_account-profiles.sql",
+    "db/migrations/meta/0001_snapshot.json",
+    "db/migrations/meta/_journal.json",
+    "db/schema.ts",
+    "lib/game/config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/07/6cd594d8c8/0/metadata.json",
+      "transcript": "/07/6cd594d8c8/0/full.jsonl",
+      "content_hash": "/07/6cd594d8c8/0/content_hash.txt",
+      "prompt": "/07/6cd594d8c8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 3395,
+    "cache_creation_tokens": 92261,
+    "cache_read_tokens": 12408525,
+    "output_tokens": 62127,
+    "api_call_count": 49
+  }
+}
