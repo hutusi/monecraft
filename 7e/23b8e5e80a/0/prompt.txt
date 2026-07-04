@@ -1,0 +1,9 @@
+just commit, no push
+
+---
+
+please do not full gate on each commit, it tooks too much time, only format and lint  is ok.
+
+---
+
+ok, go ahead the continue phase 2, commit on each slices, but do not push

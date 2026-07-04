@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7e23b8e5e80a",
+  "session_id": "9d9fe046-f715-4a3d-bf2a-9bd98356707e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T13:14:47.19866Z",
+  "branch": "feat/local-vs-account-identity",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/menu/OnlineWorldSelect.tsx",
+    "components/menu/AccountProfileSelect.tsx",
+    "components/GameShell.tsx",
+    "components/menu/ProfileSelect.tsx",
+    "components/menu/AccountPanel.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "4a5b9cdfce3e",
+  "checkpoint_transcript_start": 893,
+  "transcript_lines_at_start": 893,
+  "token_usage": {
+    "input_tokens": 4243,
+    "cache_creation_tokens": 71657,
+    "cache_read_tokens": 11293839,
+    "output_tokens": 62853,
+    "api_call_count": 29
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T13:14:47.154439Z",
+    "agent_lines": 438,
+    "agent_removed": 50,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 438,
+    "total_lines_changed": 488,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
