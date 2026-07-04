@@ -1,0 +1,25 @@
+Multiplayer is already working, but the login and profile-creation flow feels off. Right now the app forces you to create a profile before you can log in or register an account — the order seems backwards. Also, once you enter guest mode, there's no way to get back to the login screen. Please investigate this feature carefully.
+
+---
+
+are profiles belongs to account, if it is a guest, maybe we do not need to create account, the profile can be store in local browser cookies or session, what do you think?
+
+---
+
+guest can have multiple local profiles, but only local, he can not create online world and invite others, what do you think?
+
+---
+
+guest has local profiles, but online account has online profiles, that sound good, what do you think?
+
+---
+
+guest can not join someone's online world, guest is for the user want play on local, not store information online, what do you think? for online profiles, I think one account can create multiple profiles, but we need add a limit, one account can create 5 maximumn profiles, and one profiles can create 10 maximumn worlds, what do you think? is that good?
+
+---
+
+guest can not join someone's online world, guest is for the user want play on local, not store information online, what do you think? for online profiles, I think one account can create multiple profiles, but we need add a limit, one account can create 5 maximumn profiles, and one profiles can create 10 maximumn worlds, what do you think? is that good?
+
+---
+
+yes, guest = local single player, may be we do not call it guest, you can suggest what it to be called. logged-in users should not keep local worlds. do you have any other questions?
