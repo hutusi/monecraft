@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4535eb692add",
+  "session_id": "06215f56-7610-4968-9d54-f273e7775740",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T12:09:55.144828Z",
+  "branch": "fix/account-menu-onboarding",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/online.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "68b7ca1f7bc0",
+  "token_usage": {
+    "input_tokens": 68532,
+    "cache_creation_tokens": 2494004,
+    "cache_read_tokens": 198736917,
+    "output_tokens": 483422,
+    "api_call_count": 443
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T12:09:54.979663Z",
+    "agent_lines": 8,
+    "agent_removed": 0,
+    "human_added": 41,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 49,
+    "total_lines_changed": 62,
+    "agent_percentage": 12.903225806451612,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 33,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".github/workflows/fly-deploy.yml": 33
+      }
+    }
+  ]
+}
