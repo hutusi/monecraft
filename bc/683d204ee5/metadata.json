@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "bc683d204ee5",
+  "strategy": "manual-commit",
+  "branch": "feat/account-sp-worlds",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/online/worldsService.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bc/683d204ee5/0/metadata.json",
+      "transcript": "/bc/683d204ee5/0/full.jsonl",
+      "content_hash": "/bc/683d204ee5/0/content_hash.txt",
+      "prompt": "/bc/683d204ee5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 36007,
+    "cache_creation_tokens": 871689,
+    "cache_read_tokens": 71898172,
+    "output_tokens": 247059,
+    "api_call_count": 243
+  }
+}
