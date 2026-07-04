@@ -1,0 +1,88 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c5da94a36e70",
+  "session_id": "06215f56-7610-4968-9d54-f273e7775740",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T04:32:09.811228Z",
+  "branch": "feat/mp-v2",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/online.md",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/projectiles.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/combat.test.ts",
+    "lib/game/engine/systems/combat.ts",
+    "lib/game/engine/systems/mobAI.test.ts",
+    "lib/game/engine/systems/mobAI.ts",
+    "lib/game/engine/systems/projectileAI.test.ts",
+    "lib/game/engine/systems/projectileAI.ts",
+    "lib/game/engine/systems/spears.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/net/NetworkSession.test.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/protocol.ts",
+    "server/room.test.ts",
+    "server/room.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "0c1702edf86e",
+  "checkpoint_transcript_start": 511,
+  "transcript_lines_at_start": 511,
+  "token_usage": {
+    "input_tokens": 15188,
+    "cache_creation_tokens": 154547,
+    "cache_read_tokens": 33561459,
+    "output_tokens": 100532,
+    "api_call_count": 99
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T04:32:09.760487Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 226,
+    "human_modified": 100,
+    "human_removed": 0,
+    "total_committed": 226,
+    "total_lines_changed": 326,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 151,
+      "user_lines_removed": 47,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "lib/game/engine/GameEngine.ts": 72,
+        "lib/game/engine/projectiles.ts": 4,
+        "lib/game/engine/state.ts": 12,
+        "lib/game/engine/systems/combat.ts": 2,
+        "lib/game/engine/systems/mobAI.ts": 26,
+        "lib/game/engine/systems/projectileAI.ts": 1,
+        "lib/game/engine/systems/spears.ts": 3,
+        "lib/game/useMinecraftGame.ts": 3,
+        "lib/net/NetworkSession.ts": 5,
+        "lib/net/protocol.ts": 5,
+        "server/room.ts": 18
+      },
+      "user_removed_per_file": {
+        "lib/game/engine/GameEngine.ts": 29,
+        "lib/game/engine/projectiles.ts": 1,
+        "lib/game/engine/state.ts": 1,
+        "lib/game/engine/systems/mobAI.ts": 13,
+        "lib/net/protocol.ts": 1,
+        "server/room.ts": 2
+      }
+    }
+  ]
+}
