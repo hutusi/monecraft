@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "57be235522c2",
+  "strategy": "manual-commit",
+  "branch": "feat/account-only-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/menu/OnlineWorldSelect.test.tsx",
+    "components/menu/OnlineWorldSelect.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/57/be235522c2/0/metadata.json",
+      "transcript": "/57/be235522c2/0/full.jsonl",
+      "content_hash": "/57/be235522c2/0/content_hash.txt",
+      "prompt": "/57/be235522c2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12682,
+    "cache_creation_tokens": 276995,
+    "cache_read_tokens": 3430216,
+    "output_tokens": 52057,
+    "api_call_count": 33
+  }
+}

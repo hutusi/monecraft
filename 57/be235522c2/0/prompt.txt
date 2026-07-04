@@ -1,0 +1,573 @@
+continue the identity rework — plan and implement Phase 3, what do you think?
+
+---
+
+<task-notification>
+<task-id>a2e740f0ec9ce60b5</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b817669a-a873-441f-8f32-85f90414f618/tasks/a2e740f0ec9ce60b5.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore anonymous auth layer" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All research complete. Here is the full inventory.
+
+# Phase 3 Anonymity Inventory — monecraft
+
+## 1. `lib/auth/server.ts` (81 lines total)
+
+- **:3** — `import { anonymous } from "better-auth/plugins"`
+- **:7-16** — module doc comment: "Guests are first-class: the anonymous plugin mints a real user (isAnonymous)... onLinkAccount re-parents everything... That hook IS the 'guests keep their worlds' promise"
+- **:41-68** — `plugins: [anonymous({ onLinkAccount: ... })]`. The `onLinkAccount` callback (:43-66) runs one transaction re-parenting from `anonymousUser.user.id` to `newUser.user.id`:
+  - :53 `worlds.ownerId` update
+  - :54 `worldInvites.createdBy` update
+  - :57-63 `worldMembers`: select guest's rows, re-insert with new userId via `onConflictDoNothing()` (dedup against `world_members_pk` unique index when the account already joined the same world)
+  - :64 delete guest's membership rows
+- Nothing else in the file references anonymous. `createAuth` factory (:20), `auth()` singleton (:77-80). Other plugins: none — `anonymous()` is the only plugin. `emailAndPassword` (:33-35) and `user.additionalFields.skinId` (:36-40) stay.
+
+## 2. `lib/auth/client.ts` (66 lines total)
+
+- **:4** — `import { anonymousClient } from "better-auth/client/plugins"`
+- **:15** — `type Client = ReturnType&lt;typeof createAuthClient&lt;{ plugins: [ReturnType&lt;typeof anonymousClient&gt;] }&gt;&gt;`
+- **:22** — `plugins: [anonymousClient()]` inside lazy `authClient()`
+- **:31** — `isAnonymous: boolean` in the `OnlineUser` type
+- **:53-54** — `currentUser()` casts `data.user` to include `isAnonymous?: boolean | null`, maps to `isAnonymous === true`
+- **:57-65** — `ensureSignedIn()`: `markOnlineUsed()` → `currentUser()`; if none, **:62** `await authClient().signIn.anonymous()` → `currentUser()` again. This is the only `signIn.anonymous` call site in product code.
+
+**All `ensureSignedIn` callers (grep, whole repo):**
+
+| File:line | Context |
+|---|---|
+| `lib/auth/client.ts:58` | definition |
+| `app/join/[token]/page.tsx:5` (import), **:26** | invite landing page — resolves token, then `ensureSignedIn()` to mint a guest before `acceptInviteToken` |
+| `components/GameShell.tsx:9` (import), **:172** | `playOnline()` — `if (!(await ensureSignedIn())) throw new Error("sign-in failed")` before `requestJoinTicket` |
+| `components/menu/AccountPanel.tsx:4` (import), **:145** | the "Play online as guest" button handler (:138-156) |
+| `components/menu/AccountPanel.test.tsx:33-37` | test mock — increments `signInAnonymousCalls`, sets a fake guest user |
+
+## 3. `isAnonymous` — every reference
+
+**Schema/DDL/migrations:**
+- `db/schema.ts:31-32` — `isAnonymous: boolean("is_anonymous")` on `user` table, doc: "Anonymous-plugin flag: a guest identity that can upgrade in place". Also :6 module comment.
+- `db/ddl.ts:16` — `is_anonymous boolean` in the `user` CREATE TABLE (PGlite mirror).
+- `db/migrations/0000_online-foundation.sql:37` — `"is_anonymous" boolean` column.
+- `db/migrations/0001_account-profiles.sql:14,17` — backfill skips guests: `WHERE "is_anonymous" IS NOT TRUE` (comment: "that layer is being retired and their throwaway worlds are not carried over").
+- `db/migrations/meta/{0000,0001,0002}_snapshot.json` — `is_anonymous` in each snapshot (0000:238, 0001:292, 0002:308).
+
+**Server code:**
+- `lib/online/http.ts:10` — `SessionUser` type includes `isAnonymous: boolean`; **:16-17** `sessionUser()` casts and maps `isAnonymous === true`.
+- `lib/online/worldsService.ts:83,86` — `createProfile(db, owner: { id; isAnonymous }, ...)`; `if (owner.isAnonymous) return fail("forbidden")` — the **only** server-side anonymous gate (see §7).
+- `app/api/profiles/route.ts:19` — POST handler passes `{ id: user.id, isAnonymous: user.isAnonymous }` to `createProfile`. (No other API route reads `isAnonymous`.)
+
+**Client code:**
+- `lib/auth/client.ts:31,53,54` — see §2.
+- `components/GameShell.tsx:100-101` (comment "a real, non-anonymous one flips the menu into account mode"), **:317** — `if (onlineUser &amp;&amp; !onlineUser.isAnonymous)` renders `AccountProfileSelect`; else falls through to local `ProfileSelect`.
+- `components/menu/AccountPanel.tsx:99` — signup button label `user?.isAnonymous ? "Create account (keeps your worlds)" : "Create account"`; **:116** status `"Playing as guest"` vs `"Signed in as ..."`; **:117-127** guest branch renders "Keep my worlds — create account" + "Sign out" buttons; :155 "Play online as guest" button (Offline state).
+
+**Tests:**
+- `lib/auth/auth.test.ts:42-47` — asserts `isAnonymous === true` after anonymous sign-in (see §5).
+- `lib/online/worldsService.test.ts:167` — `acct(id, isAnonymous = false)` helper; **:183-187** test "guests can't create a profile (online identities are account-only)": inserts a user with `isAnonymous: true`, expects `forbidden` from `createProfile`.
+- `components/menu/AccountPanel.test.tsx:8-9,18-20,35-36,45-58,60-71,75,83` — fake auth client with `signIn.anonymous` + `signInAnonymousCalls` counter; tests "offline → guest → upgrade offer" (:45) and "a guest can sign out and return to the login screen" (:60).
+- `components/menu/AccountProfileSelect.test.tsx:40` — fixture `{ id: "u1", ..., isAnonymous: false }` (only touch in that file).
+
+## 4. `db/migrations/` and how migrations apply
+
+Files:
+- **`0000_online-foundation.sql`** — creates the better-auth core (`account`, `session`, `user` incl. `is_anonymous` + `skin_id`, `verification`) and game tables (`worlds`, `world_members` + `world_members_pk` unique index, `world_invites`), all FKs `ON DELETE cascade` to `user`.
+- **`0001_account-profiles.sql`** — creates `profiles` table, adds `worlds.profile_id` (nullable, FK → profiles ON DELETE cascade), then **backfills** (:12-18): every non-guest account (`"is_anonymous" IS NOT TRUE`) gets a default profile from its name+skin, and existing worlds with null `profile_id` are handed to that profile. Guest-owned worlds are deliberately left with `profile_id = NULL`.
+- **`0002_profile-world-indexes.sql`** — `profiles_owner_idx` on `profiles(owner_id)` and `worlds_profile_idx` on `worlds(profile_id)`.
+- **`meta/`** — yes: `_journal.json` (3 entries, tags `0000_online-foundation`, `0001_account-profiles`, `0002_profile-world-indexes`, dialect postgresql, version 7) plus `0000/0001/0002_snapshot.json`.
+
+Application:
+- `drizzle.config.ts` — schema `./db/schema.ts`, out `./db/migrations`, dialect postgresql, `dbCredentials.url = DATABASE_URL ?? postgres://localhost:5432/monecraft`.
+- `package.json` script: `"db:migrate": "drizzle-kit migrate"` — run **manually** against prod (docs/deploy.md:65,155; docs/online.md:130). No auto-migrate on boot.
+- PGlite paths bypass migrations entirely: `db/index.ts:30-35` (pglite:// runtime branch) and `db/testDb.ts:3,18` exec `SCHEMA_DDL` from `db/ddl.ts` — so any schema change must be mirrored in **both** `db/schema.ts` and `db/ddl.ts`.
+
+## 5. `lib/auth/auth.test.ts`
+
+The load-bearing integration test of guest→account upgrade, run against real better-auth + PGlite via `createAuth` (:19-27). Three tests in `describe("guest → account upgrade")`:
+1. **:42-47** — `signInAnonymous` (via `guestCookie()` helper :34-39, which uses `auth.api.signInAnonymous({ returnHeaders: true })`) creates a session whose user has `isAnonymous: true`.
+2. **:49-91** — guest creates world + membership + invite; `signUpEmail` while holding the guest cookie; asserts `onLinkAccount` re-parented world/membership/invite to the new account and the guest user row is deleted with no orphans.
+3. **:93-131** — guest joins a world the target account already owns; `signInEmail` while holding the guest cookie; asserts the duplicate membership folds away (pre-existing "owner" row wins) and the guest is deleted.
+
+The **entire file** exists to test the anonymous layer — Phase 3 deletes or completely rewrites it.
+
+## 6. Full `anonymous` grep (case-insensitive) — remaining hits not covered above
+
+- `app/api/auth/[...all]/route.ts:5` — comment: "sign-in/up (email + **anonymous guests**), session,…" (the better-auth catch-all mount).
+- `docs/online.md` — the "**Identity: guests first**" section (:25-48): :27-28 "Play online as guest" creates a real better-auth user with `isAnonymous`; :31-33 `onLinkAccount` promise; :40 guest can sign out; :48 "still reach online play via the legacy path pending the guest-layer retirement". Also :12 diagram label "(guests + accounts)", :87 (join page "as a guest if needed"), :136 (local online dev: "separate guest identities" across two browser profiles).
+- `docs/tuning.md:499` — "guests (anonymous) can't create any [profiles]".
+- `CHANGELOG.md:13` — v0.13.x entry: "Guests (anonymous) can't create profiles… (Guests still reach online play via the legacy path until the anonymous layer is retired.)"; `:26` — groundwork entry: "instant anonymous guests… re-parents the guest's worlds…".
+- **e2e (no `anonymous`/`isAnonymous` strings, but guest-flow-dependent):**
+  - `e2e/multiplayer.e2e.ts:8,30,36,52-53,77,87` — "two guests share an online world via an invite link": both host and friend click "Play online as guest" / rely on the invite link auto-signing the friend in as a guest.
+  - `e2e/cloudSaves.e2e.ts:8-9,48-50` — guest signs in ("Play online as guest"), uploads/downloads a cloud save.
+  - `e2e/menu.e2e.ts`, `smoke.e2e.ts`, `determinism.e2e.ts` — no guest references.
+- **`server/` and `lib/net/` — zero hits.** The game server and ticket layer are anonymity-blind: `signTicket({ sub: user.id, wid, name, skinId, role, pv })` carries no anonymity flag.
+- `components/menu/AccountProfileSelect.tsx:18` — comment "only signed-in accounts see this; guests can't have profiles".
+- `components/menu/ProfileSelect.tsx:13` — comment "(sign in/out/guest)".
+- `components/GameShell.tsx:35-36, 163, 260` — comments about the guest path ("null for the guest path", "Guest-or-account → ticket", "or (guest path) the local world list").
+- `lib/game/engine/state.ts:39` — "Survival guests" comment: unrelated (in-game visitors), **not** auth-anonymity. Leave alone.
+
+## 7. `lib/online/worldsService.ts` — current anonymous-gating and data model
+
+**The only anonymous gate ("guest-bar") is in `createProfile`:**
+- **:81-86** — `createProfile(db, owner: { id; isAnonymous }, input)` → `if (owner.isAnonymous) return fail("forbidden")` (line 86), documented at :77 "Guests can't (online identities are account-only, see [[Local Player]])". (Per the identity-rework memory, "guest-bar" = this guard — the bar on guests creating profiles; there is no UI component named guest-bar.)
+
+**No anonymous gating anywhere else** — guests can still, today:
+- `createWorld` (:170-210) — takes bare `userId`, no isAnonymous check. Optional `profileId` (:179-189) is ownership+cap checked, but a guest calling without `profileId` creates a world with `profileId: null` just fine.
+- `createInvite` (:282-289) — owner-gated via membership role only.
+- `mintTicket` (:347-372) — membership-gated + `kind === "mp"` only; takes `user: { id; name; skinId }` (no isAnonymous). Optional profileId overrides ticket name/skin (:361-369); `sub` stays the account id (:370).
+- `acceptInvite` (:323-338), `listWorlds`, `getSaveBlob`, `putSaveBlob`, `renameWorld`, `deleteWorld`, `revokeInvites` — all identity-agnostic (membership/owner-role gated).
+
+**Data model for guest-row cleanup planning** (`db/schema.ts`):
+- `worlds.ownerId` (:111-113) — NOT NULL FK → `user.id` ON DELETE **cascade**. `worlds.profileId` (:118) — nullable FK → `profiles.id` ON DELETE cascade. Guest-owned worlds always have `profileId = NULL` (guests can't have profiles, and the 0001 backfill skipped them).
+- `worldMembers` (:137-150) — `(worldId, userId)` unique, FKs to both `worlds` and `user`, both cascade.
+- `worldInvites.createdBy` (:159-161) — NOT NULL FK → `user.id`, cascade.
+- `profiles.ownerId` (:89-91) — NOT NULL FK → `user.id`, cascade.
+- Consequence: **deleting a `user` row where `is_anonymous = true` cascades away their sessions, accounts, worlds (and those worlds' members/invites via the worlds cascade), memberships in others' worlds, and invites they created.** A guest may also hold `member` rows in account-owned worlds (via invite links), which the same cascade removes.
+- Identifying guest rows in prod: `user WHERE is_anonymous IS TRUE` (column is nullable — real accounts have `NULL`, per better-auth; note 0001 used `IS NOT TRUE` for the same reason).
+
+## 8. better-auth version and its tables
+
+- `package.json:19` — `"better-auth": "^1.6.23"`; `bun.lock` pins **1.6.23**. (drizzle-orm ^0.45.2, drizzle-kit ^0.31.10.)
+- Generated tables live in `db/schema.ts` (:23-75): `user` (:23-35 — id, name, email unique, emailVerified, image, createdAt, updatedAt, **isAnonymous** `is_anonymous` boolean nullable, **skinId** `skin_id` additional field), `session` (:37-48), `account` (:50-66), `verification` (:68-75). Mirrored in `db/ddl.ts` `SCHEMA_DDL` (:8-51; `is_anonymous` at :16) and in migration `0000` (user at :29-40, `is_anonymous` at :37). The drizzleAdapter in `lib/auth/server.ts:24-32` wires exactly these four to better-auth.
+
+## Notable facts for planning (no fixes proposed)
+
+- Phase 2 shipped **fully additive**: the only gate that ever landed is `worldsService.ts:86`; `createWorld`/`createInvite`/`mintTicket` are still guest-reachable ("legacy path", per docs/online.md:48 and CHANGELOG.md:13).
+- Dropping the `is_anonymous` column requires a **new drizzle migration (0003)** plus mirrored edits to `db/ddl.ts` and `db/schema.ts`; migrations are applied manually via `bun run db:migrate`.
+- Two e2e suites (`multiplayer.e2e.ts`, `cloudSaves.e2e.ts`) are built entirely on the "Play online as guest" button and will break the moment that button goes.
+- Docs to rewrite: `docs/online.md` ("Identity: guests first" section + diagram + local-dev instructions at :136), `docs/tuning.md:499`, and the CHANGELOG needs a new entry.
+- The game server / ticket / protocol layers need **zero** changes — they never see anonymity.</result>
+<usage><subagent_tokens>78592</subagent_tokens><tool_uses>28</tool_uses><duration_ms>279047</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a8a8d2adf4fab0b9a</task-id>
+<tool-use-id>toolu_01Ln5wTz4WeMLLwWmTmZTMba</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b817669a-a873-441f-8f32-85f90414f618/tasks/a8a8d2adf4fab0b9a.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore invite/join UI flow" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All research complete. Here is the structured report on the current (post-PR-#46) state.
+
+# Phase 3 Research Report: Invite Flow, Guest Paths, and Menu Identity (current state on `main`)
+
+## 1. `app/join/[token]/page.tsx` — the invite landing flow
+
+Only one file exists under `app/join/`: `/Users/hutusi/workspace/ai/david/monecraft/app/join/[token]/page.tsx` (57 lines, client component). No layout, no siblings.
+
+**Flow (all inside one `useEffect`, lines 21–35):**
+1. `resolveInviteToken(token)` → `GET /api/invite/:token` (unauthenticated preview; returns `{worldId, worldName}`) — error state "This invite link is invalid or has expired." if null (line 25).
+2. `ensureSignedIn()` from `@/lib/auth/client` (line 26) — **this is the silent anonymous-guest minting**: if there's no session it calls `signIn.anonymous()`. Error "Could not sign you in — try again." if null.
+3. `acceptInviteToken(token)` → `POST /api/invite/:token` (line 28) — membership insert, error "This invite could not be accepted (it may be used up)." if false.
+4. Success state `{ phase: "joined", worldName }`.
+
+**Handoff into the game is entirely passive** — no query params, no pending-join state, no redirect. Just a `&lt;Link href="/"&gt;` (lines 50–52) labeled "Open the game" (joined) / "Back to the game" (otherwise), plus the copy at line 47: *"Open the game and press its card in Online Worlds."* The world simply appears in the account's world list because the membership row now exists. Header comment (lines 8–14) calls this "Deliberately unmagical … a two-click story, not hidden state threading into the shell."
+
+```tsx
+// lines 24-30
+const invite = await resolveInviteToken(token);
+if (!invite) return void (!cancelled &amp;&amp; setState({ phase: "error", message: "This invite link is invalid or has expired." }));
+const user = await ensureSignedIn();
+if (!user) return void (!cancelled &amp;&amp; setState({ phase: "error", message: "Could not sign you in — try again." }));
+const accepted = await acceptInviteToken(token);
+if (!accepted) return void (!cancelled &amp;&amp; setState({ phase: "error", message: "This invite could not be accepted (it may be used up)." }));
+if (!cancelled) setState({ phase: "joined", worldName: invite.worldName });
+```
+
+**Server side** (`/Users/hutusi/workspace/ai/david/monecraft/app/api/invite/[token]/route.ts`): `GET` is deliberately auth-free ("the join page shows the world name before sign-in", line 8); `POST` requires `sessionUser` (401 otherwise, line 19) and calls `acceptInvite(db(), user.id, token)`. `acceptInvite` (`lib/online/worldsService.ts:323-338`) is idempotent for existing members and atomically consumes one use under the `maxUses` cap. Note: **it takes only `userId` — memberships are account-level, there is no profileId on `world_members`.**
+
+## 2. `components/menu/AccountPanel.tsx` — current structure
+
+`/Users/hutusi/workspace/ai/david/monecraft/components/menu/AccountPanel.tsx` (166 lines).
+
+- **Prop** (lines 12–16): `onAuthChange?: () =&gt; void` — "Notified after any auth mutation (sign in/up/out, guest) so a parent shell can react — e.g. flip the menu into account mode." Called from `refresh()` (lines 33–36) after every sign-in/up/out/guest mutation.
+- **Session probe** (lines 27–31): only if `onlineUsed()` (offline-first gate) → `currentUser()`.
+- **Form mode** (`mode !== "closed"`, lines 79–110): email/password sign-in or sign-up form. Sign-up submit button text is `"Create account (keeps your worlds)"` **when `user?.isAnonymous`** else `"Create account"` (line 99); toggle buttons "I have an account" / "I need an account" / "Cancel".
+- **Signed-in-something branch** (lines 114–134): status line `user.isAnonymous ? "Playing as guest" : "Signed in as ${user.name}"` (line 116). If anonymous: **"Keep my worlds — create account"** button (opens signup, line 119–121) + **"Sign out"** (lines 124–126, with comment about guests previously being stuck). If a real account: just "Sign out".
+- **Logged-out branch** (lines 135–161): status `"Offline"` (line 137), then:
+  - **"Play online as guest"** button (lines 138–156) → `ensureSignedIn()` then `refresh()` — this is the menu guest-minting path Phase 3 removes.
+  - **"Sign in"** button (line 157–159) → `setMode("signin")`. (There is no separate "Register" button in the logged-out branch — registration is reached via "I need an account" inside the form.)
+
+**Guest-mentioning strings/buttons:** "Play online as guest" (line 155), "Playing as guest" (line 116), "Keep my worlds — create account" (line 120), "Create account (keeps your worlds)" (line 99), plus comments at lines 8, 13, 37, 57–58, 122.
+
+## 3. `components/GameShell.tsx` — mode decision, playOnline, join handoff
+
+`/Users/hutusi/workspace/ai/david/monecraft/components/GameShell.tsx` (333 lines).
+
+**Screen state machine** (lines 29–37):
+```ts
+type Screen =
+  | { name: "profile-select" }
+  | { name: "world-select"; profileId: string }                       // local
+  | { name: "online-worlds"; profile: OnlineProfile }                 // account mode
+  | { name: "play"; profileId: string; worldId: string }
+  | { name: "play-online"; profile: Profile; world: OnlineWorld; session: NetworkSession; onlineProfile: OnlineProfile | null };
+```
+`onlineProfile: null` on `play-online` **is** the guest path marker (comment lines 34–36); quit routes back accordingly (lines 259–264).
+
+**Local vs account mode decision** (lines 100–105, 208, 317–331): `onlineUser` state, refreshed by `refreshOnlineUser` = `if (onlineUsed()) void currentUser().then(setOnlineUser)`. Run once on mount (line 208) and via `ProfileSelect`'s `onAuthChange` (line 329). The root branch:
+```tsx
+// lines 317-321 — a REAL account gets AccountProfileSelect; guests and offline get local ProfileSelect
+if (onlineUser &amp;&amp; !onlineUser.isAnonymous) {
+  return (
+    &lt;AccountProfileSelect user={onlineUser} onPlay={(profile) =&gt; setScreen({ name: "online-worlds", profile })} onSignedOut={() =&gt; setOnlineUser(null)} /&gt;
+  );
+}
+return &lt;ProfileSelect onPlay={...} onAuthChange={refreshOnlineUser} /&gt;;
+```
+So an **anonymous guest is deliberately kept in local mode** and reaches online play only through `WorldSelect`'s "Online Worlds" section.
+
+**`playOnline(profile, world, onlineProfile)`** (lines 163–190): guarded by `joiningRef`; `ticketProfileId = onlineProfile?.id` (line 170); calls `ensureSignedIn()` (line 172 — another silent guest-minting site, reachable from the legacy `WorldSelect` path); then `requestJoinTicket(world.id, ticketProfileId)`; then `connectNetworkSession(grant.gameServerUrl, grant.ticket, undefined, { reconnect })` where reconnect re-mints a ticket with the **same** `ticketProfileId` (lines 177–182); finally `setScreen({ name: "play-online", ... })`.
+
+**Two call sites:**
+- Guest/legacy: `world-select` screen, line 292: `onPlayOnline={(world) =&gt; void playOnline(profile, world, null)}` — local `Profile`, `onlineProfile = null`.
+- Account: `online-worlds` screen, line 307: `onPlay={(world) =&gt; void playOnline(profileFromOnline(screen.profile), world, screen.profile)}` — `profileFromOnline` (lines 40–42) converts `OnlineProfile` → play-usable `Profile` (skin sanitized, `createdAt: 0`).
+
+**Join-via-invite handoff:** **There is none.** No `useSearchParams`, no token/param handling, no pending-join state anywhere in GameShell or `app/page.tsx` (verified by grep). The invite page mutates server state (membership) and links to `/`; the shell just re-lists worlds.
+
+**Session resume** uses sessionStorage pointer `monecraft_active_session` for **local** play only (lines 66–89, 196–203); online sessions don't resume.
+
+## 4. `AccountProfileSelect.tsx` and `OnlineWorldSelect.tsx`
+
+**`/Users/hutusi/workspace/ai/david/monecraft/components/menu/AccountProfileSelect.tsx`** — props (lines 21–27):
+```ts
+type AccountProfileSelectProps = {
+  user: OnlineUser;
+  /** Enter an online profile: show its server-hosted worlds. */
+  onPlay: (profile: OnlineProfile) =&gt; void;
+  /** After signing out — the caller drops back to the local (logged-out) menu. */
+  onSignedOut: () =&gt; void;
+};
+```
+Self-contained data fetch: `listOnlineProfiles()` on mount (lines 38–39, from `lib/online/profilesClient.ts`). Renders "Signed in as {user.name}" + Sign out (lines 86–89), a profile list with portrait cards (`data-testid="online-profile-${id}"`, line 148), rename/delete inline, "New Profile" (`data-testid="new-online-profile"`) gated by `MAX_ONLINE_PROFILES` cap, and a `CreateProfileForm` mode whose `onCreate` → `createOnlineProfile` → `onPlay(profile)` directly (lines 60–73). This is the "pick a profile" widget the invite flow would want to reuse — note it's currently a full `MenuScreen` (title "Your Profiles") with management chrome (rename/delete/sign-out), not a bare picker.
+
+**`/Users/hutusi/workspace/ai/david/monecraft/components/menu/OnlineWorldSelect.tsx`** — props (lines 31–37): `{ profile: OnlineProfile; onPlay: (world: OnlineWorld) =&gt; void; onBack: () =&gt; void }`. Fetches `listOnlineWorlds()` and filters client-side to `kind === "mp" &amp;&amp; world.profileId === profile.id` (lines 49–51) — so **a world joined via invite only shows up here if its `profileId` matches**; `profileId` on `WorldSummary` is the *owner's* profile. (This matters: memberships are account-level with no profile attribution, so a joined world's `profileId` is the host's — it would be filtered out of every one of the joiner's profile lists. The legacy `WorldSelect` "Online Worlds" section shows *all* mp worlds with a "Joined" label instead, lines 155, 282 of WorldSelect.tsx.) Owner cards get "Copy invite" / "Revoke links" buttons (lines 97–131). Create is capped at `MAX_WORLDS_PER_PROFILE`, passes `profileId: profile.id` (line 63).
+
+## 5. Client join machinery and legacy-vs-account paths
+
+**`/Users/hutusi/workspace/ai/david/monecraft/lib/online/onlineClient.ts`** — all helpers are "thin and total" (null/false on failure):
+- `resolveInviteToken(token)` (lines 84–92): `GET /api/invite/${token}` → `{worldId, worldName} | null`.
+- `acceptInviteToken(token)` (lines 94–101): `POST /api/invite/${token}` → boolean.
+- `requestJoinTicket(worldId, profileId?)` (lines 104–118): `POST /api/worlds/${worldId}/ticket` with body `{ profileId: profileId ?? null }`; returns `{ticket, gameServerUrl} | null`.
+- `createInviteLink(worldId)` (lines 61–70): `POST /api/worlds/${worldId}/invites`, returns `${window.location.origin}/join/${token}`.
+- Also `listOnlineWorlds`, `createOnlineWorld` (optional `kind`, `profileId`), `deleteOnlineWorld`, `revokeInviteLinks`.
+
+**`/Users/hutusi/workspace/ai/david/monecraft/lib/auth/client.ts`**: `ensureSignedIn()` (lines 57–65) = `markOnlineUsed()` → `currentUser()` → if none, `authClient().signIn.anonymous()`. `onlineUsed()/markOnlineUsed()` gate on localStorage key `minecraft_online_v1` (lines 39–47). `OnlineUser = { id, name, email, isAnonymous }`.
+
+**Server ticket** (`app/api/worlds/[id]/ticket/route.ts` + `worldsService.ts:347-372`): `mintTicket` requires membership; when `profileId` is given it must satisfy `profiles.id = profileId AND profiles.ownerId = user.id` else `forbidden` (lines 361–366); ticket carries the profile's `name`/`skinId` while `sub` stays the account id (comment lines 341–346: "per-profile save-slice keying is a separate decision").
+
+**Legacy guest join vs account join, summarized:**
+| | Guest/legacy | Account |
+|---|---|---|
+| Entry UI | `WorldSelect` "Online Worlds" section (WorldSelect.tsx:270–330), gated on `onlineUsed()` (line 69) | `AccountProfileSelect` → `OnlineWorldSelect` |
+| Identity in-game | local `Profile` (localStorage name/skin) | `profileFromOnline(onlineProfile)` |
+| Ticket | `requestJoinTicket(worldId)` — no profileId, ticket carries the *account* (guest) name | `requestJoinTicket(worldId, profile.id)` |
+| Quit target | `world-select` (local list) | `online-worlds` |
+| Guest world creation | `createOnlineWorld` without `profileId` (WorldSelect.tsx:100) | with `profileId` (OnlineWorldSelect.tsx:63) |
+
+`docs/online.md:48` already anticipates this: "…still reach online play via the legacy path pending the guest-layer retirement."
+
+## 6. Tests
+
+**Component tests** (bun test + happy-dom + `mock.module` fakes):
+- `/Users/hutusi/workspace/ai/david/monecraft/components/menu/AccountPanel.test.tsx` — fakes `@/lib/auth/client` (lines 13–40; fake tracks `signInAnonymousCalls`). 4 tests: **"offline → guest → upgrade offer"** (clicks "Play online as guest", expects "Playing as guest" then the "Keep my worlds — create account" → signup form, lines 45–58); **"a guest can sign out…"** (lines 60–72); "a signed-in account shows its name and can sign out" (74–80); "a failed sign-out surfaces an error…" (82–94). The first two tests die with the guest button.
+- `/Users/hutusi/workspace/ai/david/monecraft/components/menu/AccountProfileSelect.test.tsx` — fakes `profilesClient` + `authClient` (lines 14–36). 5 tests: list-and-enter, create-enters (`onPlay` after CreateProfileForm), cap disables create, sign-out notifies parent, failed sign-out stays.
+- `/Users/hutusi/workspace/ai/david/monecraft/components/menu/OnlineWorldSelect.test.tsx` — fakes `onlineClient` (lines 28–37). 3 tests: filters to this profile's mp worlds, create-enters, cap disables.
+- Also present: `ProfileSelect.test.tsx`, `WorldSelect.test.tsx`, `CreateWorldForm.test.tsx` (not read in full; not guest-specific per grep). Service-level: `lib/online/worldsService.test.ts:183-186` asserts guests can't create profiles; `lib/auth/auth.test.ts` covers the guest→account upgrade/link hooks (worlds re-parenting, membership dedup) — those back the "guests keep worlds" promise that partially retires with the guest path.
+
+**E2E** — `/Users/hutusi/workspace/ai/david/monecraft/e2e/multiplayer.e2e.ts`, "two guests share an online world via an invite link" (lines 30–148):
+- **Host**: `addInitScript` seeds `minecraft_profiles_v1` with a local profile (lines 42–49) so the menu opens on the profile list; clicks **"Play online as guest"** (line 52), asserts "Playing as guest" (53), clicks `profile-host-profile` (54), then `new-online-world` in **WorldSelect** (the legacy section — note testid collision-by-design with OnlineWorldSelect's button), creates a Creative world, `waitForOnlineGame` (WS status via `window.__monecraft.net.status() === "online"`, lines 24–28).
+- Invite is minted **via fetch with the host's cookies** (`page.evaluate` hitting `/api/worlds` then `POST /api/worlds/${id}/invites`, lines 66–75) because the clipboard is unreachable headless.
+- **Friend**: fresh context, `goto(/join/${inviteToken})`, expects `/You've joined/` (line 82 — the join page silently guest-minted them), clicks "Open the game", lands on **first-run local profile create** (already-a-guest comment lines 87–90 — the `exact: true` on "Create" avoids the account panel's "Keep my worlds — create account"), fills "Profile name", then clicks `online-world-${worldId}` in WorldSelect's legacy Online Worlds section (line 92).
+- Then: both replicas see 2 players, block edit crosses the wire, chat round-trips, roster/Kick owner gating, kick → "Disconnected" alertdialog, zero console errors.
+- **Auth in e2e setup**: there are no sign-in helpers or auth fixtures at all. `e2e/helpers.ts` only provides the `gamePage` fixture (local profile/world seeding + console-error collection, lines 9–56), `calmDaytime`, `acquirePointerLock`, `itemCount`. Auth is exercised purely through the real UI/API against `playwright.config.ts`'s webServer stack: Next app with `DATABASE_URL=pglite://memory`, `BETTER_AUTH_SECRET`, `GAME_TICKET_SECRET=e2e-ticket-secret`, `NEXT_PUBLIC_GAME_SERVER_URL=ws://localhost:18080`, plus the Bun game server (`PERSISTENCE=memory`) (lines 27–56). **No e2e signs in with email/password today** — `cloudSaves.e2e.ts:49` also uses "Play online as guest" ("sign in as a guest, then create a local world"); it's the only other e2e that would break. `menu.e2e.ts`, `smoke.e2e.ts`, `determinism.e2e.ts` have no auth usage.
+
+## 7. Other "guest" strings across components/, app/, lib/ (full grep)
+
+**User-facing strings** (the ones Phase 3 touches):
+- `components/menu/AccountPanel.tsx:155` — button "Play online as guest"
+- `components/menu/AccountPanel.tsx:116` — status "Playing as guest"
+- (`AccountPanel.tsx:120` "Keep my worlds — create account" and `:99` "Create account (keeps your worlds)" are guest-only affordances without the word)
+
+**Comments/docs-in-code** (would need copy updates, not behavior): `GameShell.tsx:35-36,163,260`; `AccountPanel.tsx:8,13,37,57-58,122`; `AccountProfileSelect.tsx:18` ("guests can't have profiles"); `ProfileSelect.tsx:13`; `app/join/[token]/page.tsx:10` ("creates a guest identity if needed"); `app/api/auth/[...all]/route.ts:5`; `app/api/profiles/route.ts:13`; `lib/auth/client.ts:7,49`; `lib/auth/server.ts:8-12,44-56` (the `onLinkAccount` guest→account world-migration hook); `lib/online/worldsService.ts:77`; `lib/game/engine/state.ts:39` (unrelated — "Creative owner beside Survival guests"). Test files: `AccountPanel.test.tsx`, `lib/auth/auth.test.ts` (guest-upgrade integration tests), `lib/online/worldsService.test.ts:183-186`. Docs: `docs/online.md` has a whole "Identity: guests first" section (lines 25–48, incl. the "pending the guest-layer retirement" note at :48) and describes the join page at :87 ("as a guest if needed"); `docs/online.md:136` describes the e2e as "separate guest identities".
+
+**Key structural facts for the plan** (facts only, no proposals): the invite accept is account-level (`world_members` has no profileId — `worldsService.ts:336`); `OnlineWorldSelect` filters by owner `profileId`, so an invite-joined world is invisible in account mode today and only surfaces in the legacy `WorldSelect` list; there is no shell handoff mechanism from `/join/[token]` — success is communicated solely by the membership existing; and `ensureSignedIn()` (the anonymous-minting primitive) is called in exactly three places: `app/join/[token]/page.tsx:26`, `AccountPanel.tsx:145` ("Play online as guest"), and `GameShell.tsx:172` (inside `playOnline`).</result>
+<usage><subagent_tokens>76600</subagent_tokens><tool_uses>27</tool_uses><duration_ms>300624</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a214cc536a3a47063</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b817669a-a873-441f-8f32-85f90414f618/tasks/a214cc536a3a47063.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore docs, tickets, server keying" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>All facts gathered. Here is the structured report.
+
+---
+
+# Phase 3 identity-rework — fact-finding report
+
+## 1. Save-slice keying (server, tickets, save format)
+
+### Join ticket format — `/Users/hutusi/workspace/ai/david/monecraft/lib/net/tickets.ts:16-31`
+```ts
+export type TicketClaims = {
+  /** The player's user id (becomes their PlayerId in the world). */
+  sub: string;
+  wid: string;              // world (= room)
+  name: string;             // display name at mint time
+  skinId: string | null;
+  role: "owner" | "member"; // owner may kick/close
+  pv: number;               // protocol version
+  iat: number; exp: number;
+};
+```
+**No `profileId` claim exists.** HS256, `TICKET_TTL_SECONDS = 60` (line 14). `verifyTicket` (lines 70-92) validates `sub`/`wid`/`role`/`pv`/`exp` only.
+
+### Where the ticket is minted — `lib/online/worldsService.ts:341-373` (`mintTicket`)
+The design decision is explicitly deferred in the doc comment (lines 341-346):
+&gt; "When a `profileId` is given (and belongs to the caller) the ticket carries that profile's name + skin, so others see the profile identity — not the account. **`sub` stays the account id (roster/kick key at the account level; per-profile save-slice keying is a separate decision).**"
+
+Flow: `POST /api/worlds/[id]/ticket` (`app/api/worlds/[id]/ticket/route.ts:13-25`) takes `{ profileId? }` in the body, verifies profile ownership, then `signTicket({ sub: user.id, wid, name, skinId, role, pv }, secret)` — profile only affects `name`/`skinId`. Membership check (`membership(db, user.id, worldId)`) and `role` come from `world_members` keyed by **account** id.
+
+### Every place `ticket.sub` is used
+- **Handshake/admission** — `server/index.ts:94-106`: `verifyTicket` → `room.join(claims, sink)`; `ws.data.playerId = claims.sub`.
+- **Engine player id + save slice** — `server/room.ts:214-265` (`Room.join`): reconnect-slot check `this.clients.has(claims.sub)` (line 217); stale-socket replace (223-224); **`const restore = this.offlinePlayers.get(claims.sub)`** then **`this.engine.addPlayer({ id: claims.sub, restore })`** (226-227); `welcome.playerId = claims.sub` (250).
+- **Offline-slice persistence** — `room.ts:121-122` (`offlinePlayers: Map&lt;string, SavedPlayer&gt;`), seeded from `record.save?.players` by `saved.id` (line 162); `leave()` (277-286) does `engine.removePlayer(playerId)` → `offlinePlayers.set(playerId, saved)`; `persist()` (377-386) merges offline slices back into `save.players` and gzips → `persistence.storeWorld`.
+- **Roster** — `room.ts:459-478`: `RosterEntry.id = player.id` (= sub); protocol type at `lib/net/protocol.ts:80`.
+- **Kick** — two paths, both keyed by sub: protocol `kick { targetId }` (`protocol.ts:74`, handled at `room.ts:356-362`, owner-role gate from the ticket) and admin `POST /rooms/:id/kick/:playerId` (`server/index.ts:67-73`). No web→game admin bridge (docs/online.md:103).
+- **Client side** — `lib/net/NetworkSession.ts:206-209`: `playerId = welcome.playerId`; `state.primaryPlayerId = playerId`; `engine.addPlayer({ id: playerId })`.
+- **Reconnect** — GameShell re-mints with the same `ticketProfileId` each rung (`components/GameShell.tsx:173-182`; `lib/online/onlineClient.ts:104-114`). Same account ⇒ same `sub`, so reconnect re-lands on the same slot.
+
+### World save format, per-player sections
+- `SavedPlayer` — `lib/game/types.ts:365-380`: `{ id, position?, inventorySlots?, equippedArmor?, selectedSlot?, gameMode?, gameOver?, hearts?, hunger?, effects?, xp?, stats?, advancements?, spawnPoint? }`. Doc comment (359-364): *"Single-player worlds hold one entry with id `"local"`; a multiplayer server holds one per account."*
+- `SaveData` v17 — `types.ts:389-408`: `{ version: 17; players: SavedPlayer[] }`; current version literal in `lib/game/save.ts:254` and `:333`. **`SavedPlayer.id` is an opaque string** — no schema constraint ties it to accounts.
+- **Pet owners are player ids**: `SavedMob.owner` is "a real player id from here on" (docs/save-format.md:43) — in mp saves that's the account sub today.
+- Server persistence: single gzipped blob in `worlds.saveBlob` (`server/persistence.ts:43-61`), loaded through the full `readSave` migration chain (`parseSaveBlob`, lines 30-41). `db/schema.ts:101-106` comment: "One save blob either way: gzipped SaveData JSON (v17 carries every player's slice)."
+
+### What would have to change for per-profile keying (facts, not a proposal)
+- **Ticket**: add/replace the identity claim in `TicketClaims` + `verifyTicket` validation (`lib/net/tickets.ts`); `mintTicket` would put the profile id in the keying claim (currently deliberately not — `worldsService.ts:344-345`); ticket route already receives `profileId`.
+- **Server**: `server/index.ts:105` (`playerId = claims.sub`) and every `claims.sub` in `Room.join` (`room.ts:217-263`) — the join key, `offlinePlayers` key, `engine.addPlayer` id, `welcome.playerId`, roster ids, kick targets. Note membership/role stay account-scoped (`worldMembers.userId`), so join would key auth by account but slices by profile — two ids would flow through admission.
+- **Save format**: no v17 schema change strictly required (`players[].id` is opaque), **but** existing mp blobs hold slices keyed by account sub and pets keyed by the same id — re-keying either orphans them or needs a migration (save-version bump v17→v18 or a server-side remap at load). AGENTS.md requires flagging save-format impact.
+- **Protocol/docs**: `PROTOCOL_VERSION = 2` (`lib/net/protocol.ts:20`) — the ticket is *not* part of the frame schema, but docs/protocol.md:19-27 (Handshake) and docs/online.md:96-103 (owner controls / kick semantics) describe sub-keyed identity; the kick admin endpoint path segment `:playerId` changes meaning.
+- **Multi-profile edge**: today `sub` uniqueness means one account = one seat per room (reconnect replaces the old socket, `room.ts:222-224`). Profile keying changes that invariant (same account, two profiles = two seats) — capacity (`ROOM_CAPACITY` 8) and reconnect-replace logic key off it.
+
+## 2. Guest-owned data (db/schema.ts)
+
+All in `/Users/hutusi/workspace/ai/david/monecraft/db/schema.ts`:
+
+- **`user`** (23-35): `isAnonymous: boolean("is_anonymous")` (line 32, nullable — the anonymous-plugin flag), plus `skinId` (34). Guest rows = `is_anonymous IS TRUE` (the 0001 migration backfill uses `WHERE "is_anonymous" IS NOT TRUE` for the complement).
+- **`profiles`** (85-99): `ownerId` NOT NULL → `user.id` **onDelete: cascade**; `profiles_owner_idx`. Guests can't own any: `createProfile` rejects `owner.isAnonymous` with `forbidden` (`lib/online/worldsService.ts:86`).
+- **`worlds`** (107-134): `ownerId` NOT NULL → `user.id` **cascade**; `profileId` **nullable** → `profiles.id` **cascade** ("pre-profile rows … leave it null until claimed", lines 114-117); `kind: "sp-cloud" | "mp"`; **`saveBlob: bytea`** (line 128) — save blobs live **in Postgres, in this column**, keyed by world (one blob per world; not Vercel Blob, no per-user blob store). `worlds_profile_idx`.
+- **`worldMembers`** (137-150): `worldId`→worlds **cascade**, `userId`→user **cascade**, `role: "owner"|"member"`, unique `(worldId, userId)`.
+- **`worldInvites`** (153-166): `worldId`→worlds **cascade**, `createdBy`→user **cascade**, token unique, `expiresAt`/`maxUses`/`uses`.
+- **Cascade summary**: deleting a guest `user` row cascades sessions, accounts, profiles (none for guests), owned worlds (and their `saveBlob`s), their memberships, and invites they created. So guest-owned rows are fully identifiable (`user.isAnonymous = true` → join on `ownerId`/`userId`/`createdBy`) and fully cascade-deletable.
+- **Upgrade hook** — `lib/auth/server.ts:43-66` (`anonymous({ onLinkAccount })`): one transaction re-parents `worlds.ownerId`, `worldInvites.createdBy`, and `worldMembers` (with duplicate-membership `onConflictDoNothing`) before better-auth deletes the guest row. **It does not touch `profiles`** (guests can't have any). Comment: "the FKs cascade — so a missed table … would silently destroy data."
+- Sessions API surface: `SessionUser = { id, name, skinId, isAnonymous }` (`lib/online/http.ts:10-17`); client mirror `lib/auth/client.ts:31,53-54`; UI gate `components/GameShell.tsx:317` (`onlineUser &amp;&amp; !onlineUser.isAnonymous` → account home).
+- DDL parity: `db/ddl.ts` (`SCHEMA_DDL`) mirrors the schema with `ON DELETE CASCADE` (uppercase — my lowercase grep missed it); migrations `0000` has 7 `ON DELETE cascade` FKs, `0001_account-profiles.sql` adds the profiles FKs + the **non-guest backfill** ("Anonymous guests are skipped — that layer is being retired and their throwaway worlds are not carried over", lines 12-15).
+
+## 3. Docs inventory — what goes stale when guests are removed
+
+### docs/online.md (217 lines)
+- **`## Identity: guests first` (lines 25-48)** — entire section is guest-centric. Quoted in full:
+  &gt; - "Play online as guest" (menu → Account panel) creates a real better-auth user with `isAnonymous` — no form, instant play. Guests own worlds and memberships like anyone else.
+  &gt; - Upgrading (sign-up, or sign-in to an existing account, while holding the guest session) triggers the anonymous plugin's `onLinkAccount` hook (`lib/auth/server.ts`): worlds, memberships, and invites re-parent onto the new account before the guest row is deleted. **This hook is the "guests keep their worlds" promise** — `lib/auth/auth.test.ts` proves it against the real better-auth flow on real SQL (PGlite), including the duplicate-membership collision case.
+  &gt; - Sessions are better-auth cookies; the game server never sees them.
+  &gt; - The Account panel renders on the profile-select screen **and on the first-run create-profile screen** (`components/menu/ProfileSelect.tsx`), so sign in / register is reachable before any local profile exists; a guest can **Sign out** back to the offline/login state.
+  &gt; - When signed in as a real account the menu opens into an **account home** (`components/menu/AccountProfileSelect.tsx`) listing that account's server-side profiles (create/rename/delete, capped at `MAX_ONLINE_PROFILES`); picking one shows its online worlds (`OnlineWorldSelect`, capped at `MAX_WORLDS_PER_PROFILE`), and the join ticket carries the profile's name/skin. Logged-out **Local Players** stay on the browser-local profile flow. (Guests still reach online play via the legacy path pending the guest-layer retirement.)
+- Also stale: line 12 (`/api/auth/*  better-auth (guests + accounts)` in the diagram), line 87 (invite landing "signs the visitor in as a guest if needed"), line 137 ("separate guest identities" in the local co-op recipe). Line 345-ish `mintTicket` cross-reference at 46 ("join ticket carries the profile's name/skin") changes if sub-keying changes.
+
+### docs/protocol.md (109 lines)
+- **Handshake** (17-27): ticket semantics ("verifies the ticket … minted by the web API") — stale only if claims change (per-profile keying).
+- **kick** bullet (42-46) + **Close codes** 4003 (95) + **Trust model** (101-108): identity/roster keying described implicitly; stale only under re-keying, not under guest removal.
+- No guest/anonymous mentions at all — guest removal alone leaves protocol.md accurate.
+
+### docs/save-format.md
+- **`## Schema` heading, line 5**: says "`SaveData` (version 16)" while code is v17 — the flat field list (7-27) describes pre-v17 top-level fields; already a stale-ish framing worth noting.
+- **`### Version history` → v17 entry (line 43)**: "a multiplayer server holds one entry per known **account**" — stale under per-profile keying.
+- No guest mentions; cloud saves appear only via line 29's localStorage context and the online.md cross-refs. Server-side blob storage is documented in online.md (57-62), not here.
+
+### docs/testing.md (rows by line)
+- **15 `Game server &amp; protocol`** — covers ticket tests; stale if claims change.
+- **17 `Online accounts &amp; worlds`** — explicitly: "The **guest→account upgrade** re-parents worlds/memberships/invites … **guests barred from creating profiles** … a join ticket carrying the chosen profile's name+skin". Stale on guest removal.
+- **50 `Menus`** — account-mode home rows; mentions sign-out, fine, but AccountPanel guest flow is in row 17 ("the Account panel's offline→guest→upgrade flow").
+- **53 `Browser E2E (multiplayer)`** — "two isolated contexts **sign in as guests**; … the friend lands on `/join/&lt;token&gt;`". Stale.
+- **54 `Browser E2E (cloud saves)`** — "A **signed-in guest's** single-player cloud round-trip". Stale.
+- 64-66: e2e boot description (pglite + memory persistence) — stays valid.
+
+### docs/manual.md
+- **`## Playing online` (line 645)** — "**Getting an identity**" paragraph (651-655): guest sign-in, "Guests are real accounts", "**Create account** upgrades the guest in place". **Joining** (664-667): "signs you in (as a guest if you're new)". Both stale. Cloud-saves subsection (696+) says "Signed in" generically — mostly survives.
+- Line 71 (chat key table) — fine.
+
+### docs/reference.md
+- **Zero** matches for online/account/guest — nothing to update.
+
+### README.md
+- **Line 8**: "…friends join as **one-click guests**. See docs/manual.md#playing-online." Stale. Lines 32, 57 (chat key, deploy link) fine.
+
+## 4. CHANGELOG.md
+- **`## [Unreleased]`** (lines 5-17): Added — cloud saves (9), player list &amp; owner kick (10), per-player progression (11), vehicles/arrows protocol v1→v2 (12), **account profiles &amp; account-mode menu** (13, ends "(Guests still reach online play via the legacy path until the anonymous layer is retired.)"); Fixed — first-run login reachability + guest Sign out (17).
+- **Numbering**: `0.x.0` minor releases; latest released **0.13.0 (2026-07-04)**, previous 0.12.0 (2026-07-03). (Note: memory says v0.13.0 was tagged, yet Unreleased still contains the post-0.13.0 identity work — Unreleased is the PR #46 batch plus cloud saves/co-op parity items.)
+
+## 5. config.ts online tunables
+- `/Users/hutusi/workspace/ai/david/monecraft/lib/game/config.ts:26-31`: `MAX_ONLINE_PROFILES = 5`, `MAX_WORLDS_PER_PROFILE = 10` (comment: enforced server-side in worldsService, "bound per-account storage").
+- `MAX_PROFILE_NAME = 24` lives in `lib/game/profiles.ts:30` (shared by local profiles and `worldsService` name validation at lines 88, 113) — **not** in config.ts.
+- **docs/tuning.md documents them**: `## Online accounts` section (~line 490-502) covers `MAX_ONLINE_PROFILES` (497) and `MAX_WORLDS_PER_PROFILE` (501) with balance notes; it says "guests (anonymous) can't create any" (499) — one guest mention to sweep. `MAX_PROFILE_NAME` is not in tuning.md.
+
+## 6. E2E online-stack bring-up
+- `/Users/hutusi/workspace/ai/david/monecraft/playwright.config.ts:27-56` — **two `webServer` entries**:
+  1. Web app: `bun run build &amp;&amp; bun run start` on :3000 with `DATABASE_URL: "pglite://memory"`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL: "http://localhost:3000"`, `GAME_TICKET_SECRET: "e2e-ticket-secret"`, `NEXT_PUBLIC_GAME_SERVER_URL: "ws://localhost:18080"`.
+  2. Game server: `bun server/index.ts` with `PORT: "18080"`, `PERSISTENCE: "memory"`, matching `GAME_TICKET_SECRET`; health-checked at `/health`.
+- pglite mode: `db/index.ts` applies `db/ddl.ts` (`SCHEMA_DDL`) at boot — no migrations, no Docker. Memory persistence auto-creates unknown world ids with an FNV-1a seed (`server/persistence.ts:63-92`).
+- Guest dependency in specs: `e2e/multiplayer.e2e.ts:52-53` and `e2e/cloudSaves.e2e.ts:49-50` both click **"Play online as guest"** and await "Playing as guest" (button rendered by `components/menu/AccountPanel.tsx:155`). An account-based rewrite would instead drive AccountPanel's email/password form (`AccountPanel.tsx:99` — "Create account" submit) — better-auth `emailAndPassword` is enabled (`lib/auth/server.ts:33-35`) and works on pglite, so no config change to the stack is needed; only the sign-in steps and the invite-landing expectation (`app/join/[token]/page.tsx:10` — "creates a guest identity if needed") change. `e2e/menu.e2e.ts`, `smoke.e2e.ts`, `determinism.e2e.ts` never touch the backend. Config: single worker, `testMatch: **/*.e2e.ts`, chromium channel for pointer-lock.</result>
+<usage><subagent_tokens>103009</subagent_tokens><tool_uses>48</tool_uses><duration_ms>521296</duration_ms></usage>
+</task-notification>
+
+---
+
+let me select again
+
+---
+
+<task-notification>
+<task-id>a0f0176a79de1affb</task-id>
+<tool-use-id>toolu_01NptencHpohMTnx89fNP61M</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b817669a-a873-441f-8f32-85f90414f618/tasks/a0f0176a79de1affb.output</output-file>
+<status>completed</status>
+<summary>Agent "Design Phase 3 implementation plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture now. Here is the full implementation plan.
+
+# Phase 3 Plan: Retire the anonymous-guest layer (accounts-only online)
+
+Branch: `feat/account-only-online` off `main`, one PR. Eight slices, each `bun run format` + `bun run lint` green; e2e specs go red at slice 5 and green again at slice 7 (acceptable mid-branch; only lint gates per commit).
+
+---
+
+## Key design calls (made once, referenced by the slices)
+
+**D1 — GameShell "Play locally" door: a `browsingLocal` boolean, not a new screen variant.**
+The root render at `components/GameShell.tsx:317` is already a fall-through (not a `screen.name` branch), so the door is a sibling piece of state, not a screen:
+
+- `const [browsingLocal, setBrowsingLocal] = useState(false)`.
+- Root render becomes: `if (onlineUser &amp;&amp; !browsingLocal) return &lt;AccountProfileSelect … onPlayLocally={() =&gt; setBrowsingLocal(true)} /&gt;`, else `&lt;ProfileSelect … onBackToAccount={onlineUser ? () =&gt; setBrowsingLocal(false) : undefined} /&gt;`.
+- **Set** `browsingLocal = true` in two places: the Play-locally callback, and the session-resume path (`GameShell.tsx:196-198`) when a local-world pointer resumes — so a signed-in player who reloads mid-local-game and quits walks back out through the *local* menus (world-select → profile-select → "Back to account"), not an abrupt jump to account home.
+- **Clear** it whenever `currentUser()` resolves null in `refreshOnlineUser` (`void currentUser().then((u) =&gt; { setOnlineUser(u); if (!u) setBrowsingLocal(false); })`) and via "Back to account". Sign-out from inside ProfileSelect's AccountPanel fires `onAuthChange` → this same path, so the stale flag can't survive a sign-out.
+- ProfileSelect showing "Signed in as X / Sign out" while browsing locally is **desired**: it's the honest state ("you're signed in, browsing local worlds") and it gives cloud-save context. The way back is a new optional `onBackToAccount?: () =&gt; void` prop on `ProfileSelect`, rendered as a "Back to account" `mc-button` (`data-testid="back-to-account"`) directly under the `&lt;AccountPanel/&gt;` in **both** branches — the list view (`ProfileSelect.tsx:51`) **and the firstRun branch (`:36`)**, otherwise a signed-in account with zero local profiles that clicks Play locally is trapped on the create form.
+
+**D2 — `playOnline` sign-in check: drop the pre-check entirely; sharpen the ticket-failure message.**
+`playOnline` is only reachable from `OnlineWorldSelect` (account mode), so the user is signed in in every normal flow; the only failure left is an expired session, and `requestJoinTicket` already returns null on 401 which lands in the existing `connectError` alertdialog. Adding a `currentUser()` pre-check would cost a session roundtrip on *every* join to improve one rare message. So: delete line 172, change the message at `:174` to `"could not get a join ticket — are you still signed in, and is the game server configured?"`. `onlineProfile` becomes required (`OnlineProfile`, no null); `Screen` variant `play-online.onlineProfile: OnlineProfile`; quit routing (`:262-264`) collapses to always `{ name: "online-worlds", profile: screen.onlineProfile }`.
+
+**D3 — WorldSelect cloud gating: a `cloudEnabled: boolean` prop.**
+GameShell passes `cloudEnabled={onlineUser !== null}`. Inside WorldSelect: the `listOnlineWorlds` fetch (`:68-71`) runs only when `cloudEnabled`; the per-card gate at `:221` swaps `onlineUsed()` → `cloudEnabled`; server list filtered to `kind === "sp-cloud"` only (the `mpWorlds` split at `:154-157` dies). `onlineUsed` import removed from this file. Named `cloudEnabled` (not `signedIn`) because it gates exactly the cloud-saves UI, and GameShell stays the one place that decides what enables it.
+
+**D4 — Join page: 4-phase state machine, reusing `&lt;AccountPanel/&gt;` as-is.**
+`{ phase: "loading" } | { phase: "signin"; worldName: string } | { phase: "joined"; worldName: string } | { phase: "error"; message: string }`. Flow: `markOnlineUsed()` first (an invite click IS an online action, and without it GameShell's offline-first `refreshOnlineUser` gate would never probe the session after "Open the game" — this replaces the marking `ensureSignedIn` used to do) → `resolveInviteToken` (null → error) → `currentUser()` → if user, `acceptInviteToken` (false → "used up" error; already-member is idempotent-true) → joined; if no user, phase `signin`: render the world-name preview ("You're invited to **{worldName}** — sign in to join") + `&lt;AccountPanel onAuthChange={() =&gt; setAuthNonce(n =&gt; n + 1)} /&gt;`, with `authNonce` in the effect deps so a successful sign-in/up re-runs resolve→accept. AccountPanel needs no MenuScreen: its classes (`account-panel`, `menu-form`, `menu-field`, `menu-input`, `mc-button`, `account-error`) are global app CSS; render it inside the existing `.net-modal-box`, and do one visual check in the manual pass. Keep the client component, the `cancelled` cleanup, and the "Open the game" link.
+
+**D5 — `auth.test.ts` replacement: keep a lean better-auth-on-PGlite integration test, don't fold it away.**
+It's the only test constructing `createAuth` + `drizzleAdapter` against the real schema — exactly the seam that would break if better-auth minded the dropped column or the plugin removal changed session shape. Replace the guest-upgrade suite with ~2 tests: (1) `signUpEmail` creates a user + session cookie; `getSession` returns id/name/email and the `skinId` additional field; (2) `signInEmail` with a wrong password fails, right password yields a session. Keep the `returnHeaders` cookie technique and `closeTestDb` in `afterAll` (exit-99 leak).
+
+**D6 — Migration 0003 mechanics.**
+1. Edit `db/schema.ts` (drop `:31-32`) and `db/ddl.ts` (drop `:16`) — these MUST move together (PGlite mirror).
+2. `bunx drizzle-kit generate --name retire-anonymous-guests` → emits `db/migrations/0003_retire-anonymous-guests.sql` (`ALTER TABLE "user" DROP COLUMN "is_anonymous";`), `meta/0003_snapshot.json`, and the `_journal.json` entry (idx 3).
+3. Hand-prepend to the SQL, following 0001's hand-edit precedent, with a comment block:
+   `DELETE FROM "user" WHERE "is_anonymous" IS TRUE;--&gt; statement-breakpoint` before the DROP. FKs cascade worlds/saveBlobs/memberships/invites.
+4. PGlite paths need nothing more (fresh DDL each boot). Release note: deploy the new app **first**, then `bun run db:migrate` (old builds SELECT the column via the drizzle schema and would error post-drop; the new build never references it, and the still-present column is harmlessly ignored before migration).
+
+**D7 — OnlineWorldSelect joined worlds.**
+Filter (`:49-51`) becomes `world.kind === "mp" &amp;&amp; (world.profileId === profile.id || world.role === "member")`, with a comment: *joined worlds appear under every profile — membership is account-level, and their `profileId` is the host's*. The "Joined" label already renders (`:91`) and owner actions are already gated (`:97`). **Cap fix**: `atCap` (`:54`) must count only `worlds.filter(w =&gt; w.profileId === profile.id)` or joined worlds visually eat your create quota (the server counts only owned).
+
+---
+
+## Commit slices
+
+### Slice 1 — `feat(menu): list joined worlds in the account online-worlds screen`
+Independently valuable; closes the joined-worlds gap while the legacy list still exists (brief double-visibility is fine).
+- `components/menu/OnlineWorldSelect.tsx` — D7 filter + cap fix + comment; header doc `:14-18` ("Lists only this profile's…" → owned-or-joined).
+- `components/menu/OnlineWorldSelect.test.tsx` — add: a member-role world (host's `profileId`) is visible with "Joined" and renders no Copy invite/Revoke buttons; cap test still counts owned only (seed `MAX_WORLDS_PER_PROFILE` owned + 1 joined, button disabled state per owned count).
+
+### Slice 2 — `feat(menu): "Play locally" door between account home and the local menus`
+- `components/menu/AccountProfileSelect.tsx` — new required prop `onPlayLocally: () =&gt; void`; button `data-testid="play-locally"`, label "Play locally", placed in a `menu-bottom-row` with the existing "New Profile" primary (mirrors WorldSelect's bottom row); header doc `:14-19` updated (drop "guests can't have profiles").
+- `components/menu/ProfileSelect.tsx` — optional `onBackToAccount` prop + button in both branches (D1); doc comment `:13` sweep.
+- `components/GameShell.tsx` — `browsingLocal` state, wiring, resume-path set, refresh-path clear (D1).
+- `components/menu/AccountProfileSelect.test.tsx` — Play-locally callback test; `components/menu/ProfileSelect.test.tsx` — back-to-account renders only when prop given + fires.
+
+### Slice 3 — `feat(join): invite landing requires an account — preview, inline sign-in, accept`
+- `app/join/[token]/page.tsx` — full rewrite per D4 (drops one of the three `ensureSignedIn` callers; the AccountPanel it embeds still shows the guest button until slice 5 — note this in the commit body as a known mid-branch state).
+
+### Slice 4 — `feat(menu): retire the local-menu Online Worlds section; cloud saves gate on the account`
+- `components/menu/WorldSelect.tsx` — remove the Online Worlds section (`:270-330`), `onPlayOnline` prop (`:44-45`), `creatingOnline` mode (`:91-114`), invite state (`:57-59`), `createInviteLink/revokeInviteLinks` imports and `createOnlineWorld`'s mp usage; keep Upload-to-cloud (`:127-151`, `:221-235`) and Cloud Saves (`:255-269`) + `onDownloadCloud`; add `cloudEnabled` per D3.
+- `components/GameShell.tsx` — world-select screen (`:284-300`): drop `onPlayOnline`, pass `cloudEnabled={onlineUser !== null}`. (`playOnline` signature unchanged until slice 5 so this compiles standalone.)
+- `components/menu/WorldSelect.test.tsx` — drop `onPlayOnline` from every render; rewrite the "splits the server list by kind" test (no `online-world-mp1`; sp-cloud downloadable; upload/Synced assertions kept) using `cloudEnabled` instead of the `minecraft_online_v1` localStorage seed; same for the failed-upload test.
+
+### Slice 5 — `feat(auth)!: remove the anonymous guest layer — accounts required for online play`
+The big one; everything here is compile-coupled through `OnlineUser.isAnonymous` and `ensureSignedIn`.
+- `lib/auth/client.ts` — drop `anonymousClient` import/plugin; `type Client = ReturnType&lt;typeof createAuthClient&gt;`; `OnlineUser` loses `isAnonymous`; `currentUser` mapping simplified; **delete `ensureSignedIn`** (its two remaining callers go in this slice); rewrite module doc `:6-14` (keep the lazy-construction and offline-first rationale — `onlineUsed`/`markOnlineUsed` **stay**, they're the offline-first gate, unrelated to guests).
+- `lib/auth/server.ts` — drop the `anonymous` import (`:3`) and the whole `plugins` block (`:41-68`) incl. `onLinkAccount`; drop the now-unused `eq` import and `schema` if unused; rewrite module doc `:7-16` (accounts-only; factory-for-PGlite rationale stays). `emailAndPassword` + `skinId` additional field stay.
+- `lib/online/http.ts` — `SessionUser` loses `isAnonymous` (`:10`); mapping (`:16-17`) simplified.
+- `lib/online/worldsService.ts` — `createProfile(db, ownerId: string, input)` (drop the `owner.isAnonymous` guard `:86` and the object param); doc comment `:76-80` rewritten (drop the guests sentence, keep the cap).
+- `app/api/profiles/route.ts` — `createProfile(db(), user.id, …)`; comment `:13`.
+- `components/menu/AccountPanel.tsx` — remove "Play online as guest" (`:137-156` handler + button), guest status/branch (`:116-127`), `isAnonymous` submit label (`:99` → always "Create account"); logged-out branch = "Offline" status + "Sign in"; drop `ensureSignedIn` import; rewrite doc comments (`:6-11`, `:13`, `:56-58`, `:122`). `onAuthChange` and `markOnlineUsed()` in `submit` stay (that mark is now the *only* thing setting the offline-first flag besides the join page — call this out in a comment).
+- `components/GameShell.tsx` — root flip becomes `if (onlineUser &amp;&amp; !browsingLocal)`; `playOnline` per D2 (drop `ensureSignedIn`, required `onlineProfile`, message tweak); `Screen` type `:37` non-null + comment `:34-36` rewritten; quit routing `:262-264` collapses; comment sweep `:163-164`, `:100-101`.
+- `app/api/auth/[...all]/route.ts:5` comment sweep.
+- Tests: `lib/auth/auth.test.ts` → D5 rewrite. `lib/online/worldsService.test.ts` — delete the `acct` helper (pass plain ids), delete the "guests can't create a profile" test, adjust the other `createProfile` call sites. `components/menu/AccountPanel.test.tsx` — drop tests 1–2, the `signIn.anonymous` fake, `signInAnonymousCalls`, and the `ensureSignedIn` mock export; keep sign-in/out + failed-sign-out tests; add "logged out shows Sign in and no guest button" and "sign-up form submits email/password" coverage. `components/menu/AccountProfileSelect.test.tsx:40` — drop `isAnonymous` from the fixture (type break otherwise).
+- NOT touched: `lib/game/engine/state.ts:39` ("Survival guests" = in-game visitors), `lib/net/tickets.ts`, `server/`, protocol, save format (decision 3).
+
+### Slice 6 — `feat(db)!: migration 0003 — purge anonymous users and drop is_anonymous`
+Per D6: `db/schema.ts`, `db/ddl.ts`, `db/migrations/0003_retire-anonymous-guests.sql` (generated then hand-edited), `db/migrations/meta/0003_snapshot.json`, `meta/_journal.json`. Commit body carries the deploy-order note and the data-destruction warning. Must follow slice 5 (nothing may reference the column when it drops).
+
+### Slice 7 — `test(e2e): drive the online journeys as real accounts`
+- `e2e/multiplayer.e2e.ts` — retitle ("two accounts share an online world via an invite link"). Host: **no localStorage seeding needed** (the first-run screen shows AccountPanel); `goto "/"` → `getByRole("button", { name: "Sign in" })` → `getByRole("button", { name: "I need an account" })` → `getByLabel("Email")` = `host@example.com`, `getByLabel("Display name")` = `Hosta`, `getByLabel("Password")` = `hunter2hunter2` → `getByRole("button", { name: "Create account" })` → `await expect(host.getByText("Your Profiles")).toBeVisible({ timeout: 15000 })` → `getByTestId("new-online-profile")` → `getByLabel("Profile name")` = `Hosta` → `getByRole("button", { name: "Create", exact: true })` (exact: "Create World"/"Create account" are substring traps) → lands in OnlineWorldSelect → existing `new-online-world`/World name/seed/Creative/Create World steps → `waitForOnlineGame`. Invite still minted via `page.evaluate` fetch (unchanged, `:66-75`). Friend: fresh context → `/join/${token}` → assert the world-name preview (`getByText("Co-op Test")`) → same Sign in → I need an account → register (`friend@example.com`) → `expect(getByText(/You've joined/))` → "Open the game" → account home (join page marked online-used, so GameShell finds the session) → create profile "Friend" → `getByTestId(`online-world-${worldId}`)` visible with "Joined" text (assert it) → click → `waitForOnlineGame`. All downstream assertions unchanged: 2 players both replicas, block-edit cross, chat round-trip, roster + owner-only Kick, kick → "Disconnected" alertdialog, zero console errors. Locators are Playwright-valid throughout (getByLabel works — AccountPanel labels wrap their inputs).
+- `e2e/cloudSaves.e2e.ts` — keep the local-profile `addInitScript` seed; replace the "Play online as guest" steps (`:48-50`) with the sign-UP dance above → "Your Profiles" → `getByTestId("play-locally")` → seeded `profile-cloud-profile` → the rest (create Roamer, marker block, Save &amp; Quit, Upload to cloud → Synced, delete local, clear `minecraft_cloud_stamps_v1`, fetch cloudId, download, assert Stone) is preserved verbatim.
+
+### Slice 8 — `docs: accounts-only online model (+ CHANGELOG)`
+- `docs/online.md` — rewrite "Identity: guests first" (`:25-48`) → "Identity: Local Players and accounts" (accounts required online; 5 profiles × 10 worlds; Play-locally door; joined worlds under every profile; local worlds hidden-but-preserved while in account mode); diagram label `:12` → "(accounts)"; `:83-88` Online Worlds/join-page paragraph (now `OnlineWorldSelect`; join page = preview → sign in → accept); `:135-137` local co-op recipe → two browser profiles each *registering* an account; `:149-150` "auth integration test" sentence updated to the new lean test.
+- `docs/tuning.md:497-499` — drop "guests (anonymous) can't create any".
+- `docs/testing.md` — row 17 (drop guest→account upgrade + guests-barred; add email/password integration + joined-worlds visibility), rows 53/54 (accounts sign-up flows, Play-locally door).
+- `docs/manual.md` — "Getting an identity" (`:651-655`): accounts required for online, one-time email/password registration, Local Players stay offline-free; "Joining" (`:664-667`): invite link previews the world, asks you to sign in/register, then adds it to your list under every profile with a "Joined" tag.
+- `README.md:8` — "friends join as one-click guests" → "friends register an account and join via the link".
+- `CHANGELOG.md` Unreleased — **Changed**: accounts required for online play; invite pages require sign-in; joined worlds listed in the account world list; Play-locally door. **Removed**: the anonymous guest layer; migration `0003` **deletes all guest users and their worlds** (release note + deploy order). Amend line 13 (drop the "(Guests still reach online play via the legacy path…)" parenthetical) and line 17 (keep the first-run-login fix, drop the guest-sign-out sentence).
+- Optional separate drive-by commit (NOT in this feature's slices): `docs/save-format.md:5` says "version 16" while code is v17 — pre-existing staleness.
+
+---
+
+## Risks / gotchas
+
+1. **Deploy ordering vs migration 0003** — old builds SELECT `is_anonymous` through the drizzle schema; new app first, migrate second (D6). Release-note it; the migration is deliberately destructive to guest data.
+2. **better-auth after plugin removal** — the drizzleAdapter builds the user model from the configured schema + plugins; with the plugin gone it never touches `isAnonymous`, and the new `auth.test.ts` (D5) is the tripwire if that assumption breaks under an upgrade.
+3. **`Client` type** — `ReturnType&lt;typeof createAuthClient&gt;` with no generic; verify `signUp.email`/`signIn.email`/`signOut`/`getSession` still typecheck (they're core, they will).
+4. **`onlineUsed()` must survive** — it's offline-first (no session fetch on a cold menu), not a guest artifact. Callers after the rework: `GameShell.refreshOnlineUser:104` and `AccountPanel:30`. With `ensureSignedIn` gone, `markOnlineUsed` is set only by `AccountPanel.submit:56` and (new) the join page — the join page call is load-bearing (gotcha: forget it and the friend's "Open the game" lands on local menus while signed in).
+5. **OnlineWorldSelect cap** — joined worlds must not count toward `atCap` (D7).
+6. **e2e locator traps** — "Create" vs "Create account" vs "Create World": use `exact: true` on the profile form's Create (a Playwright-valid option; the past CI break was `{exact}` in a *component* test's testing-library call). Two-step "Sign in" (panel button, then form submit share the name) is safe because clicks are sequential.
+7. **e2e timing** — sign-up → account home spans two network hops (sign-up, then `currentUser`); assert on "Your Profiles" with a 15 s timeout; distinct emails across contexts (one shared pglite process, single worker).
+8. **`bun test` exit 99** — never gate on `bun test | tail`; the PGlite leak is expected, CI catches real leaks. New/rewritten PGlite tests must `closeTestDb`.
+9. **Join-page AccountPanel unmount** — after sign-in the parent flips phase and unmounts the panel mid-`refresh()`; harmless in React 19, but keep the accept in the parent effect (nonce-driven), not inside `onAuthChange`.
+10. **Legacy mp rows with `profileId: null`** — owned ones stay hidden from every profile list (pre-existing; migration 0001 backfilled real deployments), member-role ones now surface via the `role === "member"` arm — strictly an improvement.
+11. **`connecting`/`connectError` modals** are only rendered on world-list screens — unchanged, since `playOnline` is now only reachable from `online-worlds`, which renders `netModals`.
+
+## Verification
+
+**Per commit**: `bun run format` + `bun run lint` only.
+**Before opening the PR** (full gate, once): `bun run lint` &amp;&amp; `bun run typecheck` &amp;&amp; `bun run format:check` &amp;&amp; `bun test` (unpiped) &amp;&amp; `bun run build`, then `bun run test:e2e` (shell/UI touched — both webServers boot from `playwright.config.ts`).
+
+**Manual pass** (`DATABASE_URL=pglite://memory bun run dev` + `PERSISTENCE=memory GAME_TICKET_SECRET=… bun run server`, two browser profiles):
+1. Fresh profile: local play end-to-end with the network tab open — zero auth requests until an online action.
+2. Sign up via the panel → account home; create a profile + online world; play; quit → returns to that profile's online worlds.
+3. "Play locally" → local menus (AccountPanel reads "Signed in as …"); Upload to cloud → ☁ Synced; "Back to account" (also verify from the firstRun screen with zero local profiles).
+4. Copy invite → second browser profile: preview shows the world name + sign-in form (visual check of AccountPanel outside MenuScreen); register; joined; "Open the game" → account home → new profile → world card shows "Joined", no invite buttons; join; chat; host kicks → Disconnected modal.
+5. Sign out → local menus; confirm no guest affordance anywhere; invalid `/join/xyz` shows the error state.
+6. Migration rehearsal on disposable Postgres (`docker compose up -d`): apply 0000–0002, seed a guest user (+world/membership/invite) and a real account, `bun run db:migrate` → guest cascade-deleted, column gone, real account intact.
+
+### Critical Files for Implementation
+- /Users/hutusi/workspace/ai/david/monecraft/components/GameShell.tsx
+- /Users/hutusi/workspace/ai/david/monecraft/lib/auth/client.ts
+- /Users/hutusi/workspace/ai/david/monecraft/lib/auth/server.ts
+- /Users/hutusi/workspace/ai/david/monecraft/components/menu/WorldSelect.tsx
+- /Users/hutusi/workspace/ai/david/monecraft/app/join/[token]/page.tsx</result>
+<usage><subagent_tokens>126960</subagent_tokens><tool_uses>41</tool_uses><duration_ms>556860</duration_ms></usage>
+</task-notification>
