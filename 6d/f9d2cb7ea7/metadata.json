@@ -3,7 +3,7 @@
   "checkpoint_id": "6df9d2cb7ea7",
   "strategy": "manual-commit",
   "branch": "feat/mp-v2",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "CHANGELOG.md",
     "app/hud.css",
@@ -27,13 +27,19 @@
       "transcript": "/6d/f9d2cb7ea7/0/full.jsonl",
       "content_hash": "/6d/f9d2cb7ea7/0/content_hash.txt",
       "prompt": "/6d/f9d2cb7ea7/0/prompt.txt"
+    },
+    {
+      "metadata": "/6d/f9d2cb7ea7/1/metadata.json",
+      "transcript": "/6d/f9d2cb7ea7/1/full.jsonl",
+      "content_hash": "/6d/f9d2cb7ea7/1/content_hash.txt",
+      "prompt": "/6d/f9d2cb7ea7/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 6075,
-    "cache_creation_tokens": 57254,
-    "cache_read_tokens": 27373639,
-    "output_tokens": 38409,
-    "api_call_count": 62
+    "input_tokens": 211709,
+    "cache_creation_tokens": 4276760,
+    "cache_read_tokens": 573799812,
+    "output_tokens": 939573,
+    "api_call_count": 1188
   }
 }

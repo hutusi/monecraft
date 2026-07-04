@@ -1,0 +1,671 @@
+Check the background e2e run for the input-intents slice; if green, run the final verify gate, commit the input-intents slice, and report Phase 1 status to the user. If it failed, diagnose and fix.
+
+---
+
+I am thinking of the continue phase's slices all commit on this branch, and change the branch's name, then open one pr.
+
+---
+
+<task-notification>
+<task-id>bvorumq6l</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/bvorumq6l.output</output-file>
+<status>completed</status>
+<summary>Background command "Run full e2e suite against alias layer" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a46a68697432ca35d</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/a46a68697432ca35d.output</output-file>
+<status>completed</status>
+<summary>Agent "Fix save-v17 test fallout" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Note: claude-opus-4-8[1m] (the safety classifier) was unavailable when reviewing this subagent's work. Please carefully verify the subagent's actions and output before acting on them.
+
+You've hit your session limit · resets 3:10pm (Asia/Shanghai)</result>
+<usage><subagent_tokens>330</subagent_tokens><tool_uses>21</tool_uses><duration_ms>578039</duration_ms></usage>
+</task-notification>
+
+---
+
+Check whether the save-v17 test-fix agent has completed. If green: run the full verify gate (typecheck, bun test, lint, format) and commit the save-v17 slice (types SavedPlayer/SaveDataV16/v17, migrateSaveV16toV17, validator retargeting, serializePlayer/restorePlayerFields, mob owner/vehicle rider PlayerIds, advancements/raid/vehicles straggler conversion, ESLint alias guard for systems/). Then continue Phase 2 remaining work: dispatch(cmd, playerId) attribution + per-player step loop + setPlayerInput + addPlayer/removePlayer + apiFor + authority/headless engine options + sleep=all-players+wakeUp command + GameEngine.multiplayer.test.ts + docs (architecture.md engine rewrite, save-format.md v17 entry, testing.md) + CHANGELOG. Keep commits in focused slices, keep the suite green, run full e2e at the phase boundary.
+
+---
+
+<task-notification>
+<task-id>b505bwijj</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b505bwijj.output</output-file>
+<status>completed</status>
+<summary>Background command "Full e2e on per-player step loop" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+let's open a pr, then continue phase 3, what do you think?
+
+---
+
+<task-notification>
+<task-id>bvse0wh58</task-id>
+<tool-use-id>toolu_01T5gLoJvCcHTa9h6sWGta5x</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/bvse0wh58.output</output-file>
+<status>completed</status>
+<summary>Background command "Full e2e with AccountPanel in the menu" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+continue phase 4, 5, but not push
+
+---
+
+Read the bl00b74p3 task output (spawned game-server health debug) and continue fixing the server smoke test, then finish Phase 4 (docs/protocol.md, online.md ops section, CHANGELOG, commit) and proceed to Phase 5. Do not push.
+
+---
+
+continue
+
+---
+
+<task-notification>
+<task-id>b3oyjdhb7</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b3oyjdhb7.output</output-file>
+<status>completed</status>
+<summary>Background command "Full Playwright e2e suite" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b6j83f9l5</task-id>
+<summary>Monitor event: "e2e suite result"</summary>
+<event>✓  10 [chromium] › e2e/smoke.e2e.ts:39:5 › pointer-lock flow enables WASD movement (7.4s)
+✓  11 [chromium] › e2e/smoke.e2e.ts:54:5 › inventory opens and crafting works end to end (4.4s)
+✓  12 [chromium] › e2e/smoke.e2e.ts:74:5 › the advancements overlay opens with L, shows progress, switches tabs, and closes (4.2s)
+✓  13 [chromium] › e2e/smoke.e2e.ts:93:5 › holding the mouse mines the block underfoot (7.0s)
+✓  14 [chromium] › e2e/smoke.e2e.ts:113:5 › right-click still places a block when not aimed at an interactive one (7.3s)
+✓  15 [chromium] › e2e/smoke.e2e.ts:144:5 › a chest opens, stores an item, and keeps it across a reload (12.7s)
+✓  16 [chromium] › e2e/smoke.e2e.ts:195:5 › inventory edits persist across a plain reload, with no explicit save (12.1s)
+✓  17 [chromium] › e2e/smoke.e2e.ts:220:5 › V cycles the camera views and the scene keeps rendering (9.1s)
+✓  18 [chromium] › e2e/smoke.e2e.ts:243:5 › the pause menu freezes the game and resumes it (12.2s)
+✓  19 [chromium] › e2e/smoke.e2e.ts:259:5 › picking a skin persists across a reload (18.5s)
+✓  20 [chromium] › e2e/smoke.e2e.ts:280:5 › saving from the pause menu persists the world across a reload (14.7s)
+20 passed (3.0m)</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b6j83f9l5</task-id>
+<tool-use-id>toolu_01EoiNv7s3ivsgeC6R1jxyt1</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b6j83f9l5.output</output-file>
+<status>completed</status>
+<summary>Monitor "e2e suite result" stream ended</summary>
+</task-notification>
+
+---
+
+push first
+
+---
+
+<task-notification>
+<task-id>b63gdxnre</task-id>
+<summary>Monitor event: "PR #43 CI checks (verify/e2e)"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
+
+---
+
+continue phase 6, but not tag, not push
+
+---
+
+continue phase 6, but not tag, not push, then check the pr status
+
+---
+
+push first
+
+---
+
+<task-notification>
+<task-id>bofd2jfc5</task-id>
+<summary>Monitor event: "PR #43 CI checks after Phase 6 push"</summary>
+<event>[Monitor timed out — re-arm if needed.]</event>
+</task-notification>
+
+---
+
+check all the code reviews on the pr
+
+---
+
+A and B, what do you think?
+
+---
+
+push
+
+---
+
+<task-notification>
+<task-id>b6a3s9ejb</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b6a3s9ejb.output</output-file>
+<status>completed</status>
+<summary>Background command "Full e2e suite with real exit code" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b6m24qj92</task-id>
+<summary>Monitor event: "e2e result after review fixes"</summary>
+<event>20 passed (3.2m)</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b6m24qj92</task-id>
+<tool-use-id>toolu_014t8z529J47wgW5QfkfVH4d</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b6m24qj92.output</output-file>
+<status>completed</status>
+<summary>Monitor "e2e result after review fixes" stream ended</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b19m1944s</task-id>
+<summary>Monitor event: "PR #43 CI after review fixes"</summary>
+<event>verify: SUCCESS</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b19m1944s</task-id>
+<summary>Monitor event: "PR #43 CI after review fixes"</summary>
+<event>e2e: SUCCESS</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b19m1944s</task-id>
+<summary>Monitor event: "PR #43 CI after review fixes"</summary>
+<event>CodeRabbit: SUCCESS
+CI-DONE</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b19m1944s</task-id>
+<tool-use-id>toolu_011LyM8U5QF4bPHmhVbeCh55</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/b19m1944s.output</output-file>
+<status>completed</status>
+<summary>Monitor "PR #43 CI after review fixes" stream ended</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bl00b74p3</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/bl00b74p3.output</output-file>
+<status>killed</status>
+<summary>Background command "Debug spawned server health" was stopped</summary>
+</task-notification>
+
+---
+
+check the new code reviews on the pr
+
+---
+
+how can I deploy? are there deploy manual docs?
+
+---
+
+ok, add the docs
+
+---
+
+push
+
+---
+
+<task-notification>
+<task-id>ba9u6bqhr</task-id>
+<summary>Monitor event: "PR #43 CI after copy-invite fix + deploy doc"</summary>
+<event>CodeRabbit: SUCCESS</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ba9u6bqhr</task-id>
+<summary>Monitor event: "PR #43 CI after copy-invite fix + deploy doc"</summary>
+<event>verify: SUCCESS</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ba9u6bqhr</task-id>
+<summary>Monitor event: "PR #43 CI after copy-invite fix + deploy doc"</summary>
+<event>e2e: SUCCESS
+CI-DONE</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ba9u6bqhr</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/ba9u6bqhr.output</output-file>
+<status>completed</status>
+<summary>Monitor "PR #43 CI after copy-invite fix + deploy doc" stream ended</summary>
+</task-notification>
+
+---
+
+the pr is clean, let's merge it
+
+---
+
+what's next do you recommend? v2? or what?
+
+---
+
+I have push it
+
+---
+
+I have updated the fly.toml for region select, and add dockerignore, please check and commit
+
+---
+
+push
+
+---
+
+ok, I have deployed
+
+---
+
+https://monecraft-server.fly.dev and https://monecraft.vercel.app
+
+---
+
+let's move on
+
+---
+
+go one
+
+---
+
+go on
+
+---
+
+I am thinking of MP v2, but do we need plan and implement in new session?
+
+---
+
+or is it better to plan the MP v2 in this session, and implement in new session?
+
+---
+
+let me choose again
+
+---
+
+<task-notification>
+<task-id>a13593fa6b54820ca</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/a13593fa6b54820ca.output</output-file>
+<status>completed</status>
+<summary>Agent "Map MP replication seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I now have a complete picture of both seams. Here is the map.
+
+---
+
+# Seam A — Boardable vehicles in multiplayer
+
+## How boarding/steering works today (`lib/game/engine/systems/vehicles.ts`)
+
+- **Raft right-click boarding**: `tryBoardAimedVehicle` (`vehicles.ts:205`) → `aimedVehicle` raycast (`vehicles.ts:184`) → `mountVehicle` (`vehicles.ts:135`). `mountVehicle` sets `vehicle.rider = player.id`, `player.mountedVehicleId = vehicle.id`, then `syncPlayerToVehicle`.
+- **Ship step-on boarding**: the non-mounted branch of `tickVehicles` (`vehicles.ts:259-272`) — for each unridden ship it projects the player into the hull's local frame and calls `mountVehicle` if they're standing on the deck. **This path is NOT authority-gated.**
+- **Mounted steering**: mounted branch of `tickVehicles` (`vehicles.ts:240-256`). Reads `input.move.forward/back` (thrust) and `input.move.left/right` (yaw), integrates `mounted.position`, reverts on `!canOccupy` (`vehicles.ts:121` — water-support + bounds + overlap), then `syncPlayerToVehicle` (`vehicles.ts:176`) pins `player.position` to `vehicle.position.y + 0.16`, zeroes velocity, `onGround = true`.
+- **Water support**: `vehicleHasWaterSupport` (`vehicles.ts:97`) — every rotated footprint corner must have Water below + Air at deck level.
+- **Dismount**: `input.move.crouch` triggers `dismountVehicle` (`vehicles.ts:145`) — searches offset cells for a non-colliding spot, clears `rider`/`mountedVehicleId`.
+
+## Where boarding is gated OFF
+
+- **The one explicit gate**: `GameEngine.ts:857-859`, inside the `placeBlock` command handler:
+  ```
+  if (this.authority !== "server" &amp;&amp; !this.replica &amp;&amp; tryBoardAimedVehicle(state, player)) break;
+  ```
+  So raft right-click boarding is skipped on both server and replica. **Un-gating Seam A starts here.**
+- **`applyRemotePose` early-out**: `GameEngine.ts:448-449` — `if (player.mountedVehicleId !== null) return { accepted: false }`. This is the mechanism you KEEP (server owns the mounted pose; the client's streamed pose is rejected). Note `room.ts:282` still calls `setPlayerInput(...move...)` on every pose even when rejected, so **steering intents already reach the server** through `player.input` → `tickVehicles`.
+- **`stepPlayer` movement selection**: `GameEngine.ts:615-627`. Three branches: `mounted` → `tickVehicles` drives the body (zeroed move-summary); `authority === "server"` unmounted → consumes `player.remoteMove` synthesized from accepted poses; `local` → `tickPlayerMotion`. Critically, `tickVehicles` is called in ALL three branches — so **ship step-on already fires on the server today**, but there's no channel to tell the owning client they got mounted, which is the latent desync.
+
+## The two real gaps (outbound replication)
+
+The server can already drive a mounted player from intents. What's missing is getting the authoritative result back:
+
+1. **The owning client doesn't learn it's mounted and doesn't get its own authoritative position.** `collectPlayerPoses` (`room.ts:463-470`) excludes `self`, and the replica's `step()` (`GameEngine.ts:519-530`) unconditionally runs `tickPlayerMotion(primary...)` for the local player — it never checks `mountedVehicleId` (which is never set on the replica's `self`). So the owner keeps free-walking-predicting while the server thinks they're riding → rubber-band. This is almost certainly why boarding was cut.
+2. **Vehicles are never replicated live, and never even restored on join.** `WorldSync.vehicles` is populated server-side (`room.ts:458` via `serializeVehicles`), but **`applyWorldSync` in `NetworkSession.ts:231-246` ignores `sync.vehicles` entirely** — the replica's `state.vehicles` stays empty, so `vehicleVisuals.sync(state.vehicles)` (`GameRenderer.ts:215`) renders nothing. There is also no live vehicle-pose channel in `TickMessage`.
+
+## Cleanest wiring for Seam A (reuse points)
+
+- **Un-gate** `GameEngine.ts:859` so `tryBoardAimedVehicle` runs under server authority (it arrives as a `placeBlock` cmd; `placeBlock` is already a network command — not in `LOCAL_COMMANDS` at `NetworkSession.ts:71` — so a right-click already round-trips to the server via `sendCmd`).
+- **Tell the owner it's mounted + feed its authoritative position** by extending the existing per-player private channel:
+  - `SelfDelta` type (`protocol.ts:122-135`) — add `mountedVehicleId?: number | null` and authoritative `x/y/z/yaw` (only while mounted).
+  - `buildSelfDelta` (`room.ts:502-536`) — emit them (mirror the existing `conn.shadow` diff pattern; add fields to the `shadow` type at `room.ts:63-76`).
+  - `applySelfDelta` (`NetworkSession.ts:288-305`) — set `self.mountedVehicleId` and snap `self.position` (like the `forcePose` handler at `NetworkSession.ts:399-401`).
+  - Replica `step()` (`GameEngine.ts:519-524`) — skip `tickPlayerMotion` for the primary when `mountedVehicleId !== null` (so the server-driven position wins). Also gate the outbound pose stream (`NetworkSession.ts:511-528`) while mounted, or let `applyRemotePose`'s reject keep handling it.
+- **Replicate the vehicle pose** by mirroring the mob path exactly (see Seam B mechanics below): a new `VehiclePose = { id, kind, x, y, z, yaw, riderId }`, a `collectVehiclePoses()` in `room.ts` alongside `collectMobPoses`, carried in `TickMessage` (new field) + `WorldSync`, and applied into `state.vehicles` on the replica. Because `GameRenderer.ts:215` already renders straight from `state.vehicles`, populating that array is all the client render needs. Also restore `sync.vehicles` in `applyWorldSync` (the current omission). `restoreVehicle` (`vehicles.ts:55`) is the ready-made upsert primitive.
+- **Rider position for other clients**: other players already see the mounted rider move, because `collectPlayerPoses` broadcasts `player.position` (which `syncPlayerToVehicle` pins to the boat) to everyone else — that part already works once boarding is enabled.
+- Departure cleanup already handles mounted leavers: `removePlayer` (`GameEngine.ts:1045-1048`) clears `vehicle.rider`.
+
+---
+
+# Seam B — In-flight arrow replication
+
+## Projectile state &amp; simulation
+
+- **`ProjectileState`** (`state.ts:146-158`): `{ id, position:Vector3, velocity:Vector3, yaw, pitch, damage, knockback, fromPlayer, ttl }`. Also `state.projectiles` / `state.nextProjectileId` (`state.ts:346-347`).
+- **`spawnArrow`** (`projectiles.ts:23`): normalizes dir, offsets by `MUZZLE_OFFSET`, derives `yaw = atan2(dir.x, dir.z)`, `pitch = asin(dir.y)`, pushes onto `state.projectiles`. Shared by bow, skeletons, boss. `fromPlayer` selects the hit target set.
+- **`tickProjectiles`** (`projectileAI.ts:39`): substepped gravity integration (`ARROW_GRAVITY`, `projectileAI.ts:57`), swept block DDA + entity segment tests, emits `arrowHit`/`mobHit`, re-derives `yaw`/`pitch` from velocity each tick (`projectileAI.ts:147-149`), despawns on hit/ttl/out-of-bounds.
+- **Where it runs**: `GameEngine.step` calls `tickProjectiles` at `GameEngine.ts:571` (and in the SP dead-player branch `:543`). **The replica short-circuits before this** — `step()` returns at `GameEngine.ts:519-530` after only local prediction; the comment at `:516-518` explicitly lists projectiles as "replicated state that NetworkSession writes in, never simulated." So `state.projectiles` on a replica is currently always empty.
+- **Already replicated**: only the `arrowHit` GameEvent (emitted `projectileAI.ts:123/129/133`) rides the `tick.ev` array (`room.ts:395` → `NetworkSession.ts:358-361`), so clients see the impact puff but not the flight.
+
+## The mob replication template to copy
+
+**Wire (`lib/net/protocol.ts`)**
+- `MobPose` type: `protocol.ts:113`.
+- Carried in `TickMessage.mp` (`protocol.ts:147`), `MobsKeyframeMessage` (`protocol.ts:154`), and `WorldSync.liveMobs` (`protocol.ts:108`).
+
+**Server (`server/room.ts`)**
+- `collectMobPoses(keyframe)`: `room.ts:472-500` — deadband (`MOB_DEADBAND_SQ`, `room.ts:83`), `mobShadow` map (`room.ts:115`), 10 Hz delta vs. full keyframe (`room.ts:481`), prunes dead ids on keyframe (`room.ts:495-498`).
+- Broadcast points: computed once per tick (`room.ts:376`), attached per-client as `mp` (`room.ts:397`), keyframe broadcast every `KEYFRAME_INTERVAL_TICKS` (`room.ts:417-419`), and in `buildWorldSync` (`room.ts:457`).
+
+**Client (`lib/net/NetworkSession.ts`)**
+- `mobBuffers` ring-buffer map (`NetworkSession.ts:122`), `upsertReplicaMob` (`:248-286`) creates/updates the `MobState` in `state.mobs` and its `PoseBuffer`.
+- Tick ingest: `:354-357` upsert + `buffer.push({ tMs: serverTickTimeMs, ... })`.
+- Keyframe ingest + prune: `:364-372` (`state.mobs.filter(alive)`, drop dead buffers).
+- WorldSync ingest: `:242-244`.
+- Interpolated sampling each frame in `afterFrame`: `:544-551` (renders ~125 ms in the past via `INTERPOLATION_DELAY_MS`, `interpolation.ts:7`).
+
+**Render (`lib/game/render/projectileVisuals.ts`)**
+- `projectileVisuals.sync(state.projectiles)` called at `GameRenderer.ts:217`. `sync` (`projectileVisuals.ts:36-55`) pools one mesh per `p.id`, positions from `p.position`, orients from `p.velocity` (`:47-49`). So **it already renders straight off `state.projectiles`** — populating that array on the replica is all that's needed.
+
+## What a `ProjectilePose` looks like + where it plugs in
+
+- **Wire shape**: `{ id, x, y, z, vx, vy, vz }` — sending velocity (not just yaw/pitch) lets the replica reuse `projectileVisuals`' existing `p.velocity`-based orientation (`projectileVisuals.ts:47`) unchanged. (Alternatively `{ id, x, y, z, yaw, pitch }` + a small renderer tweak.) Add it to `protocol.ts` next to `MobPose`, and a new `TickMessage` field (e.g. `aj`/`pj`) next to `mp` (`protocol.ts:147`).
+- **Server**: add `collectProjectilePoses()` in `room.ts` mirroring `collectMobPoses` — but projectiles move every frame and are ephemeral, so **skip the deadband** (always emit all live ones) and rely on presence-based pruning like `mobsKeyframe`. Wire it into the tick loop next to `mobPoses` (`room.ts:376/397`). Include in `WorldSync` for late joiners (optional — arrows are short-lived). No keyframe strictly needed given they're always fully sent; a client prunes any `state.projectiles` id absent from the latest frame.
+- **Client**: add `upsertReplicaProjectile(pose)` next to `upsertReplicaMob` (`NetworkSession.ts:248`) that creates/updates a `ProjectileState` in `state.projectiles` (mirror the shape at `state.ts:146`; set `velocity` from `vx/vy/vz`, derive `yaw/pitch` or leave 0 since the renderer uses velocity). Prune ids missing from the frame. Interpolation via `PoseBuffer` is optional — arrows are fast and short-lived, so a direct snap-per-frame is usually acceptable; if you want smoothing, the same `mobBuffers` pattern (`:544-551`) applies, but you'd extrapolate rather than delay since arrows outrun the 125 ms delay.
+
+## Cross-cutting notes
+
+- Both seams share the exact same replication skeleton (collect+deadband+shadow+keyframe on the server; upsert+buffer+prune on the client; render straight off the `state.*` array). Seam A's vehicle channel and Seam B's projectile channel are both "copy the `MobPose` path."
+- The replica render already consumes `state.vehicles` (`GameRenderer.ts:215`) and `state.projectiles` (`:217`) with no MP-specific code, so **the entire client-render side of both seams is already built** — the work is populating those arrays from new wire channels (plus the `SelfDelta` mounted-position feedback that's unique to Seam A).
+
+Note: I did not create a plan file — you asked for a code map, so I've returned it here directly. Nothing was modified (read-only).</result>
+<usage><subagent_tokens>71336</subagent_tokens><tool_uses>31</tool_uses><duration_ms>235593</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a880d453fa50ac542</task-id>
+<tool-use-id>toolu_01FXNmfbVpNtyLXTxxRrA8t1</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/a880d453fa50ac542.output</output-file>
+<status>completed</status>
+<summary>Agent "Map progression/credit/pet seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I now have a complete picture. Here is the wiring map for seams C, D, and E.
+
+---
+
+# MP v2 Seam Map — C / D / E
+
+## Shared foundation (relevant to all three)
+
+- **Per-player state is already the source of truth.** `PlayerState` (`lib/game/engine/state.ts:31`) owns `stats: Map&lt;string,number&gt;` (`:57`), `advancements: Set&lt;string&gt;` (`:59`), `xp` (`:55`), `inventory`, `hearts`, etc. `GameState.players: Map&lt;PlayerId,PlayerState&gt;` (`state.ts:270`) holds one per player.
+- **The primary alias trap.** `state.stats`, `state.advancements`, `state.player`, etc. are accessor aliases onto the *primary* player, installed by `installPlayerAliases` (`lib/game/engine/players.ts:155-187`, key list `:21-46`). The file's own doc warns: "ENGINE SYSTEMS MUST NOT USE THEM" (`players.ts:14-17`). A headless server room has a `primaryPlayerId` that points at nobody real.
+- **Player helpers** (reuse points): `getPlayer(state,id)` (`players.ts:68`), `mustGetPlayer` (`:72`), `primaryPlayer` (`:78`), `nearestPlayerTo(state,x,z)` (`:87`), `nearestTargetablePlayer` (`:123`).
+- **Per-player serialization already exists (SavedPlayer v17).** `serializePlayer` writes `stats: serializeStats(player.stats)` and `advancements: [...player.advancements]` (`GameEngine.ts:1073-1074`); `restorePlayerFields` restores them per-player (`:1096-1099`). Codecs: `serializeStats`/`restoreStats`/`restoreAdvancements` in `lib/game/save.ts:506-535`. **So persistence needs no change for C** — only the live accrual + wire path do.
+
+---
+
+## Seam C — Per-player advancements &amp; stats on the server
+
+### Current data flow
+1. **Single emit chokepoint.** `GameEngine.emit` (`GameEngine.ts:1150-1155`) pushes the event, then calls `this.observeProgress(event)` for everything except `advancementUnlocked` (recursion guard).
+2. **observeProgress records to primary only** (`GameEngine.ts:1166-1174`):
+   ```
+   const primary = this.state.players.get(this.state.primaryPlayerId);
+   if (!primary) return;                       // ← server rooms: no primary → tracks NOTHING
+   recordEvent(primary, event);
+   for (const id of evaluateAdvancements(primary)) {
+     primary.advancements.add(id);
+     this.emit({ type: "advancementUnlocked", id, name: ADVANCEMENTS_BY_ID[id].title });
+   }
+   ```
+   The doc comment at `:1157-1164` explicitly names this as the known MP gap.
+3. **advancements.ts is pure and per-player already.** `recordEvent(player, event)` (`advancements.ts:71-127`) folds one event into `player.stats`; `recordTick(player, dt, dist)` (`:134-137`) bumps `play_time`/`distance_walked`; `evaluateAdvancements(player)` (`:245-252`) returns newly-earnable ids from `player.stats` vs the `{stat, threshold}` registry (`ADVANCEMENTS`, `:168-234`). None of these touch the primary — they take a `PlayerState`. **Fully reusable as-is.**
+4. **`recordTick` is already correctly attributed.** `stepPlayer` calls `recordTick(player, dt, move.horizontalDistance)` with the real acting player (`GameEngine.ts:631`). So the per-frame counters already accrue per-player; only the *event*-driven path (`observeProgress`) is mis-attributed.
+
+### The attribution gap
+- **`GameEvent` does NOT carry a playerId** (union at `state.ts:513-575`). Only `playerJoined`/`playerLeft` have `playerId`. World events (`blockBroken`, `mobDied`, `crafted`, `bowFired`, `mobBred`, …) are anonymous.
+- **`emit` takes only `(event)`** — there is no `emit(event, playerId?)` today (`GameEngine.ts:1150`). Every call site (`this.emit({...})`) passes a bare event. So the acting player is known at each emit site (dispatch has `player` at `:672`; `stepPlayer` has `player`) but is *dropped* at the emit boundary.
+
+### Wire path — stats/advancements do NOT ride the self-delta today
+- `SelfDelta` type (`lib/net/protocol.ts:122-135`) carries inventory/armor/selectedSlot/hearts/hunger/oxygen/xp/effects/isDead/respawnSeconds/gameMode/sleeping. **No `stats`, no `advancements`.**
+- `Room.buildSelfDelta` (`server/room.ts:502-536`) diffs exactly those fields against `conn.shadow`; the `shadow` type (`room.ts:63-76`) has no stats/advancements slots.
+- `NetworkSession.applySelfDelta` (`lib/net/NetworkSession.ts:288-305`) applies exactly those fields to `self`.
+- **Advancement unlocks currently reach clients only as loose events**: `advancementUnlocked` is an emitted `GameEvent`, drained by the server tick (`room.ts:372` `consumeEvents()`), and broadcast to *everyone* in `TickMessage.ev` (`room.ts:395` `ev: events`). On the client they flow through `pendingEvents`/`onEvent` (`NetworkSession.ts:358-361`) into the shell's toast drain — but they are **not per-recipient** and don't update any client's `stats`/`advancements` maps.
+
+### What Seam C needs
+- **(a) Attribute each event to the actor.** Add an optional actor to the emit boundary — e.g. `emit(event, actorId?: PlayerId)` (`GameEngine.ts:1150`) — and thread the acting `PlayerId` from the sites that already hold a player: the whole `dispatch` switch (actor = `player`, resolved at `:672`), `removeMobAt` (actor = the crediting receiver — ties into Seam D), and system callbacks that emit (combat/mobAI/projectileAI pass `emit` down). Systems that emit world events without an obvious actor (mob death sweep, explosions) inherit the same actor plumbing you build for Seam D.
+- **(b) Fold into that player's maps.** Change `observeProgress` (`:1166`) to `observeProgress(event, actorId?)`: resolve `actor = actorId ? getPlayer(state, actorId) : primary`, then `recordEvent(actor, event)` + `evaluateAdvancements(actor)` exactly as now. The `advancementUnlocked` re-emit should carry the same actorId so the toast is routed to the right client. Reuse `recordEvent`/`evaluateAdvancements`/`ADVANCEMENTS_BY_ID` unchanged.
+- **(c) Send per-player unlocks + stat counts down the self-delta.** Extend `SelfDelta` (`protocol.ts:122`) with `advancements?: string[]` and `stats?: Array&lt;{id;value}&gt;` (or a changed-since-last subset); diff them in `buildSelfDelta` (`room.ts:508`) against new `shadow` fields (`room.ts:63`); apply them in `applySelfDelta` (`NetworkSession.ts:288`) onto `self.advancements`/`self.stats`. This makes each client's own `advancementsUnlocked` snapshot count (`state.ts:483`, built at `GameEngine.ts:1606` from `state.advancements.size`) correct for a server room. Reuse `serializeStats`/`restoreStats` (`save.ts:506/515`) as the codec.
+- Note the recursion guard (`emit` skips `observeProgress` for `advancementUnlocked`, `:1154`) must be preserved when you add the actor param.
+
+---
+
+## Seam D — Mob-kill credit for indirect kills
+
+### The single credit sink
+`removeMobAt` (`GameEngine.ts:1296-1322`) is the one place loot + XP land:
+```
+private removeMobAt = (index, lootingLevel = 0, credit = true, creditTo?: PlayerState) =&gt; {
+  ...
+  const receiver = creditTo ?? state.players.get(state.primaryPlayerId) ?? null;   // ← default = primary
+  const drops = credit &amp;&amp; receiver &amp;&amp; mob.ageTimer &lt;= 0 ? rollMobDrops(...) : [];
+  if (receiver) { ...adjustSlotCount into receiver.inventory...
+    if (credit &amp;&amp; mob.ageTimer &lt;= 0) awardXp(receiver, xpForMob(mob.kind), this.emit); }
+  ...
+}
+```
+- **`creditTo` is a prepared-but-unused seam: it has ZERO callers today** (grep confirms only the definition `:1296` and the `creditTo ?? primary` fallback `:1302`). Every path falls through to the primary.
+- `awardXp(receiver, ...)` (`systems/xp.ts`, imported `GameEngine.ts:122`) already targets an explicit `PlayerState`, and loot goes to `receiver.inventory`. **The receiver plumbing is per-player-ready — only the choice of receiver is wrong.**
+
+### The four kill paths and their attribution assumptions
+1. **Direct melee** — `dispatch` `attack` case (`GameEngine.ts:869-893`) calls `tryAttackMob(state, player, …, this.removeMobAt, …)` (`:879-887`). `tryAttackMob` (`combat.ts:75-100`) invokes `onMobKilled(bestIndex, lootingLevel)` (`:98`) — **only index + looting, no `creditTo`**. So even a *direct* kill credits the primary, not `player`. The attacker (`player`, `GameEngine.ts:672`) is in scope but never forwarded. Minimal fix: pass a closure `(i, looting) =&gt; this.removeMobAt(i, looting, true, player)`.
+2. **Player arrows** — `projectileAI.ts:124` `deps.removeMobAt(hitMobIndex)` (no credit/creditTo). The projectile only knows `fromPlayer: boolean` (`state.ts:155`, set in `spawnArrow` `projectiles.ts:37`) — **no shooter id**. `ProjectileTickDeps.removeMobAt` is typed `(index)=&gt;void` (`projectileAI.ts:9`), so it *can't* pass credit even if it wanted to. Fix requires adding an `owner?: PlayerId` to `ProjectileState`, capturing it at `tryFireBow` (`combat.ts:113-136`, currently sets `fromPlayer: true`), widening the deps signature, and forwarding to `removeMobAt`.
+3. **Thrown spears** — `spears.ts:93` `removeMobAt(hitIndex)`; the param is typed `(index)=&gt;void` (`spears.ts:53`). `ThrownSpearState` (`state.ts:166-175`) has `itemId` but **no owner**. Same shape of fix as arrows.
+4. **Explosions &amp; mob-vs-mob / pet kills (the post-loop sweep)** — `mobAI.ts:504-512`:
+   ```
+   if (dead.hp &lt;= 0) deps.removeMobAt(i, 0, CREDITED_FACTIONS.has(dead.faction));
+   ```
+   Passes a `credit` boolean (from `CREDITED_FACTIONS`, `mobAI.ts:82`) but **no `creditTo`** → primary. This is the exact "pet kill / creeper / explosion defaults to primary" path. `MobTickDeps.removeMobAt` typed `(index, lootingLevel?, credit?)` (`mobAI.ts:226`) — no creditTo slot. `explode` (`explosion.ts:58`) never removes mobs (only lowers hp, `:56`), so all explosion kills resolve through this sweep; `ExplosionDeps` (`explosion.ts:10-15`) carries no owner. TNT is lit by a player (chain at `explosion.ts:79-88`, entry `:176`); creeper blasts (`mobAI.ts:488`) have no player actor.
+
+### What Seam D needs
+- Thread a **killer `PlayerId`** to `removeMobAt`'s `creditTo`, wired at each kill site: melee → `player`; arrows/spears → a new `owner` field on `ProjectileState`/`ThrownSpearState` captured at spawn; explosion-driven sweep → an actor carried on the mob death (e.g. "last damaged by" or, for pets, `dead.owner`; for a pet's *own* kill of an enemy, credit `mob.owner`). Widen the three `removeMobAt` dep signatures (`projectileAI.ts:9`, `spears.ts:53`, `mobAI.ts:226`) to carry the creditTo/id. The receiver→inventory/XP machinery underneath is untouched.
+- This dovetails with Seam C: the same actor you resolve for credit is the actor whose `mobDied`/`pickedUp`/XP events should attribute progression.
+
+---
+
+## Seam E — Pet-follow by owner id
+
+### Current logic
+In `tickMobs` (`mobAI.ts:279+`), per mob:
+- `anchor = nearestPlayerTo(state, mob.position.x, mob.position.z)` (`mobAI.ts:306`) — **nearest player, not the owner**. `scratchToPlayer`/`distanceToPlayer` are computed from `anchor` (`:310-311`).
+- The ally/pet branch (`mobAI.ts:345-361`) uses `anchor` for both **teleport-recall** (`:348-353`, when `distanceToPlayer &gt; PET_TELEPORT_DISTANCE`) and **follow** (`:355-361`, when `&gt; PET_FOLLOW_MAX`). So a tamed wolf runs to / teleports to whichever player is closest, ignoring `mob.owner`.
+- `mob.owner` is a `PlayerId` (`state.ts:107`; v17), restored at `GameEngine.ts:1276-1279`, saved at `serializeMob`. `mob.faction === "ally"` marks tamed (`state.ts:104`).
+
+### Minimal change
+Inside the `mob.faction === "ally"` branch (`mobAI.ts:345`), resolve the owner and target *their* `PlayerState` instead of `anchor`:
+- Add `getPlayer` to the existing import (`mobAI.ts:39`, currently only `nearestPlayerTo, nearestTargetablePlayer`).
+- `const owner = mob.owner ? getPlayer(state, mob.owner) : null;` then recompute the follow vector/distance against `owner.position` (reuse a scratch vector like the existing `scratchToPlayer` pattern) and use `owner` in place of `anchor` at `:348-357`.
+- Fallback: when `owner` is null (owner offline / left the room), keep the current "mill about" idle (`:358-361`) or leave it stationary — don't fall back to nearest, which is the bug. Note `anchor` is still needed for the *flee* proximity of wild animals (`:373`) and general anchor use, so only the ally branch changes.
+
+`nearestPlayerTo` stays the anchor for non-pet proximity behavior; the pet branch switches to an owner lookup via `getPlayer`/`mustGetPlayer` (`players.ts:68/72`).
+
+---
+
+## One-line reuse summary
+
+| Seam | Already per-player (reuse) | Needs the actor threaded |
+|---|---|---|
+| C | `recordEvent`/`recordTick`/`evaluateAdvancements` (advancements.ts), `serializeStats`/`restoreStats` (save.ts), `recordTick` call at `GameEngine.ts:631` | `emit`→`observeProgress` actor param (`GameEngine.ts:1150,1166`); extend `SelfDelta`/`buildSelfDelta`/`applySelfDelta`/`shadow` |
+| D | `removeMobAt` receiver→loot/XP + `creditTo` param (`GameEngine.ts:1296`), `awardXp(receiver,…)` | `creditTo` at all 4 kill sites; `owner` on `ProjectileState`/`ThrownSpearState`; widen 3 `removeMobAt` dep signatures |
+| E | `getPlayer`/`mustGetPlayer` (players.ts), `mob.owner` (state.ts:107) | swap `anchor`→owner lookup in the ally branch (`mobAI.ts:345-361`) |
+
+Note: I did not write a plan file — this is the map you asked for, returned directly. All findings above are read-only observations of the current code.</result>
+<usage><subagent_tokens>92714</subagent_tokens><tool_uses>24</tool_uses><duration_ms>229077</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ae872e3d91c789ded</task-id>
+<tool-use-id>toolu_0146SMPPstUqyPKzWasZZbc1</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/7a168c40-1645-4914-8312-8f3aaf0fbeb6/tasks/ae872e3d91c789ded.output</output-file>
+<status>completed</status>
+<summary>Agent "Map ownership UX + cloud-save seams" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture of both seams. Here is the map.
+
+---
+
+# Seam F — Owner kick + in-game roster UI
+
+## What exists today
+
+**Server admin kick (confirmed, works):**
+- `server/index.ts:66-73` — `POST /rooms/:id/kick/:playerId`, gated by `authorized()` (`server/index.ts:39-42`, Bearer `ADMIN_TOKEN`). Calls `room.kick(...)`.
+- `server/room.ts:252-258` — `Room.kick(playerId)`: closes the socket with `CLOSE_KICKED` (4003) then `leave()`. `CLOSE_KICKED` is in the client's `FATAL_CLOSES` set (`lib/net/NetworkSession.ts:68`), so a kicked client will **not** reconnect — correct.
+
+**Roles are known server-side but never reach the client:**
+- Ticket claims carry `role: "owner" | "member"` (`lib/net/tickets.ts:26`, validated `tickets.ts:85`).
+- On join, the role lands in `ClientConn.role` (`server/room.ts:52`, populated `room.ts:223` from `claims.role`).
+- The existing owner-gate pattern is `server/room.ts:306`: `if ((cmd.type === "setDifficulty" || "setGameMode") &amp;&amp; conn.role !== "owner") return;` — this is the exact pattern to copy.
+- **But**: `WelcomeMessage` and `RosterEntry` (`lib/net/protocol.ts:78-92`) carry **no `role`** (grep confirms zero `role` in `protocol.ts`). So over the wire, a client does not learn its own role or anyone else's.
+
+**The web app DOES already know the local player's role**, independent of the wire:
+- `WorldSummary.role` (`lib/online/worldsService.ts:28`) → `OnlineWorld.role` (`onlineClient.ts:11`) → carried into `GameShell` as `screen.world.role` (`components/GameShell.tsx:27`, `:104`, `:163`).
+- **Gap**: `onlineWorldMeta()` (`GameShell.tsx:30-44`) drops `role` — `WorldMeta` has no role field (`lib/game/worlds.ts:21-36`), so `MinecraftGame` never receives it today.
+
+**Client roster state (partial):**
+- `NetworkSession` keeps `names: Map&lt;id,name&gt;` (`NetworkSession.ts:123`), plus the replica `engine.state.players` map. It exposes only `playerName(id)` (`NetworkSession.ts:489`) — **no roster enumeration, no join/left subscription, no kick method** (grep of the public `NetworkSession` type at `:75-96` confirms: `subscribeChat`, `subscribeStatus`, `status`, `rttMs`, `playerName`, `dispatch`, `applyLook`, `sendChat`, latency, `drainEvents`, `afterFrame`, `dispose`).
+- Roster updates are handled internally only: `applyRoster` (`:215-225`), `upsertRemotePlayer` (`:208-213`), `playerJoined`/`playerLeft` cases (`:375-386`) — none notify the UI. `subscribeStatus` (`:482`) is connection-status only, not roster.
+
+**HUD panel pattern to copy:**
+- `components/game/ChatPanel.tsx` and `ConnectionStatus.tsx` both take `{ session }`, subscribe in a `useEffect`, unsubscribe on cleanup.
+- They are rendered online-only in `MinecraftGame.tsx:156-157`: `{online &amp;&amp; &lt;ChatPanel .../&gt;}` / `{online &amp;&amp; &lt;ConnectionStatus .../&gt;}`. **A `&lt;RosterPanel session={online} .../&gt;` slots in right here.**
+
+## What's missing
+1. A way for the client to enumerate the roster reactively (list of `{id,name}` + join/left events).
+2. The local player's role reaching `MinecraftGame` (either threaded from `screen.world.role`, or added to `welcome`).
+3. A kick channel.
+
+## Recommended approach — **protocol message (Path 1), not the web bridge**
+
+Path 1 is decisively cleaner here:
+- Reuses the **exact** owner-gate already in `handleMessage` (`room.ts:306`) and the existing `Room.kick()` (`room.ts:252`) and `conn.role` (already from the ticket) — no new trust surface.
+- The web bridge (Path 2) would need the web app to hold the game server's **admin URL + `ADMIN_TOKEN`**, which it does **not** today (grep: `ADMIN_TOKEN` appears only in `server/index.ts`; the web app only has the public `NEXT_PUBLIC_GAME_SERVER_URL` at `ticket/route.ts:21`). It would add two env vars, a new `worldsService` owner-check + `/api/worlds/:id/kick/:playerId` route, and a **runtime cross-deployment call** — directly against the stateless design note in `tickets.ts:6-9`.
+
+Concrete Path 1 wiring:
+- `lib/net/protocol.ts`: add `KickMessage = { t: "kick"; targetId: string }` to the `ClientMessage` union (`:74`) and a `readClientMessage` case (`:256-284`) validating `isStr(m.targetId)`. (Unknown types already return `null`, so this is backward-safe; no `PROTOCOL_VERSION` bump needed since client/server are version-locked at the door.)
+- `server/room.ts` `handleMessage` switch (`:276`): add `case "kick": if (conn.role !== "owner") return; this.kick(message.targetId); return;` — mirrors `:306`.
+- `lib/net/NetworkSession.ts`: add `kick(targetId)` → `delayedSend(encodeClientMessage({ t: "kick", targetId }))`, and add a roster subscription — either `subscribeRoster(listener)` firing on `playerJoined`/`playerLeft`/`applyRoster`, or a simple `roster(): {id,name}[]` derived from `state.players` + `names`.
+- Role surfacing: cleanest is to **add `role` to `WelcomeMessage`** (`protocol.ts:80`, filled from `claims.role` at `room.ts:231-245`) and expose `session.role`; this makes the panel self-contained. Cheaper alternative: thread `isOwner={screen.world.role === "owner"}` from `GameShell.tsx:163` → `MinecraftGame` → `RosterPanel` (must stop dropping `role` in `onlineWorldMeta`).
+- New `components/game/RosterPanel.tsx` (copy `ChatPanel`/`ConnectionStatus` shape), rendered at `MinecraftGame.tsx:156-157`. Shows `session.roster()`; if owner, a Kick button per non-self id → `session.kick(id)`.
+
+---
+
+# Seam G — Single-player cloud-save autosync
+
+## What exists (transport ~90%, zero callers)
+
+**Client transport — fully built, unused** (`lib/game/cloudSaves.ts`):
+- `pushSave(cloudWorldId, save)` (`:50-71`): gzip → `PUT /api/worlds/:id/save` with `x-save-version` and `x-base-updated-at` = last-seen stamp; returns `"saved" | "conflict" | "error"`; on 409 → `"conflict"`; on success writes the new stamp.
+- `pullSave(cloudWorldId)` (`:74-85`): `GET` → gunzip `SaveData`; writes stamp from `x-updated-at`; `null` if no blob.
+- Stamp/cursor map in localStorage `minecraft_cloud_stamps_v1` (`:15-35`), gzip helpers `gzipJson`/`gunzipJson` (`:37-45`).
+- **Grep confirms `cloudSaves`/`pushSave`/`pullSave` are referenced only by their own file + test — nothing imports them.** The module docstring itself (`:11-13`) says wiring "lands with the online shell."
+
+**Server side — fully built** (`lib/online/worldsService.ts`, `app/api/worlds/[id]/save/route.ts`):
+- `getSaveBlob` (`worldsService.ts:134-144`) / `putSaveBlob` (`:152-175`): LWW via `x-base-updated-at`, folded into the UPDATE predicate — `baseUpdatedAt === null` requires no blob yet (first upload), otherwise requires exact `updatedAt`; zero rows → `"conflict"` (409).
+- Route (`save/route.ts`): `GET` returns raw bytes + `x-updated-at`/`x-save-version` headers, 404 `no-save` when empty; `PUT` reads headers, enforces 4 MB body cap (`:40`).
+- `createWorld` accepts `kind: "sp-cloud"` (`worldsService.ts:82-105`); DB columns `saveBlob`/`saveVersion`/`updatedAt` exist (`db/schema.ts:90,98,99,101`).
+- `listWorlds` (`:61-70`) returns **all** kinds with `kind`, `role`, `updatedAt`.
+- `mintTicket` **refuses `sp-cloud`** (`:246`, `world.kind !== "mp"` → invalid) — correct: sp-cloud worlds never touch the game server.
+
+**Local SP model** (`lib/game/worlds.ts`):
+- Manifest `minecraft_worlds_v1` (`:51`), per-world blob `minecraft_world_save_&lt;id&gt;` via `worldSaveKey()` (`:60-62`), `WorldMeta` (`:21-36`) — **no cloud-link field**.
+
+**Autosave path** (`lib/game/useMinecraftGame.ts`):
+- `persistGame(api, saveKey)` → `writeSave(saveKey, api.serialize())` (`:85-92`).
+- Fired from: `setInterval(autoSave, AUTOSAVE_INTERVAL_MS)` (`:302`; `AUTOSAVE_INTERVAL_MS = 15000`, `config.ts:336`), `beforeunload` (`:303`), unmount cleanup (`:395`), `quitToWorlds` (`:524`), `saveNow` (`:495`), and hardcore `gameOver` (`:329`).
+- **Every one is gated `if (!online)`** — where `online` = a live `NetworkSession` (mp only). An sp-cloud world has **no** `NetworkSession`, so `online` is falsy and the local write path runs normally. That's the correct hook site: append a debounced cloud push after `writeSave`, no restructuring.
+
+**World list UI** (`components/menu/WorldSelect.tsx`):
+- Local worlds via `worldsForProfile()` (`:98`, rendered `:102-180`).
+- Online section via `listOnlineWorlds()`, guarded by `onlineUsed()` (`:50-53`); rendered as "Online Worlds" (`:181-241`); every entry's play button calls `onPlayOnline` → `GameShell.playOnline` → `requestJoinTicket` → `connectNetworkSession` (mp join flow, `GameShell.tsx:87-111`).
+- **Current bug-in-waiting**: `listOnlineWorlds` returns sp-cloud worlds too, but the UI treats every online row as mp — clicking an sp-cloud row would hit `mintTicket`'s `sp-cloud` refusal and fail with "could not join." Harmless only because the UI never creates sp-cloud today (`createOnlineWorld` hardcodes `kind: "mp"`, `onlineClient.ts:36`).
+
+## What's missing, per sub-goal
+
+**(a) Merge sp-cloud worlds into the world list**
+- Split `listOnlineWorlds()` output by `kind` in `WorldSelect`: `kind === "mp"` → Online Worlds (join flow); `kind === "sp-cloud"` → merge into the local list (or a "Cloud Worlds" subsection).
+- Need a **local↔cloud link**: `WorldMeta` has none. Either add `WorldMeta.cloudId?` (touches `worlds.ts` sanitize/create at `:88-111`, `:134-162`) or keep a side-map. Needed for both directions: (i) a local world "uploaded" to cloud must remember its server id; (ii) a cloud-only world appearing on a new device must materialize a local `WorldMeta` from `WorldSummary` (+ pull its blob). `worlds.ts createWorld` (`:134`) doesn't accept a preset id/cloud link — missing.
+- Need an sp-cloud create call: `createOnlineWorld` hardcodes `mp` (`onlineClient.ts:24-44`) — generalize it or add a sibling that sends `kind: "sp-cloud"`.
+
+**(b) Push local SP save to cloud on autosave/quit (debounced)**
+- Reuse `pushSave(cloudId, api.serialize())`. Missing: the call in `useMinecraftGame`'s `autoSave`/`quitToWorlds`/unmount, after the existing `writeSave`, when the world is cloud-linked and signed in. Add debounce/coalesce (15 s autosave is too chatty to push every tick of it) + a forced flush on quit/unmount.
+- **Known gap**: `beforeunload` (`:303`) is synchronous; `pushSave` is an async `fetch` and won't reliably complete. `navigator.sendBeacon` can't set the custom `x-base-updated-at`/`x-save-version` headers `putSaveBlob` requires, so tab-close cloud flush is best-effort only. Note it explicitly.
+
+**(c) Pull-on-play into localStorage, then boot normally**
+- Reuse `pullSave(cloudId)` → `writeSave(worldSaveKey(localId), save)` → then transition to play. The engine boots from `readSave(saveKey)` at mount (`useMinecraftGame.ts:196-204`), so once the blob is on disk the normal boot path just works. `pullSave` also seeds the stamp cursor so the first subsequent `pushSave` sends the right base.
+- Missing: `onPlay` is **synchronous** today (`WorldSelect.tsx:152` / `GameShell.tsx:185-189`: `touchWorld` + `setScreen`). Cloud-linked worlds need an **async pull gate** before `setScreen('play')`. Reuse the exact `connecting`/`connectError` "Joining…" modal already built for mp in `GameShell.tsx:80-111,193-207`.
+
+**(d) LWW 409 conflict in the UI**
+- `pushSave` already returns `"conflict"`; nothing consumes it. Missing: a UI surface. For v1, on conflict at quit/explicit-save, prompt keep-local (re-push after `pullSave` to refresh the base, i.e. overwrite) vs discard-local (adopt remote via `pullSave` + `writeSave`). Reuse the toast (`flashMessage`/`saveMessage`, `useMinecraftGame.ts:237-253`, rendered `MinecraftGame.tsx:158-162`) or the `net-modal` pattern (`ConnectionStatus.tsx:24-35`, `GameShell.tsx:193-207`).
+
+## Every existing piece to reuse (Seam G)
+- Transport: `lib/game/cloudSaves.ts` — `pushSave`, `pullSave`, `gzipJson`/`gunzipJson`, stamp map (done).
+- Server: `lib/online/worldsService.ts` `getSaveBlob`/`putSaveBlob`/`createWorld`/`listWorlds`; `app/api/worlds/[id]/save/route.ts`; `app/api/worlds/route.ts` (POST create, GET list).
+- Client API: `lib/online/onlineClient.ts` `listOnlineWorlds` (returns `kind`+`role`+`updatedAt`), `createOnlineWorld` (generalize for sp-cloud), `deleteOnlineWorld` (cloud delete).
+- Local save: `lib/game/worlds.ts` (`worldSaveKey`, `WorldMeta`, manifest CRUD — add cloud link + create-from-summary); `lib/game/save.ts` `readSave`/`writeSave`.
+- Hook site: `lib/game/useMinecraftGame.ts` `persistGame` + all `if (!online)` autosave call sites (`:300,302,303,329,395,495,524`).
+- UI: `components/menu/WorldSelect.tsx` (split online list by kind; upload action), `components/GameShell.tsx` (async pull gate — reuse the `connecting`/`connectError` modal), auth gate `lib/auth/client.ts` `onlineUsed`/`ensureSignedIn` (`:41,58`).
+
+## Cross-cutting note
+Both seams need the local player's **role/identity** to reach in-game UI. Seam F needs owner-role in `MinecraftGame`; the web already has it (`screen.world.role`) but `onlineWorldMeta` (`GameShell.tsx:30-44`) drops it. Fixing that once — thread role through, or add `role` to `WelcomeMessage` — serves Seam F and keeps the door-side role (`tickets.ts`/`room.ts`) as the single source of truth.</result>
+<usage><subagent_tokens>103433</subagent_tokens><tool_uses>25</tool_uses><duration_ms>233246</duration_ms></usage>
+</task-notification>
