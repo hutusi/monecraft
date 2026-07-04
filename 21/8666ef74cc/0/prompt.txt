@@ -1,0 +1,298 @@
+push it
+
+---
+
+what's next? what do you think?
+
+---
+
+<task-notification>
+<task-id>a0270304090ecaff5</task-id>
+<tool-use-id>toolu_01HncSopstJxQFrjynqZMJVy</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/06215f56-7610-4968-9d54-f273e7775740/tasks/a0270304090ecaff5.output</output-file>
+<status>completed</status>
+<summary>Agent "Map MP e2e harness and driving hooks" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything I need. Here is my complete mapping of the e2e harness and the reachability of each MP v2 feature.
+
+---
+
+# MP v2 e2e Extension — Harness Map &amp; Feature Reachability
+
+## 1. `e2e/multiplayer.e2e.ts` (read fully, 122 lines)
+
+**Two-context setup.** Each guest is a separate `browser.newContext()` → `newPage()`, so they have isolated cookies/localStorage (independent guest accounts):
+
+- Host: `e2e/multiplayer.e2e.ts:37-39` `const hostContext = await browser.newContext(); const host = await hostContext.newPage();`
+- Friend: `:78-80` same pattern for `friendContext`/`friend`.
+- Teardown: `:119-120` `await hostContext.close(); await friendContext.close();`
+
+**Boot gate** — the bar every online page must clear (`:24-28`):
+```ts
+async function waitForOnlineGame(page: Page): Promise&lt;void&gt; {
+  await page.waitForFunction(() =&gt; window.__monecraft !== undefined, undefined, { timeout: 30000 });
+  await page.waitForFunction(() =&gt; window.__monecraft!.net?.status() === "online", undefined, { timeout: 30000 });
+  await page.waitForFunction(() =&gt; window.__monecraft!.renderer.renderedTriangles() &gt; 0, undefined, { timeout: 30000 });
+}
+```
+
+**Invite→join flow** (menu-driven for the host, link-driven for the friend):
+- Host seeds a profile via `addInitScript` writing `minecraft_profiles_v1` (`:42-49`), then `:52-62`: clicks **"Play online as guest"**, waits for **"Playing as guest"**, clicks `getByTestId("profile-host-profile")`, `getByTestId("new-online-world")`, fills `getByLabel("World name")`/`"World seed"`, clicks **"Creative mode"** then **"Create World"**.
+- Invite is minted via `fetch`, NOT the clipboard button (headless can't read clipboard) — `:66-75`:
+```ts
+const worldId = await host.evaluate(async () =&gt; {
+  const response = await fetch("/api/worlds");
+  const { worlds } = (await response.json()) as { worlds: Array&lt;{ id: string }&gt; };
+  return worlds[0].id;
+});
+const inviteToken = await host.evaluate(async (id) =&gt; {
+  const response = await fetch(`/api/worlds/${id}/invites`, { method: "POST" });
+  const { token } = (await response.json()) as { token: string };
+  return token;
+}, worldId);
+```
+- Friend joins by navigating to `/join/${inviteToken}` (`:81`), waits for `getByText(/You've joined/)`, clicks `getByRole("link", { name: "Open the game" })`, creates its profile via `getByLabel("Profile name")` + **"Create"**, then clicks `getByTestId(\`online-world-${worldId}\`)` (`:82-90`).
+
+**Assertions:**
+- Both replicas see 2 players (`:93-95`):
+```ts
+for (const page of [host, friend]) {
+  await page.waitForFunction(() =&gt; window.__monecraft!.engine.state.players.size === 2, undefined, { timeout: 15000 });
+}
+```
+- Block-break reaches both — host aims straight down and holds mouse; a `blockChanges` entry must appear on BOTH clients, proving the server decided and broadcast the break (`:101-110`):
+```ts
+await acquirePointerLock(host);
+await host.waitForTimeout(1000);
+await host.evaluate(() =&gt; { window.__monecraft!.engine.state.player.pitch = -Math.PI / 2 + 0.02; });
+await host.mouse.down();
+for (const page of [host, friend]) {
+  await expect.poll(() =&gt; page.evaluate(() =&gt; window.__monecraft!.engine.state.blockChanges.changes().length), { timeout: 30000 }).toBeGreaterThan(0);
+}
+await host.mouse.up();
+```
+- Chat round-trip both directions (`:113-116`):
+```ts
+await host.evaluate(() =&gt; window.__monecraft!.net!.sendChat("hello from the host"));
+await expect(friend.getByText("hello from the host")).toBeVisible({ timeout: 10000 });
+await friend.evaluate(() =&gt; window.__monecraft!.net!.sendChat("hi back"));
+await expect(host.getByText("hi back")).toBeVisible({ timeout: 10000 });
+```
+- No console/page errors: `:118` `expect(errors, ...).toEqual([])`, collected by `watchErrors` (`:14-21`) which filters favicon 404 noise.
+
+**Every `page.evaluate` / `window.__monecraft.*` usage in this file:**
+| line | expression |
+|---|---|
+| 25 | `window.__monecraft !== undefined` |
+| 26 | `window.__monecraft!.net?.status() === "online"` |
+| 27 | `window.__monecraft!.renderer.renderedTriangles() &gt; 0` |
+| 66-70 | `fetch("/api/worlds")` (no `__monecraft`) |
+| 71-75 | `fetch(.../invites)` (no `__monecraft`) |
+| 94 | `window.__monecraft!.engine.state.players.size === 2` |
+| 104 | `window.__monecraft!.engine.state.player.pitch = ...` |
+| 108 | `window.__monecraft!.engine.state.blockChanges.changes().length` |
+| 113 | `window.__monecraft!.net!.sendChat("hello from the host")` |
+| 115 | `window.__monecraft!.net!.sendChat("hi back")` |
+
+`acquirePointerLock` (from `e2e/helpers.ts:86-96`) double-clicks `.game-canvas-wrap canvas`, and on failure calls `window.__monecraft!.input.forcePointerLock(true)` — the headless escape hatch.
+
+---
+
+## 2. `playwright.config.ts` — webServer (2-entry array)
+
+Quoted `:27-56`:
+```ts
+webServer: [
+  {
+    command: "bun run build &amp;&amp; bun run start",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 180000,
+    env: {
+      DATABASE_URL: "pglite://memory",
+      BETTER_AUTH_SECRET: "e2e-secret-e2e-secret-e2e-secret",
+      BETTER_AUTH_URL: "http://localhost:3000",
+      GAME_TICKET_SECRET: "e2e-ticket-secret",
+      NEXT_PUBLIC_GAME_SERVER_URL: "ws://localhost:18080"
+    }
+  },
+  {
+    command: "bun server/index.ts",
+    url: "http://localhost:18080/health",
+    reuseExistingServer: !process.env.CI,
+    timeout: 60000,
+    env: {
+      PORT: "18080",
+      PERSISTENCE: "memory",
+      GAME_TICKET_SECRET: "e2e-ticket-secret"
+    }
+  }
+]
+```
+Relevant details for driving the game server:
+- Web app on `:3000` (baseURL, `:21`), game WS server on `:18080` — its health probe is `/health`, and clients connect to `ws://localhost:18080` (the Next env `NEXT_PUBLIC_GAME_SERVER_URL`). The WS path is `/ws` (see `NetworkSession.ts:164`).
+- Shared `GAME_TICKET_SECRET: "e2e-ticket-secret"` on both is what makes web-minted join tickets valid on the game server.
+- Global test timeout 60000 (`:19`), `workers: 1`, `fullyParallel: false` (`:14-17`). The MP test overrides to `test.setTimeout(240000)` itself.
+- Runs against the **production build** (`build &amp;&amp; start`), not dev — StrictMode double-mount is avoided (`:3-9`). Uses `channel: "chromium"` full browser (headless-shell rejects pointer lock) (`:24-26`).
+
+---
+
+## 3. Test affordances / hooks
+
+**`window.__monecraft` definition** — `lib/game/useMinecraftGame.ts:80-84`:
+```ts
+declare global {
+  interface Window {
+    __monecraft?: { engine: GameEngine; renderer: GameRenderer; input: InputController; audio: AudioDirector; net?: NetworkSession };
+  }
+}
+```
+Assigned at `:331`: `window.__monecraft = { engine: gameEngine, renderer, input, audio, net: online ?? undefined };` and `delete`d on teardown (`:432`). So `net` is present only for online worlds. `giveCreativeItem` also exists on the hook return (`:466`) but is not on the window handle — a test reaches it via `engine.dispatch`.
+
+**`forcePointerLock`** — declared `lib/game/input/inputController.ts:19`, implemented `:227-233`; it pokes the engine-facing `pointerLocked` flag without notifying React (so keys→engine and held-mouse→mining work in headless).
+
+**`data-testid` inventory (all of them):**
+- `components/MinecraftGame.tsx:166` `minimap`
+- `InventoryPanel.tsx:212/251/254` `chest-grid` / `storage-grid` / `hotbar-grid`
+- `CreativeInventoryTab.tsx:53` `creative-${group.kind}`
+- `DebugOverlay.tsx:46` `debug-overlay`; `SleepOverlay.tsx:11` `sleep-overlay`; `AdvancementsPanel.tsx:85` `adv-${id}`; `Hotbar.tsx:33` `hotbar`
+- Menu: `ProfileSelect.tsx:93/117` `profile-${id}` / `new-profile`; `WorldSelect.tsx` `world-${id}` (211), `cloud-world-${id}` (261), `online-world-${id}` (279), `new-online-world` (326), `back-to-profiles` (332), `new-world` (335).
+- **Note:** RosterPanel, ConnectionStatus, ChatPanel, AccountPanel have **no `data-testid`** — they use roles/aria-labels/class names (see §4).
+
+**`NetworkSession` public surface** — `lib/net/NetworkSession.ts:80-109` (the `export type NetworkSession`):
+```ts
+export type NetworkSession = {
+  readonly engine: GameEngine;
+  readonly playerId: PlayerId;
+  readonly role: "owner" | "member";                         // Phase 3
+  subscribeChat(listener): () =&gt; void;
+  subscribeStatus(listener): () =&gt; void;
+  subscribeRoster(listener: () =&gt; void): () =&gt; void;          // Phase 3
+  status(): NetStatus;
+  rttMs(): number;
+  roster(): RosterMember[];                                   // Phase 3
+  playerName(id: PlayerId): string;
+  dispatch(command: Command): void;
+  applyLook(deltaYaw: number, deltaPitch: number): void;
+  sendChat(text: string): void;
+  kick(targetId: PlayerId): void;                            // Phase 3
+  setSimulatedLatency(ms: number): void;
+  simulatedLatency(): number;
+  drainEvents(): GameEvent[];
+  afterFrame(nowMs: number): void;
+  dispose(): void;
+};
+```
+Yes — **all four Phase 3 additions exist**: `role` (`:83`), `roster()` (`:93`, impl `:576`), `kick()` (`:99-100`, impl `:577-579` sends `{ t: "kick", targetId }`), `subscribeRoster()` (`:88-89`, impl `:572-575`). `RosterMember` = `{ id, name }` (`:78`). Chat subscribe/sendChat and status subscribe were already present.
+
+Key routing fact for driving commands: `engine.routeDispatch` (`:216-223`) sends everything up to the server **except** `LOCAL_COMMANDS` (`:73` — `toggleInventory`, `toggleAdvancements`, `toggleDebug`, `toggleCameraView`, `pause`, `resume`); `selectSlot` is applied optimistically AND sent. So `window.__monecraft.engine.dispatch({...})` (or `net.dispatch`, which just calls `engine.dispatch`, `:585-587`) is the way a test drives server-authoritative actions. The protocol decoder whitelists which cross the wire — `lib/net/protocol.ts` includes `selectSlot`(244), `creativeGiveItem`(264), `placeBlock`(277), `attack`(278), and top-level `kick`(316).
+
+---
+
+## 4. Reachability of the NEW MP v2 features
+
+### 4a. Owner kick + roster — **fully e2e-testable, easy**
+
+`RosterPanel` is rendered for every online session (not gated on pause) — `components/MinecraftGame.tsx:159` `{online &amp;&amp; &lt;RosterPanel session={online} /&gt;}`.
+
+Selectors (`components/game/RosterPanel.tsx`):
+- Container `:21`: `&lt;div className="roster-panel" aria-label="Players in this world"&gt;` → `getByRole("region"?)`/`locator(".roster-panel")`. Title `:23` `Players ({members.length})`.
+- Rows `:25` `className="roster-row"`, name span `:27` `roster-name` (with `" (you)"` for self, `:29`).
+- Kick button `:30-34`, shown only when `session.role === "owner" &amp;&amp; member.id !== session.playerId`:
+```tsx
+&lt;button type="button" className="roster-kick" onClick={() =&gt; session.kick(member.id)} aria-label={`Kick ${member.name}`}&gt;
+  Kick
+&lt;/button&gt;
+```
+No `data-testid` — select via `page.getByRole("button", { name: "Kick Friend" })` or `page.locator(".roster-kick")`.
+
+Kick propagation is real end-to-end: host `session.kick(id)` → `{t:"kick"}` → server re-checks owner role and rejects self-kick (`server/room.ts:356-362`), then `kick()` closes the target socket with `CLOSE_KICKED` and calls `leave()` (`:267-274`). `CLOSE_KICKED` is in `FATAL_CLOSES` (`NetworkSession.ts:70`), so the friend's `onSocketClosed` sets status `"closed"` (`:497-504`) — no reconnect.
+
+`ConnectionStatus` on `"closed"` (`components/game/ConnectionStatus.tsx:24-35`):
+```tsx
+if (status === "closed") {
+  return (
+    &lt;div className="net-modal" role="alertdialog" aria-label="Disconnected"&gt;
+      &lt;div className="net-modal-box"&gt;
+        &lt;p&gt;Disconnected from the server.&lt;/p&gt;
+        &lt;button type="button" className="mc-button" onClick={onLeave}&gt;Back to worlds&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+```
+Selector: `friend.getByRole("alertdialog", { name: "Disconnected" })` or `friend.locator(".net-modal")`. (`"reconnecting"` renders `.net-status.net-status-warn` "Reconnecting…", `:39-45`.)
+
+**Test recipe:** After both are in, on the host press Escape (frees cursor — the panel comment at `RosterPanel.tsx:7-11` notes it renders above the pause overlay for exactly this), click the Kick button (in headless the DOM cursor is never truly locked so a direct click also works), then assert on the friend: `getByRole("alertdialog", {name:"Disconnected"})` visible AND/OR `friend.evaluate(() =&gt; window.__monecraft.net.status())` === `"closed"`, and `host.evaluate(() =&gt; window.__monecraft.engine.state.players.size)` drops to 1. Also assertable purely via hooks: `host.evaluate(() =&gt; window.__monecraft.net.kick(&lt;friendId&gt;))` where friendId comes from `host.evaluate(() =&gt; window.__monecraft.net.roster())`. **Verdict: practical end-to-end, low effort.**
+
+### 4b. Vehicle boarding — **NOT practical end-to-end; keep as unit tests**
+
+Boarding routes through `placeBlock` → `tryBoardAimedVehicle` (`lib/game/engine/GameEngine.ts:897`, within the `placeBlock` case `:879-906`). It requires **an existing vehicle the player is aiming at**. There is no seed hook: the replica never simulates vehicles (`state.vehicles = []` then only replicated in — `NetworkSession.ts:265-283`), and the host client IS a replica, so `window.__monecraft.engine` can't author a vehicle — a local `state.vehicles.push(...)` would be overwritten by the next server frame and wouldn't exist server-side to board.
+
+To create one you must place it: `tryPlaceVehicle` (`GameEngine.ts:902`) needs a raft/ship item held and a right-click aimed at water, and water support is strict — `vehicleHasWaterSupport` requires Water below + Air at deck across all footprint corners (`lib/game/engine/systems/vehicles.ts:97-107`, gated by `canOccupy` `:121-133`). No server-side HTTP hook exists to spawn a vehicle (grep of `server/` shows only kick/pose/cmd, no vehicle-spawn endpoint). So an e2e would need: creative-give a raft, locate/craft water near spawn, aim precisely at the water surface, right-click to place, re-aim at the placed raft, right-click to board — all through real pointer math on a software renderer. **Verdict: leave to unit tests** (the boarding/mount/dismount logic already lives in `systems/vehicles.ts:135-205` with `server/room.ts` streaming `riderId` via `vp` poses and the rider's server-owned position via `SelfDelta.mountedVehicleId`, `NetworkSession.ts:382`). If any e2e coverage is wanted, assert only *replication of a vehicle pose* if one could be placed — but placement itself is the blocker.
+
+### 4c. Arrow replication — **e2e-testable via the creative-give hook, moderate effort**
+
+There IS a creative-give command reachable through the session/engine: `creativeGiveItem` (command `lib/game/engine/commands.ts:36`, engine handler `GameEngine.ts:939-945` — **creative mode only**, item must be in `ITEM_DEF_BY_ID`), and it crosses the wire (`protocol.ts:264`). The hook `giveCreativeItem` (`useMinecraftGame.ts:466`) just does `engine.dispatch({ type: "creativeGiveItem", itemId })`, so a test does the same via `window.__monecraft.engine.dispatch(...)` (routes up because it's not in `LOCAL_COMMANDS`).
+
+Firing: `attack` also crosses the wire (`protocol.ts:278`); the server's `attack` case fires a bow when the held slot is a bow (`GameEngine.ts:907-915`), and `tryFireBow` requires a bow in `selectedSlot` and ≥1 `arrow` in inventory (`lib/game/engine/systems/combat.ts:114-134`, `:118` `if ((countsById(...).get("arrow") ?? 0) &lt; 1) return false`). The spawned projectile is server-simulated and replicated to every client via the per-tick `prj` set → `applyProjectiles` → `state.projectiles` (`NetworkSession.ts:288-315`, `:441`).
+
+**Test recipe (host, Creative world):** `dispatch({type:"creativeGiveItem", itemId:"bow"})`, `dispatch({type:"creativeGiveItem", itemId:"arrow"})`, select the bow slot via `dispatch({type:"selectSlot", slot:N})`, then `dispatch({type:"attack"})`; assert on BOTH pages `expect.poll(() =&gt; page.evaluate(() =&gt; window.__monecraft.engine.state.projectiles.length)).toBeGreaterThan(0)`. Caveats: creativeGiveItem lands the stack at the server-side selected slot, so confirm the bow ends up in the selected slot (or select it after the self-delta lands), and the arrow ttl/flight is short — poll quickly. **Verdict: feasible via hooks (no pointer aiming needed), moderate effort.**
+
+### 4d. Cloud saves (sp-cloud) — **menu-flow, e2e-testable with existing testids**
+
+This is entirely the WorldSelect menu against `/api/worlds` — no game session needed. The full mechanism is in `components/menu/WorldSelect.tsx`:
+- **Upload:** each *local* world card renders an "Upload to cloud" button when `onlineUsed()` and no `cloudId` yet (`:227-234`) — no testid, select by text/title. It calls `uploadToCloud` (`:127-151`) → `createOnlineWorld({..., kind: "sp-cloud"})` + `pushSave` + `linkWorldCloud`; on success the card flips to `☁ Synced` badge (`:222-224`). Failure shows "Upload failed" (`:233`).
+- **Cloud Saves section:** unlinked `sp-cloud` rows (`:157`, filtered out if already linked locally) render under `&lt;h3&gt;Cloud Saves&lt;/h3&gt;` (`:255-268`) with the **testid** `data-testid={\`cloud-world-${world.id}\`}` (`:261`) and text "Download to this device". Clicking calls `onDownloadCloud` → `GameShell.downloadCloud` (`:124-142`) which `createWorld(..., { cloudId })` then opens it, pulling the newer save (`GameShell.openWorld` `:95-111`).
+
+**Sign-in as guest:** `AccountPanel` button **"Play online as guest"** (`components/menu/AccountPanel.tsx:114-132`, calls `ensureSignedIn()`), status text becomes **"Playing as guest"** (`:93`). No testids in AccountPanel — drive by role/name and text, exactly as the MP test does at `multiplayer.e2e.ts:52-53`.
+
+**Test recipe:** guest sign-in → create a **local** world (`new-world` testid) → open+quit once so a save exists (upload of a save-less world still links but pushes nothing — `WorldSelect.tsx:142`) → click "Upload to cloud" → assert `☁ Synced`. Then in a **second context** (same guest won't share; you'd sign in the same account or verify the row via `/api/worlds`), the unlinked cloud world appears as `getByTestId(\`cloud-world-${id}\`)` → click → `waitForFunction(() =&gt; window.__monecraft.engine.state.world.seed === &lt;seed&gt;)`. Note the identity subtlety: cloud rows are per-account, so cross-device download in a fresh context needs the *same* signed-in account (guest sessions differ per context) — either sign in a real account or assert within one context after deleting the local copy. `e2e/menu.e2e.ts` shows the local-world create/play/reload patterns to mirror (e.g. `:26-29`, `:78-90`). **Verdict: testable end-to-end within one signed-in identity; cross-device requires a real (non-guest) account.**
+
+---
+
+## 5. Existing e2e sign-in / online-world flow (quote)
+
+From `multiplayer.e2e.ts` the host path (`:52-62`):
+```ts
+await host.getByRole("button", { name: "Play online as guest" }).click();
+await expect(host.getByText("Playing as guest")).toBeVisible({ timeout: 15000 });
+await host.getByTestId("profile-host-profile").click();
+await host.getByTestId("new-online-world").click();
+await host.getByLabel("World name").fill("Co-op Test");
+await host.getByLabel("World seed").fill("4242");
+await host.getByRole("button", { name: "Creative mode" }).click();
+await host.getByRole("button", { name: "Create World" }).click();
+```
+Invite link copy is bypassed for the API in headless (`:66-75`, quoted in §1). Friend join path (`:81-90`):
+```ts
+await friend.goto(`/join/${inviteToken}`);
+await expect(friend.getByText(/You've joined/)).toBeVisible({ timeout: 15000 });
+await friend.getByRole("link", { name: "Open the game" }).click();
+await friend.getByLabel("Profile name").fill("Friend");
+await friend.getByRole("button", { name: "Create" }).click();
+await friend.getByTestId(`online-world-${worldId}`).click();
+```
+
+**Testids on the online menu:** `new-online-world` (`WorldSelect.tsx:326`), `online-world-${id}` (`:279`), `cloud-world-${id}` (`:261`), plus `world-${id}`/`new-world`/`back-to-profiles` and `profile-${id}`/`new-profile`. **AccountPanel has no testids** — its controls are: "Play online as guest", "Sign in", "Keep my worlds — create account", "Sign out", status spans "Playing as guest"/"Signed in as {name}"/"Offline" (`AccountPanel.tsx:93-136`). The Copy-invite/Revoke-links buttons (owner-only, `WorldSelect.tsx:287-319`) also have no testids — they read "Copy invite"/"Link copied!"/"Revoke links" by text.
+
+---
+
+## Summary: e2e-testable end-to-end vs. keep-as-unit
+
+| Feature | e2e? | Hook / selector |
+|---|---|---|
+| **Owner kick + roster** | **Yes, easy** | `net.roster()`, `net.kick(id)`, `.roster-kick`/`getByRole("button",{name:"Kick X"})`; assert friend `getByRole("alertdialog",{name:"Disconnected"})` / `net.status()==="closed"` |
+| **Arrow replication** | **Yes, moderate** | `engine.dispatch({type:"creativeGiveItem",itemId:"bow"/"arrow"})`, `selectSlot`, `attack`; assert `engine.state.projectiles.length&gt;0` on both |
+| **Cloud saves (sp-cloud)** | **Yes (single identity)** | AccountPanel "Play online as guest"; "Upload to cloud" text button → `☁ Synced`; `getByTestId("cloud-world-&lt;id&gt;")` → download; cross-device needs a real account |
+| **Vehicle boarding** | **No — keep unit** | Needs a placed vehicle on water + precise aim; replica can't author vehicles, no server spawn hook. Covered by `systems/vehicles.ts` + `server/room.test.ts` |
+
+Files of record: `e2e/multiplayer.e2e.ts`, `e2e/helpers.ts`, `e2e/menu.e2e.ts`, `playwright.config.ts`, `lib/net/NetworkSession.ts`, `lib/net/protocol.ts`, `components/game/RosterPanel.tsx`, `components/game/ConnectionStatus.tsx`, `components/game/ChatPanel.tsx`, `components/MinecraftGame.tsx`, `components/menu/WorldSelect.tsx`, `components/menu/AccountPanel.tsx`, `app/join/[token]/page.tsx`, `lib/online/onlineClient.ts`, `lib/game/useMinecraftGame.ts`, `lib/game/input/inputController.ts`, `lib/game/engine/GameEngine.ts`, `lib/game/engine/systems/vehicles.ts`, `lib/game/engine/systems/combat.ts`, `server/room.ts`, `server/index.ts`.
+
+No files were modified.</result>
+<usage><subagent_tokens>87422</subagent_tokens><tool_uses>34</tool_uses><duration_ms>272514</duration_ms></usage>
+</task-notification>
+
+---
+
+check the new code reviews on the pr
