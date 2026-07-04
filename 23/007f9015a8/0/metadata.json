@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "23007f9015a8",
+  "session_id": "9d9fe046-f715-4a3d-bf2a-9bd98356707e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T14:04:30.955527Z",
+  "branch": "feat/local-vs-account-identity",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/online/worldsService.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8[1m]",
+  "turn_id": "1f28e9c3aa15",
+  "checkpoint_transcript_start": 1171,
+  "transcript_lines_at_start": 1171,
+  "token_usage": {
+    "input_tokens": 3857,
+    "cache_creation_tokens": 52144,
+    "cache_read_tokens": 16626725,
+    "output_tokens": 45872,
+    "api_call_count": 36
+  },
+  "session_metrics": {
+    "turn_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T14:04:30.903854Z",
+    "agent_lines": 55,
+    "agent_removed": 40,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 55,
+    "total_lines_changed": 95,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
