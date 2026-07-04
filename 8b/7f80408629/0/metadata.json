@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8b7f80408629",
+  "session_id": "7a168c40-1645-4914-8312-8f3aaf0fbeb6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T00:58:11.848562Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "1c9abff838ac",
+  "token_usage": {
+    "input_tokens": 202607,
+    "cache_creation_tokens": 4143909,
+    "cache_read_tokens": 523812076,
+    "output_tokens": 849257,
+    "api_call_count": 1091
+  },
+  "session_metrics": {
+    "turn_count": 37
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 37,
+      "user_lines_removed": 20,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1,
+        ".dockerignore": 17,
+        "server/fly.toml": 19
+      },
+      "user_removed_per_file": {
+        "server/fly.toml": 20
+      }
+    }
+  ]
+}
