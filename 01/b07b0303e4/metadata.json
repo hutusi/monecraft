@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "01b07b0303e4",
+  "strategy": "manual-commit",
+  "branch": "feat/local-vs-account-identity",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "components/menu/AccountPanel.test.tsx",
+    "components/menu/AccountPanel.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/b07b0303e4/0/metadata.json",
+      "transcript": "/01/b07b0303e4/0/full.jsonl",
+      "content_hash": "/01/b07b0303e4/0/content_hash.txt",
+      "prompt": "/01/b07b0303e4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2743,
+    "cache_creation_tokens": 38294,
+    "cache_read_tokens": 6982756,
+    "output_tokens": 20572,
+    "api_call_count": 21
+  }
+}
