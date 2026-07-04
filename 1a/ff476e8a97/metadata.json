@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "1aff476e8a97",
+  "strategy": "manual-commit",
+  "branch": "feat/local-vs-account-identity",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/online.md",
+    "docs/testing.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1a/ff476e8a97/0/metadata.json",
+      "transcript": "/1a/ff476e8a97/0/full.jsonl",
+      "content_hash": "/1a/ff476e8a97/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1843,
+    "cache_creation_tokens": 8492,
+    "cache_read_tokens": 3024083,
+    "output_tokens": 5603,
+    "api_call_count": 7
+  }
+}
