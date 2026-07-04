@@ -3,7 +3,7 @@
   "checkpoint_id": "c5da94a36e70",
   "strategy": "manual-commit",
   "branch": "feat/mp-v2",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "CHANGELOG.md",
     "docs/architecture.md",
@@ -32,13 +32,19 @@
       "transcript": "/c5/da94a36e70/0/full.jsonl",
       "content_hash": "/c5/da94a36e70/0/content_hash.txt",
       "prompt": "/c5/da94a36e70/0/prompt.txt"
+    },
+    {
+      "metadata": "/c5/da94a36e70/1/metadata.json",
+      "transcript": "/c5/da94a36e70/1/full.jsonl",
+      "content_hash": "/c5/da94a36e70/1/content_hash.txt",
+      "prompt": "/c5/da94a36e70/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 15188,
-    "cache_creation_tokens": 154547,
-    "cache_read_tokens": 33561459,
-    "output_tokens": 100532,
-    "api_call_count": 99
+    "input_tokens": 220822,
+    "cache_creation_tokens": 4374053,
+    "cache_read_tokens": 579987632,
+    "output_tokens": 1001696,
+    "api_call_count": 1225
   }
 }
