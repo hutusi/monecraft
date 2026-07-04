@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cdc866152921",
+  "strategy": "manual-commit",
+  "branch": "feat/account-only-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/api/auth/[...all]/route.ts",
+    "app/api/profiles/route.ts",
+    "components/GameShell.tsx",
+    "components/menu/AccountPanel.test.tsx",
+    "components/menu/AccountPanel.tsx",
+    "components/menu/AccountProfileSelect.test.tsx",
+    "components/menu/OnlineWorldSelect.test.tsx",
+    "components/menu/WorldSelect.test.tsx",
+    "lib/auth/auth.test.ts",
+    "lib/auth/client.ts",
+    "lib/auth/server.ts",
+    "lib/online/http.ts",
+    "lib/online/worldsService.test.ts",
+    "lib/online/worldsService.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cd/c866152921/0/metadata.json",
+      "transcript": "/cd/c866152921/0/full.jsonl",
+      "content_hash": "/cd/c866152921/0/content_hash.txt",
+      "prompt": "/cd/c866152921/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5358,
+    "cache_creation_tokens": 323473,
+    "cache_read_tokens": 10905064,
+    "output_tokens": 46834,
+    "api_call_count": 49
+  }
+}
