@@ -19,3 +19,7 @@ ok, go ahead
 <status>completed</status>
 <summary>Background command "Redeploy the correct game-server image to Fly" completed (exit code 0)</summary>
 </task-notification>
+
+---
+
+I still have a question about how online accounts interact with single-player worlds. Even when I'm signed in with an online account, if I only create a single-player world, do I still need to connect to the game server — or can single-player run entirely client-side? My assumption is that single-player should NOT require a game-server connection, but the save data still needs to be persisted to the database (cloud save), so that I can sign in on another computer and continue where I left off.
