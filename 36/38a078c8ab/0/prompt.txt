@@ -1,0 +1,21 @@
+I created an online world and sent the link to another user. he joined successfully, 
+but we cannot see each other. On the mini-map, it only shows ourselves individually, 
+and the player count displays "Players (1)".
+
+---
+
+I have merged the pr, please update main
+
+---
+
+let's make some improvements: 1. on the welcome page, show sign in (no create account on begin) and play local, it prompts user can choose sign in online or play locally without online account (anonymous or something), user should choose. 2, in the sign in or create account page, do not show the local profile under the box, it will misunderstand user. 3. after user signed in, do not show the "play locally" button, he can choose a profile to play online worlds or signleplayer worlder. 4. if I run a localhost "bun run dev", I can play local without config the database url or auth url. now it shows error if I do not config the db: Error: DATABASE_URL is not set — see .env.example. what do you think?
+
+---
+
+<task-notification>
+<task-id>b4kjyfi4v</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/9feb6675-3ffd-4d9b-9da2-371f0f056b31/tasks/b4kjyfi4v.output</output-file>
+<status>completed</status>
+<summary>Background command "Run full Playwright e2e suite" completed (exit code 0)</summary>
+</task-notification>
