@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "eba91a94c0ff",
+  "strategy": "manual-commit",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/testing.md",
+    "e2e/multiplayer.e2e.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/eb/a91a94c0ff/0/metadata.json",
+      "transcript": "/eb/a91a94c0ff/0/full.jsonl",
+      "content_hash": "/eb/a91a94c0ff/0/content_hash.txt",
+      "prompt": "/eb/a91a94c0ff/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4610,
+    "cache_creation_tokens": 27644,
+    "cache_read_tokens": 9066990,
+    "output_tokens": 12488,
+    "api_call_count": 25
+  }
+}

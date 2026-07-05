@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bxet8js6o</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/3e2935ae-8ba4-4cef-8c03-b322a01108ac/tasks/bxet8js6o.output</output-file>
+<status>completed</status>
+<summary>Background command "Run Playwright e2e suite" completed (exit code 0)</summary>
+</task-notification>
