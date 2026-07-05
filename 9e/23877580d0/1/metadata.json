@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9e23877580d0",
+  "session_id": "9feb6675-3ffd-4d9b-9da2-371f0f056b31",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T06:09:15.124164Z",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/architecture.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "567b7c5b4ff6",
+  "token_usage": {
+    "input_tokens": 41853,
+    "cache_creation_tokens": 378902,
+    "cache_read_tokens": 45650105,
+    "output_tokens": 154283,
+    "api_call_count": 205
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T06:09:15.080815Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 148,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 148,
+    "total_lines_changed": 166,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
