@@ -3,7 +3,7 @@
   "checkpoint_id": "1cddd991da59",
   "strategy": "manual-commit",
   "branch": "improve/mp-latency",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "CHANGELOG.md",
     "docs/architecture.md",
@@ -22,13 +22,19 @@
       "transcript": "/1c/ddd991da59/0/full.jsonl",
       "content_hash": "/1c/ddd991da59/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1c/ddd991da59/1/metadata.json",
+      "transcript": "/1c/ddd991da59/1/full.jsonl",
+      "content_hash": "/1c/ddd991da59/1/content_hash.txt",
+      "prompt": "/1c/ddd991da59/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1004,
-    "cache_creation_tokens": 32149,
-    "cache_read_tokens": 4921338,
-    "output_tokens": 24686,
-    "api_call_count": 22
+    "input_tokens": 42857,
+    "cache_creation_tokens": 411051,
+    "cache_read_tokens": 50571443,
+    "output_tokens": 178969,
+    "api_call_count": 227
   }
 }
