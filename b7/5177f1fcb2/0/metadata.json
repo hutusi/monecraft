@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b75177f1fcb2",
+  "session_id": "9feb6675-3ffd-4d9b-9da2-371f0f056b31",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T05:07:38.340508Z",
+  "branch": "improve/welcome-flow",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "6a23de1e9e82",
+  "token_usage": {
+    "input_tokens": 41702,
+    "cache_creation_tokens": 372195,
+    "cache_read_tokens": 41789565,
+    "output_tokens": 148796,
+    "api_call_count": 194
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
