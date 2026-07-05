@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e0299a7fa72a",
+  "session_id": "400e0f6d-23d3-4ef2-9a64-230acdb2ee02",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T12:36:50.624303Z",
+  "branch": "feature/lag-compensation",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "0a799f1cdb4e",
+  "token_usage": {
+    "input_tokens": 44365,
+    "cache_creation_tokens": 448129,
+    "cache_read_tokens": 54014190,
+    "output_tokens": 200047,
+    "api_call_count": 219
+  },
+  "session_metrics": {
+    "turn_count": 8
+  }
+}
