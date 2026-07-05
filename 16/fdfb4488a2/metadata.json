@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "16fdfb4488a2",
+  "strategy": "manual-commit",
+  "branch": "improve/welcome-flow",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/menu/AccountPanel.tsx",
+    "components/menu/ProfileSelect.test.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/16/fdfb4488a2/0/metadata.json",
+      "transcript": "/16/fdfb4488a2/0/full.jsonl",
+      "content_hash": "/16/fdfb4488a2/0/content_hash.txt",
+      "prompt": "/16/fdfb4488a2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 39780,
+    "cache_creation_tokens": 297503,
+    "cache_read_tokens": 18489317,
+    "output_tokens": 105751,
+    "api_call_count": 119
+  }
+}

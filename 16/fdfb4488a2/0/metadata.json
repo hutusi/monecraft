@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "16fdfb4488a2",
+  "session_id": "9feb6675-3ffd-4d9b-9da2-371f0f056b31",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T03:58:34.206035Z",
+  "branch": "improve/welcome-flow",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/menu/AccountPanel.tsx",
+    "components/menu/ProfileSelect.test.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "f79db91f471d",
+  "token_usage": {
+    "input_tokens": 39780,
+    "cache_creation_tokens": 297503,
+    "cache_read_tokens": 18489317,
+    "output_tokens": 105751,
+    "api_call_count": 119
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T03:58:34.169153Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 357,
+    "human_modified": 70,
+    "human_removed": 0,
+    "total_committed": 357,
+    "total_lines_changed": 473,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
