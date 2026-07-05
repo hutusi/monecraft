@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "427ae596dcc6",
+  "strategy": "manual-commit",
+  "branch": "feature/pwa",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "components/menu/WelcomeScreen.test.tsx",
+    "components/menu/WelcomeScreen.tsx",
+    "docs/testing.md",
+    "lib/ui/useOnlineStatus.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/42/7ae596dcc6/0/metadata.json",
+      "transcript": "/42/7ae596dcc6/0/full.jsonl",
+      "content_hash": "/42/7ae596dcc6/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2594,
+    "cache_creation_tokens": 10157,
+    "cache_read_tokens": 926820,
+    "output_tokens": 5255,
+    "api_call_count": 5
+  }
+}
