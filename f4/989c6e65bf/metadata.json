@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f4989c6e65bf",
+  "strategy": "manual-commit",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/protocol.md",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "server/room.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f4/989c6e65bf/0/metadata.json",
+      "transcript": "/f4/989c6e65bf/0/full.jsonl",
+      "content_hash": "/f4/989c6e65bf/0/content_hash.txt",
+      "prompt": "/f4/989c6e65bf/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 682,
+    "cache_creation_tokens": 16446,
+    "cache_read_tokens": 5156193,
+    "output_tokens": 8726,
+    "api_call_count": 22
+  }
+}
