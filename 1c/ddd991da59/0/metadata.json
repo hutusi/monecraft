@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "1cddd991da59",
+  "session_id": "3e2935ae-8ba4-4cef-8c03-b322a01108ac",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T06:15:27.297508Z",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/testing.md",
+    "docs/tuning.md",
+    "lib/net/NetworkSession.ts",
+    "lib/net/clock.test.ts",
+    "lib/net/clock.ts",
+    "lib/net/interpolation.test.ts",
+    "lib/net/interpolation.ts",
+    "lib/net/protocol.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "482dc353067b",
+  "checkpoint_transcript_start": 416,
+  "transcript_lines_at_start": 416,
+  "token_usage": {
+    "input_tokens": 1004,
+    "cache_creation_tokens": 32149,
+    "cache_read_tokens": 4921338,
+    "output_tokens": 24686,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T06:15:27.273756Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 246,
+    "human_modified": 50,
+    "human_removed": 0,
+    "total_committed": 246,
+    "total_lines_changed": 296,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
