@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "42801bf9c606",
+  "session_id": "3e2935ae-8ba4-4cef-8c03-b322a01108ac",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T07:24:21.129141Z",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/game/engine/GameEngine.multiplayer.test.ts",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "25610ae74b00",
+  "checkpoint_transcript_start": 842,
+  "transcript_lines_at_start": 842,
+  "token_usage": {
+    "input_tokens": 1016,
+    "cache_creation_tokens": 28469,
+    "cache_read_tokens": 9308936,
+    "output_tokens": 19449,
+    "api_call_count": 28
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T07:24:21.093079Z",
+    "agent_lines": 118,
+    "agent_removed": 12,
+    "human_added": 74,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 192,
+    "total_lines_changed": 206,
+    "agent_percentage": 63.10679611650486,
+    "metric_version": 2
+  }
+}
