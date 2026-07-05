@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a52593e4f65b",
+  "session_id": "400e0f6d-23d3-4ef2-9a64-230acdb2ee02",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T17:14:02.908403Z",
+  "branch": "feature/touch-play",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/layout.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "f96c9841edd1",
+  "token_usage": {
+    "input_tokens": 53117,
+    "cache_creation_tokens": 1527368,
+    "cache_read_tokens": 95287685,
+    "output_tokens": 286312,
+    "api_call_count": 303
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T17:14:02.826808Z",
+    "agent_lines": 11,
+    "agent_removed": 1,
+    "human_added": 56,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 67,
+    "total_lines_changed": 74,
+    "agent_percentage": 16.216216216216218,
+    "metric_version": 2
+  }
+}
