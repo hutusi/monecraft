@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "8cd2aa8845ed",
+  "session_id": "3e2935ae-8ba4-4cef-8c03-b322a01108ac",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T08:24:34.849049Z",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/net/prediction.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/prediction.test.ts",
+    "server/room.test.ts",
+    "server/room.ts",
+    "lib/net/codec.ts",
+    "e2e/multiplayer.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "fd56c9f77d9a",
+  "checkpoint_transcript_start": 1122,
+  "transcript_lines_at_start": 1122,
+  "token_usage": {
+    "input_tokens": 572,
+    "cache_creation_tokens": 31707,
+    "cache_read_tokens": 11065532,
+    "output_tokens": 20634,
+    "api_call_count": 28
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T08:24:34.807397Z",
+    "agent_lines": 100,
+    "agent_removed": 19,
+    "human_added": 28,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 128,
+    "total_lines_changed": 152,
+    "agent_percentage": 78.28947368421053,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
