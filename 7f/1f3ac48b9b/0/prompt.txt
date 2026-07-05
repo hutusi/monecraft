@@ -1,0 +1,5 @@
+there seem not sign up or create account on welcome page, if it is a new user, he can not create an account
+
+---
+
+continue
