@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e52afe9dfa08",
+  "strategy": "manual-commit",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/blockChanges.test.ts",
+    "lib/game/engine/blockChanges.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/prediction.test.ts",
+    "lib/net/prediction.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e5/2afe9dfa08/0/metadata.json",
+      "transcript": "/e5/2afe9dfa08/0/full.jsonl",
+      "content_hash": "/e5/2afe9dfa08/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11101,
+    "cache_creation_tokens": 63226,
+    "cache_read_tokens": 11412411,
+    "output_tokens": 41613,
+    "api_call_count": 40
+  }
+}
