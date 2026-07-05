@@ -3,7 +3,7 @@
   "checkpoint_id": "52a6783214d7",
   "session_id": "400e0f6d-23d3-4ef2-9a64-230acdb2ee02",
   "strategy": "manual-commit",
-  "created_at": "2026-07-05T17:07:53.083757Z",
+  "created_at": "2026-07-05T17:13:37.17958Z",
   "branch": "feature/touch-play",
   "checkpoints_count": 1,
   "files_touched": [],
@@ -11,11 +11,11 @@
   "model": "claude-sonnet-5",
   "turn_id": "f96c9841edd1",
   "token_usage": {
-    "input_tokens": 52339,
-    "cache_creation_tokens": 1509523,
-    "cache_read_tokens": 87685223,
-    "output_tokens": 273570,
-    "api_call_count": 290
+    "input_tokens": 53115,
+    "cache_creation_tokens": 1527030,
+    "cache_read_tokens": 94695100,
+    "output_tokens": 285625,
+    "api_call_count": 302
   },
   "session_metrics": {
     "turn_count": 13
