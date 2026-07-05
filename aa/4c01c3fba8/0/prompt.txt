@@ -1,0 +1,3 @@
+I created an online world and sent the link to another user. he joined successfully, 
+but we cannot see each other. On the mini-map, it only shows ourselves individually, 
+and the player count displays "Players (1)".
