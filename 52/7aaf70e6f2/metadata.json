@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "527aaf70e6f2",
+  "strategy": "manual-commit",
+  "branch": "improve/mp-latency",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "server/fly.toml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/52/7aaf70e6f2/0/metadata.json",
+      "transcript": "/52/7aaf70e6f2/0/full.jsonl",
+      "content_hash": "/52/7aaf70e6f2/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 2908,
+    "cache_read_tokens": 1499805,
+    "output_tokens": 1466,
+    "api_call_count": 4
+  }
+}
