@@ -1,0 +1,4 @@
+Problem: high multiplayer latency causing noticeable lag.
+Multiplayer is basically working, but gameplay feels laggy. My in-game minimap consistently shows a ping of 700ms+, which I suspect is the cause. 
+
+Can you plan and make some latency optimize techniques, some client-side techniques like client-side prediction, assess entity interpolation, delta sync, etc. or some improvements you can think.
