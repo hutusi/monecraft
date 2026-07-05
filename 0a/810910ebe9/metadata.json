@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0a810910ebe9",
+  "strategy": "manual-commit",
+  "branch": "feature/touch-play",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/0a/810910ebe9/0/metadata.json",
+      "transcript": "/0a/810910ebe9/0/full.jsonl",
+      "content_hash": "/0a/810910ebe9/0/content_hash.txt",
+      "prompt": "/0a/810910ebe9/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 71450,
+    "cache_creation_tokens": 2393693,
+    "cache_read_tokens": 157228164,
+    "output_tokens": 385030,
+    "api_call_count": 395
+  }
+}
