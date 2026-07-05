@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "bc95521f63e5",
+  "session_id": "400e0f6d-23d3-4ef2-9a64-230acdb2ee02",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T17:28:12.666557Z",
+  "branch": "feature/touch-play",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "f96c9841edd1",
+  "token_usage": {
+    "input_tokens": 65756,
+    "cache_creation_tokens": 1593630,
+    "cache_read_tokens": 115279756,
+    "output_tokens": 324425,
+    "api_call_count": 335
+  },
+  "session_metrics": {
+    "turn_count": 13
+  }
+}
