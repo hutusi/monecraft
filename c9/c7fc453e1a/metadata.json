@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c9c7fc453e1a",
+  "strategy": "manual-commit",
+  "branch": "feature/lag-compensation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/net/NetworkSession.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c9/c7fc453e1a/0/metadata.json",
+      "transcript": "/c9/c7fc453e1a/0/full.jsonl",
+      "content_hash": "/c9/c7fc453e1a/0/content_hash.txt",
+      "prompt": "/c9/c7fc453e1a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 41390,
+    "cache_creation_tokens": 397358,
+    "cache_read_tokens": 40579735,
+    "output_tokens": 165369,
+    "api_call_count": 185
+  }
+}

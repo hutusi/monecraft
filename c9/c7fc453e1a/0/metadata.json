@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c9c7fc453e1a",
+  "session_id": "400e0f6d-23d3-4ef2-9a64-230acdb2ee02",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-05T11:55:16.380261Z",
+  "branch": "feature/lag-compensation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/net/NetworkSession.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "0a799f1cdb4e",
+  "token_usage": {
+    "input_tokens": 41390,
+    "cache_creation_tokens": 397358,
+    "cache_read_tokens": 40579735,
+    "output_tokens": 165369,
+    "api_call_count": 185
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-05T11:55:16.341012Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 44,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 44,
+    "total_lines_changed": 45,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
