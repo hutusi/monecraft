@@ -1,0 +1,52 @@
+is it the time to cut a new version? what do you think?
+
+---
+
+is it the time to cut a new version? what do you think?
+
+---
+
+<task-notification>
+<task-id>ab4afb4ea84d37505</task-id>
+<tool-use-id>toolu_01KaXpuJC3o5JGJQhYoVDZ3g</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/eb5db53f-9767-470c-a602-04f32e6e5ab6/tasks/ab4afb4ea84d37505.output</output-file>
+<status>completed</status>
+<summary>Agent "Check release readiness state" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result># Release Readiness Facts — Monecraft
+
+**1. Current version (package.json):** `0.13.0`
+
+**2. Most recent tag:** `v0.13.0`, created **2026-07-04 09:10:17 +0800** (yesterday relative to today, 2026-07-05).
+
+**3. Commits since `v0.13.0`:** 42 commits, roughly by conventional-commit type:
+- **feat (16):** account profiles CRUD/schema/quotas + API routes, account-mode menu (home, "Play locally" door, joined-worlds list, profile labeling), accounts-only online model (remove anonymous guest layer, migration 0003 dropping `is_anonymous`), first-class singleplayer worlds in account mode, cloud-saves sync, in-game player roster + owner kick, per-player progression/kill-credit/pet-follow, vehicle+arrow replication (protocol v2)
+- **fix (7):** CodeRabbit review follow-ups (AccountPanel sign-out, cloud-saves upload/download, singleplayer-world deletes), CI retry-safe e2e accounts, MAX_PROFILE_NAME/quota TOCTOU race, login reachability
+- **test (6):** e2e coverage for cross-device singleplayer, account-mode journeys, AccountProfileSelect/OnlineWorldSelect, MP v2 roster/kick/cloud-saves
+- **docs/style (6):** account-mode menu/singleplayer-worlds docs (+CHANGELOG updates), save-format schema-header correction (v17), deploy.md formatting
+- **chore/perf (2):** deploy script wrapper, DB index on profiles/worlds
+- **merge (5):** PRs #49, #48, #47, #46, #44
+
+**4. CHANGELOG.md:** `## [Unreleased]` section (lines 5–27) contains 4 "Added" items (singleplayer worlds in account mode, cross-device cloud saves, in-game player list/kick, per-player progression/pets, account profiles &amp; account-mode menu — 5 bullets total under Added), 2 "Changed" items (accounts-only online play/guest retirement, profile-store labeling), 1 "Removed" item (anonymous guests — notes the migration deletes all guest data), 1 "Fixed" item (login reachable on first run). Full raw text captured above in the tool output (lines 5–27 of CHANGELOG.md). Most recent released entry for comparison: `## [0.13.0] - 2026-07-04` (multiplayer hardening &amp; ops, online co-op multiplayer, game-server groundwork, engine multi-player core v16→v17, worldgen noise v10→11).
+
+**5. Working tree:** `git status` — clean, on `main`, up to date with `origin/main`. Last 5 commits: `a867546` Merge PR #49 (account-sp-worlds), `2784b74` Merge PR #48 (post-identity-followups), `51d5239` style(docs) format deploy.md, `c62a389` fix(menu,shell) surface failed sp-world deletes, `1e3b7a7` docs account-mode sp worlds (+CHANGELOG).
+
+**6. Open PRs:** `gh pr list --repo hutusi/monecraft --state open` returned an empty list (gh authenticated as user `hutusi`). No open PRs.
+
+**7. Pending/release-blocking markers:** No TODO/FIXME/"pending release"/"before release" markers found in CHANGELOG.md or `docs/*.md` relevant to release blocking (only unrelated hits: "pending hazard damage" in manual.md/CHANGELOG, a bow-damage doc line). No TODO.md/ROADMAP.md file exists. The guest-data deletion warning is **already documented**, not a dangling pending item — CHANGELOG's "Removed" entry explicitly states "The migration deletes all guest users and everything they owned" plus a deploy-order caveat (app first, then `bun run db:migrate`), and `docs/deploy.md` (lines 163–168) restates the same schema-change deploy-order rule generically.</result>
+<usage><subagent_tokens>42903</subagent_tokens><tool_uses>10</tool_uses><duration_ms>76698</duration_ms></usage>
+</task-notification>
+
+---
+
+continue
+
+---
+
+<task-notification>
+<task-id>bijg084ch</task-id>
+<tool-use-id>toolu_017tMrUHXP8eo5HYoUgUEvzn</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/eb5db53f-9767-470c-a602-04f32e6e5ab6/tasks/bijg084ch.output</output-file>
+<status>failed</status>
+<summary>Background command "Restart the Next.js dev server for manual QA" failed with exit code 143</summary>
+</task-notification>
