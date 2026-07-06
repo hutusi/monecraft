@@ -1,0 +1,25 @@
+push and open pr
+
+---
+
+<task-notification>
+<task-id>bh2z5sbtx</task-id>
+<summary>Monitor event: "CI checks on PR #59 (verify + e2e + CodeRabbit)"</summary>
+<event>verify: fail</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b2aur60lh</task-id>
+<summary>Monitor event: "PR #59 CI rerun (verify + e2e)"</summary>
+<event>e2e: skipping</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b2aur60lh</task-id>
+<summary>Monitor event: "PR #59 CI rerun (verify + e2e)"</summary>
+<event>verify: pass</event>
+</task-notification>

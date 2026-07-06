@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ab2ab48cb093",
+  "strategy": "manual-commit",
+  "branch": "feat/nether",
+  "checkpoints_count": 2,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/ab/2ab48cb093/0/metadata.json",
+      "transcript": "/ab/2ab48cb093/0/full.jsonl",
+      "content_hash": "/ab/2ab48cb093/0/content_hash.txt",
+      "prompt": "/ab/2ab48cb093/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 109835,
+    "cache_creation_tokens": 1759924,
+    "cache_read_tokens": 228848279,
+    "output_tokens": 350532,
+    "api_call_count": 462
+  }
+}
