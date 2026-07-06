@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "838ec92c2043",
+  "strategy": "manual-commit",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/save.test.ts",
+    "lib/game/save.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/83/8ec92c2043/0/metadata.json",
+      "transcript": "/83/8ec92c2043/0/full.jsonl",
+      "content_hash": "/83/8ec92c2043/0/content_hash.txt",
+      "prompt": "/83/8ec92c2043/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 50982,
+    "cache_creation_tokens": 1802569,
+    "cache_read_tokens": 143455068,
+    "output_tokens": 305668,
+    "api_call_count": 360
+  }
+}
