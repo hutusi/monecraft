@@ -1,0 +1,663 @@
+continue
+
+---
+
+push and ope pr
+
+---
+
+push and open pr
+
+---
+
+check code reviews on the pr?
+
+---
+
+check code reviews on the pr
+
+---
+
+ok, go ahead
+
+---
+
+ok, go on merge
+
+---
+
+what's next do you recommend?
+
+---
+
+I will manual test later, not now, and not 0.16.0 for now. what next features or improvements do you recommend?
+
+---
+
+<task-notification>
+<task-id>a9de73d9539e0d342</task-id>
+<tool-use-id>toolu_01EVntKDcDHD1SnRPCVtDYMn</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/a9de73d9539e0d342.output</output-file>
+<status>completed</status>
+<summary>Agent "Sweep repo for deferred work" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything needed. No plan file required — this is a read-only report. Here is the compiled inventory.
+
+---
+
+# Deferred Work, Limitations &amp; Content Inventory — monecraft
+
+## 1. Code-level deferred markers (TODO/FIXME/HACK/XXX/"not yet"/etc.)
+
+Production source (`lib/`, `components/`, `server/`, `app/`) contains **zero** real `TODO`/`FIXME`/`HACK`/`XXX` comments. All such grep hits are either test fixtures (`hackTheGibson`, `speedhack`) or idiomatic anti-cheat naming, not deferred work. Notable non-trivial items:
+
+- `lib/game/engine/systems/advancements.ts:240` — "not yet unlocked" is descriptive doc, not a TODO.
+- The only genuine deferred-work statements live in **CHANGELOG.md** and **docs** (below), not in code comments.
+
+## 2. Docs: "not supported / desktop-only / coming / absent"
+
+- `README.md:19` — "Chat and the debug overlay remain **desktop-only for now**."
+- `docs/manual.md:90` — "Chat and the debug overlay are **desktop-only** for [keyboardless players]."
+- `docs/manual.md:272-276` — Weather (rain/snow) is **"atmospheric only: it doesn't change how mobs [spawn/behave]"** — cosmetic, no gameplay effect, no thunderstorms.
+- `docs/architecture.md:54` — random-tick system is "the **extension point for future** saplings / grass spread" (grass spread partially deferred).
+- `docs/architecture.md:114` — engine is input-agnostic to allow "**future gamepad**" and replays (gamepad not implemented).
+
+## 3. CHANGELOG: explicit follow-ups / "next frontier"
+
+- `CHANGELOG.md:15` — Touch play: **"Deferred for now: touch chat typing, the debug overlay, and tap-a-block targeting."** Also **"a real-device pass is the named follow-up."**
+- `CHANGELOG.md:16` — Melee lag comp: **"Bow arrows keep current behavior on purpose … rewinding swept projectile paths is heavier machinery for less felt benefit (future work)."**
+- `CHANGELOG.md:22` — **"combat at high ping remains delayed; that's the next frontier (server-side lag compensation)"** (since partly addressed by v3 melee rewind; arrows still open per line 16).
+- `CHANGELOG.md:27` — event attribution is **"groundwork for the client telling its own action echoes apart."**
+- `CHANGELOG.md:29` — wire diet is **"groundwork for playing across continents."**
+- `CHANGELOG.md:75` — input intents enable **"a future keybinding screen"** (keybinding UI not built).
+- `CHANGELOG.md:184` — **"Village _structures_ are a possible future addition"** (note: house-cluster villages have since shipped — see `architecture.md:67` `placeVillages` — so this specific item is now partly done).
+- `CHANGELOG.md:201` — worldgen versioning designed so **"a future worldgen change"** discards only affected worlds.
+
+## 4. Scalability ceilings / perf constraints (tuning.md + architecture.md + online.md)
+
+- **World is fixed-size** — 512×150×512 (see §5).
+- `docs/tuning.md:488-490` — **`ROOM_CAPACITY` = 8** players/world: "the v1 co-op scale the whole design assumes; raising it grows the per-tick pose/self fan-out **quadratically**."
+- `docs/tuning.md:491-493` / `server/index.ts:25` — **`MAX_ROOMS`** default **6**, **~74 MB world each**; joins beyond it refused at the door. (Note discrepancy: `CHANGELOG.md:30` says production was rightsized to **`MAX_ROOMS`=3** on a 512 MB Fly VM — "rooms are ~74 MB each, so the two must scale together or a full house would OOM." Code default remains 6; production overrides via env.)
+- `server/roomRegistry.ts:6` — "MAX_ROOMS bounds memory (~74 MB of world per [room]"; rooms stop after sitting empty.
+- `docs/tuning.md:494-496` — **Tick rate 20 Hz** (`TICK_SECONDS 0.05`): "The whole latency budget hangs off it; not a casual dial."
+- `docs/tuning.md:502-508` — Interpolation delay 125–450 ms trade-off ("Larger delays absorb more jitter at the cost of visible lag").
+- `docs/online.md:202-210` / `architecture.md:132` — **"Single instance, by design."** Rooms live in one process's memory; "Scaling _up_ means a bigger [VM]", no horizontal scale-out/sharding. `fly scale count 1` enforced. Web app has "no web→game admin bridge."
+- `docs/tuning.md:294-301` — `MELEE_REWIND_MAX_MS` (900, online only) and `MELEE_ATTACKS_PER_SECOND` (12) bound the lag-comp rewind window (anti-spam ceiling).
+- Per-world entity caps: `MAX_VEHICLES` 64 (`tuning.md:48-57`), `HOSTILE_CAP` 16, `PASSIVE_CAP` 24, `AQUATIC_CAP` 24 — all bound save size / per-tick work.
+
+## 5. World-size model
+
+**Fixed-size finite grid — NOT chunked or infinite.** `lib/world/blocks.ts:1-3` defines `WORLD_SIZE_X = 512`, `WORLD_SIZE_Y = 150`, `WORLD_SIZE_Z = 512`. `VoxelWorld` (`lib/world/voxelWorld.ts:27-33`) allocates two flat `Uint8Array`s of `sizeX*sizeY*sizeZ` (blocks + light) at construction, indexed `x + z*sizeX + y*sizeX*sizeZ` (`voxelWorld.ts:37`, a save-format invariant). There is no chunk manager, streaming, or dynamic loading — the entire ~39M-voxel world is one contiguous in-memory buffer generated up front from a seed; the save format stores seed + block-diffs against that fixed volume. Worldgen respects hard `sizeX`/`sizeZ` bounds everywhere (e.g. `meshing.ts:146-148` clamps to `sizeX-1`/`sizeZ-1`).
+
+## 6. Content inventory
+
+**Systems that EXIST** (from `docs/reference.md` + `docs/manual.md` headings):
+
+- Game modes: survival / creative / adventure / spectator (`reference.md:11`)
+- Difficulty: peaceful/easy/normal/hard + **Hardcore** permadeath (`reference.md:24,37`; `manual.md:146`)
+- World types (`reference.md:46`)
+- **Crafting** — full recipe tree: building/materials, tools, **vehicles**, weapons, ranged &amp; endgame, armor, food &amp; **smelting** (`reference.md:59-171`)
+- **Brewing &amp; potions** (`reference.md:171`; `manual.md:381`)
+- Status effects (`reference.md:188`)
+- **XP &amp; enchanting** + Anvil + Grindstone (`reference.md:206`; `manual.md:406,436,456`)
+- Mobs, **Trading** (villager trades as recipes), **Villages &amp; raids** (waves of raiders), **Companions** (wolves &amp; cats) (`reference.md:288-371`; `architecture.md:67`)
+- **Dungeons**, **Shipwrecks**, **Buried treasure** + treasure maps (`reference.md:476-522`)
+- **Endgame boss** (Cursed Totem → boss → Dragon Heart → victory) (`reference.md:522`; `architecture.md:65`)
+- Advancements &amp; statistics (`reference.md:537-564`)
+- **Farming** (hoe/farmland/wheat/crops), **Trees/saplings/bone meal**, **Fishing**, **Ocean** (fish/kelp/coral) (`manual.md:570-633`)
+- **Beds &amp; sleeping** — sets respawn point, skips night, co-op "all in bed" gate (`manual.md:635-641`, `697-710`)
+- **Vehicles** — rafts &amp; ships on water (`CHANGELOG.md:88`)
+- **Weather** — rain/snow, cosmetic only (`manual.md:272`)
+- Doors, Storage (chests), procedural sound/music (`manual.md:487-651`)
+
+**Conspicuous absences** (verified by zero hits across `docs/` + `lib/`):
+
+1. **Redstone / automation** — no redstone, pistons, hoppers, dispensers, comparators, or command blocks anywhere.
+2. **Minecarts &amp; rails** — no rail/track system (the only "rail" hit is a decorative box on a vehicle model, `lib/game/render/vehicleVisuals.ts:46`).
+3. **Other dimensions** — no Nether, no End, no portals; the single fixed 512×150×512 overworld is the entire game.
+4. **Meaningful weather** — rain/snow are purely atmospheric (`manual.md:272-276`); no thunderstorms, lightning, or weather-driven mechanics.
+5. **Gamepad / keybinding customization** — engine is wired for a "future gamepad" and "future keybinding screen" (`architecture.md:114`, `CHANGELOG.md:75`) but neither ships.
+
+(Note: beds/sleeping and villages DO exist — not absences, despite being plausible guesses.)</result>
+<usage><subagent_tokens>49421</subagent_tokens><tool_uses>15</tool_uses><duration_ms>164931</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ab42cf1353cc5a199</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/ab42cf1353cc5a199.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore block model and rendering" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything I need. Here is the structured report.
+
+---
+
+# Redstone-lite feasibility report — block representation &amp; rendering
+
+All paths absolute; line references verified against current source.
+
+## 1. BlockId space
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/world/blocks.ts`
+
+- `BlockId` is a `const enum` (blocks.ts:5-87). Highest id in use is `CoralBlue = 57`, so **58 ids used (0–57)**. World stores blocks in a `Uint8Array` (`voxelWorld.ts:32`, `new Uint8Array(sizeX*sizeY*sizeZ)`), value range 0–255, so **~198 ids free; next free id is 58**.
+- **Append-only convention** is explicit and load-bearing: docs say append new ids "at the end of the enum so saved ids don't shift" (`docs/adding-content.md:99`). Save deltas are `[voxelIndex, blockId]` pairs (`blockChanges.ts:13,67`), so renumbering corrupts every save.
+- **State-variant ids — the 16 door blocks 30–45.** They encode **3 axes = facing × open × half**, NOT hinge:
+  - facing (4): north/east/south/west
+  - open (2): closed / open
+  - half (2): lower / upper
+  - 4 × 2 × 2 = 16. There is **no hinge bit** (Minecraft's left/right hinge is not modeled).
+- **Offset math** (`doors.ts:26-48`): `DOOR_FIRST = DoorNorthLower = 30`. Layout is `open*8 + facingIndex*2 + upper`.
+  - `doorState(block)` (doors.ts:35-43): `index = block - 30`; `facing = FACING_ORDER[floor((index % 8) / 2)]`; `open = index &gt;= 8`; `upper = index % 2 === 1`.
+  - `doorBlock(facing, open, upper)` (doors.ts:45-48): `30 + (open?8:0) + facingIndex*2 + (upper?1:0)`.
+  - `isDoorBlock` is a simple range check `30..45` (doors.ts:31-33).
+- Other consecutive-id "state" runs (advance by +1): **WheatStage0–3 = 22–25** (blocks.ts:28-32; grown via `block+1` in randomTicks.ts:26-30). These are the model for a redstone-wire-power-level encoding if you go the "N consecutive ids" route.
+- Two color tables you must extend for any new block: `BLOCK_COLORS` (float RGB, feeds the atlas — blocks.ts:138-206) and `HELD_BLOCK_COLORS` (held-item tint — blocks.ts:99-132).
+
+## 2. Non-cube rendering precedent
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/world/meshing.ts`
+
+- **Doors are the ONLY non-full-cube block today.** The mesher expresses them via `pushBlockCuboid` with per-block X/Z bounds:
+  - Main loop branch: `if (isDoorBlock(block)) { const bounds = doorBounds(block)!; pushBlockCuboid(target, block, x, y, z, bounds.minX, bounds.maxX, bounds.minZ, bounds.maxZ); continue; }` (meshing.ts:242-246).
+  - `pushBlockCuboid` (meshing.ts:217-234) emits all 6 faces of an inset box. **Critically, it insets only X and Z — Y is hardcoded full-height** (`y + cy`, where cy ∈ {0,1}, meshing.ts:225). There is no minY/maxY support today.
+  - `doorBounds` (doors.ts:58-70) returns a 3/16-thick panel (`THICKNESS = 3/16`, doors.ts:29), positioned at the mid-face when closed, rotated onto the hinge edge when open. So a door is a **thin full-height box, not a full cube with transparent texture**.
+  - Door faces don't cull neighbors and aren't culled by neighbors: face-culling special-cases `!isDoorBlock(neighbor)` (meshing.ts:254), and doors never enter the normal per-face loop (they `continue` at 246).
+- **Torches render as FULL CUBES.** There is no special mesh branch for `Torch`; they fall through to the standard 6-face cube path (meshing.ts:247-275). Their "torch look" is entirely painted in the atlas (a stick + flame on a dark ground — atlas.ts:121-131) plus their block-light glow.
+- **Non-full-cube geometry seam:** there is a per-block **cuboid** seam (`pushBlockCuboid`) but it is X/Z-inset only. To render:
+  - **A flat wire overlay on top of a block** — you'd add a branch like the door branch calling a cuboid helper, but you must **extend `pushBlockCuboid` to accept minY/maxY** (currently full-height). No per-face geometry/UV system and no multi-piece models exist; every cuboid face samples one tile via `tileIndexFor(block, face)` (meshing.ts:183-195, atlas.ts:30-33).
+  - **A small lever handle** — same story: needs a Y-bounded cuboid (a second small box) and, if you want the base + handle to differ, either two blocks or a second draw. No composite-geometry infrastructure exists.
+  - Per-face texture variation exists only at the top/side/bottom granularity (see §3), so a "wire crossing on top, plain on sides" texture is expressible, but arbitrary per-face-direction (N vs S) tiles are not.
+
+## 3. Block textures
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/world/atlas.ts`
+
+- Procedural 16×16-per-tile atlas painted on a canvas at startup (`createBlockAtlasTexture`, atlas.ts:35-225). **The only world module that touches the DOM.**
+- **Per-face variation = 3 variants: top / side / bottom** (`ATLAS_FACE_VARIANTS = 3`, atlas.ts:8; `tileIndexFor(block, face) = block*3 + faceId`, atlas.ts:30-33). The mesher chooses `top` for ny&gt;0, `bottom` for ny&lt;0, else `side` (meshing.ts:183-186). Example of top/side/bottom variation: grass side gets a green fringe and grass bottom is painted as dirt (atlas.ts:58,66).
+- **Pattern to add a block's pixels:** the atlas auto-sizes from `BLOCK_COLORS` (`ATLAS_BLOCK_COUNT = max(BLOCK_COLORS keys)+1`, atlas.ts:13; rows derived at atlas.ts:14). So step 1 is a `BLOCK_COLORS` entry (blocks.ts:138) — **without it the block indexes past the atlas and samples garbage UVs** (the fix is documented in the atlas.ts:11-13 comment). Then add an `if (block === BlockId.X) { … }` paint branch inside `drawTile`'s pixel loop (atlas.ts:60-202); every existing block does this (e.g. Torch atlas.ts:121-131, TNT 111-120, doors 193-202). The draw loop runs for every block `Grass..ATLAS_BLOCK_COUNT` (atlas.ts:210-214).
+- **Emissive / glow look:** there is **no emissive material flag on the atlas or block**. Torches/lava "glow" through two independent mechanisms:
+  1. They emit **block light** (see §4), which the world shader adds back as an albedo-tinted glow (`gl_FragColor.rgb … + mcAlbedo * vLight.y * TORCH_TINT`, `GameRenderer.ts:57`; `TORCH_TINT = vec3(1.35,1.06,0.62)`, GameRenderer.ts:36). This is what actually makes them read as light sources.
+  2. The atlas simply paints bright warm pixels (lava crust/cracks atlas.ts:104-110, torch flame atlas.ts:121-131, furnace mouth atlas.ts:88), which look lit because the block-light term brightens their own face.
+  - So **a new "redstone lamp" that glows uses the exact same recipe: add `emission()` in lighting.ts + paint bright pixels.** No shader change needed.
+
+## 4. Lighting
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/world/lighting.ts`
+
+- Two 4-bit channels packed per voxel: `light[idx] = (skyLight&lt;&lt;4) | blockLight` (lighting.ts:6-8; accessors voxelWorld.ts:59-69). It is a **derived cache, never serialized** (lighting.ts:16-18, `docs/save-format.md:38`).
+- **Emitters are declared in `emission(block)`** (lighting.ts:73-82): `Torch → 14`, `Lava → MAX_LIGHT (15)`, default `0`. A new lamp = one `case` here.
+- **Opacity** (how much light a block absorbs) is `opacity(block)` (lighting.ts:49-61): Air/Glass 0, Leaves/Water/Kelp 1, everything else `OPAQUE (15)`. A new solid lamp defaults to OPAQUE (blocks light) unless you add a case.
+- **`applyEdit(world, light, x, y, z)`** (lighting.ts:128-162) patches both channels after a single edit using remove-then-refill BFS floods. For block light it: zeroes the cell, removes what it had lit, then **re-reads the new block's own `emission(block)` and reseeds it** (lighting.ts:135-143). This is the whole runtime-emission mechanism.
+- **Where applyEdit runs:** it is called from exactly one chokepoint — `blockChanges.set` (`blockChanges.ts:47`, `applyEdit(world, world.light, x, y, z)`), which every gameplay edit (mining, doors, farming, explosions, crop growth) funnels through. The load path (`applySavedChanges`) bypasses it and relies on the full bake `computeFullLight` (lighting.ts:115-120, blockChanges.ts:54-65).
+- **Toggling emission at runtime (torch off/on, lamp powered/unpowered):** because `applyEdit` re-derives emission from the block id at the edited cell, **the ONLY thing required is to change the block id at that voxel via `state.blockChanges.set(x,y,z,newId)`** — e.g. `TorchOff → TorchOn` as two ids with different `emission()` values. That single write relights the neighborhood (remove old flood + refill from new emission) and, with `state.worldMeshDirty = true`, remeshes. There is no in-place "mutate emission of an existing voxel without changing its id" path — the model is one-id-per-emission-level, exactly like WheatStage/door variants. So a lamp/lit-torch pair follows the door pattern: two BlockIds, swap between them.
+
+## 5. Interaction routing
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/interact.ts`
+
+- Right-click and KeyE both dispatch the `placeBlock` command; the engine runs a **fixed precedence chain** in `GameEngine.dispatch` (`GameEngine.ts:910-936`), in order: throw spear → tame mob → feed mob → toggle-sit pet → trade villager → board vehicle → **`tryInteractBlock`** → summon boss → start raid → fish → place vehicle → `tryUseHeldItem` → `placeSelectedBlock`. First handler to return `true` consumes the click.
+- **`tryInteractBlock`** (interact.ts:67-87): raycasts the aimed block (`voxelRaycast`, `MINE_REACH`), looks it up in `INTERACTIVE_BLOCKS` (`Partial&lt;Record&lt;BlockId, InteractiveKind&gt;&gt;`, interact.ts:33-57), and dispatches to a `kind`-specific handler. Chest vs door vs bed/furnace/brewing/etc. is a `kind` switch at interact.ts:78-86. This is the documented extension point (`docs/adding-content.md:81-83`).
+- **Door open/close end-to-end** (`interactDoor`, interact.ts:89-101):
+  1. Read `doorState` of the aimed cell; find the lower half (`current.upper ? y-1 : y`).
+  2. Validate the lower+upper pair matches (same facing, same open state, correct halves) (interact.ts:95).
+  3. `state.blockChanges.set` **both cells** to the flipped-open door id via `doorBlock(facing, !open, half)` (interact.ts:96-97) — a pure BlockId swap.
+  4. `state.worldMeshDirty = true` (interact.ts:98) → renderer remeshes (GameRenderer.ts:609-631). Lighting is patched automatically by the `blockChanges.set` chokepoint.
+  5. Emit `doorToggled` (interact.ts:99).
+- **Where a "toggle lever" slots in:** register `BlockId.Lever → "lever"` in `INTERACTIVE_BLOCKS` (interact.ts:33), add `"lever"` to the `InteractiveKind` union (interact.ts:31), add a branch in the `tryInteractBlock` switch (interact.ts:78-86), and write a `interactLever` handler that swaps `LeverOff↔LeverOn` block ids (exactly like `interactDoor`) plus kicks off whatever power-propagation you design. Buttons/pressure plates would also live here (button) or in a per-frame system (pressure plate needs entity-proximity, not a click).
+- Note: torch→TNT ignition is NOT in `INTERACTIVE_BLOCKS`; it's in `tryUseHeldItem` because it keys on the *held item* being a torch aimed at TNT (`primeTnt`, interact.ts:311-315). Redstone-item-based interactions (e.g. flint&amp;steel-style) would follow that held-item pattern instead.
+
+## 6. Block metadata precedent (per-voxel auxiliary state)
+
+**File:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/state.ts` (GameState, lines 277-382)
+
+Every per-voxel/auxiliary structure, keyed by `world.index(x,y,z)` unless noted:
+
+| Structure | Type | Line | Serialized? | Survives block break |
+|---|---|---|---|---|
+| `containers` | `Map&lt;voxelIndex, InventorySlot[]&gt;` (chest contents) | state.ts:326-327 | **Yes** → `blockEntities` (only non-empty); restored only if the index still holds a Chest (GameEngine.ts:1185, 397-402; `docs/save-format.md:26`) | On break, spilled into inventory then `containers.delete(idx)` (mining.ts:60-78, 166-173) |
+| `primedTnt` | `Map&lt;voxelIndex, secondsLeft&gt;` (lit fuses) | state.ts:328-329 | **No — session-only** (`docs/save-format.md:66`) | Deleted if the cell is no longer TNT (`tickPrimedTnt`, explosion.ts:160-162) |
+| `lootedWorldgenChests` | `Set&lt;voxelIndex&gt;` (opened/broken worldgen chests) | state.ts:342-343 | **Yes** → `lootedChests` (GameEngine.ts:1186, 389; `docs/save-format.md:28`) | The *index* persists in the set independent of the block; gates one-time lazy loot fill |
+| `dungeonChestIndices` | `Set&lt;voxelIndex&gt;` | state.ts:332-333 | **No — re-derived from seed each load** (`collectDungeonSites`, GameEngine.ts:356) | Transient |
+| `dungeonSpawnerIndices` | `Set&lt;voxelIndex&gt;` | state.ts:334-335 | No — re-derived (GameEngine.ts:357) | Transient |
+| `shipwreckChestIndices` | `Set&lt;voxelIndex&gt;` | state.ts:336-337 | No — re-derived (GameEngine.ts:358) | Transient |
+| `buriedTreasureChestIndices` | `Set&lt;voxelIndex&gt;` | state.ts:338-339 | No — re-derived (GameEngine.ts:359) | Transient |
+| `treasureSites` | `Array&lt;{x,y,z,index}&gt;` | state.ts:340-341 | No — re-derived (GameEngine.ts:360) | Transient |
+| `villageSites` | `Array&lt;{x,z}&gt;` (not voxel-indexed) | state.ts:344-345 | No — re-derived (GameEngine.ts:362) | Transient |
+
+- **The pattern for a redstone-lite feature:** if a block needs attached data that can't be encoded in its BlockId, add a `Map&lt;voxelIndex, …&gt;` to GameState following `containers` (persisted) or `primedTnt` (transient). Redstone *power levels* would more naturally be encoded as consecutive BlockIds (WheatStage/door precedent) so they ride the block-diff save for free with zero new state (this is the documented cheap path — `docs/adding-content.md:97,99`). A button's "seconds until pop-back" is a perfect `primedTnt`-style transient map.
+- **Container serialization helpers:** `serializeContainers`/`readContainers` and `serializeLootedChests`/`readLootedChests` live in `lib/game/save.ts` (referenced GameEngine.ts:1185-1186, 389, 398; `SavedContainer = { index, slots }` at types.ts:141). Adding a persisted per-voxel map is an additive save-version bump (v4 added `blockEntities`; types.ts:176-179).
+
+## 7. Random ticks + timed block behavior
+
+**Random ticks:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/randomTicks.ts`
+
+- `tickRandomBlocks` (randomTicks.ts:94-118): every `RANDOM_TICK_INTERVAL_SECONDS` it samples `RANDOM_TICK_SAMPLES` columns within `RANDOM_TICK_RADIUS` of each player and runs `RANDOM_TICK_HANDLERS[topBlock]` on the column's **top block only** (`highestSolidY`, randomTicks.ts:113-115). Split across players for constant cost (randomTicks.ts:104-106).
+- Handler registry `RANDOM_TICK_HANDLERS: Partial&lt;Record&lt;BlockId, handler&gt;&gt;` (randomTicks.ts:84-92): WheatStage0-2 → `growCrop` (+1 id, randomTicks.ts:26-31), Sapling → `growSapling` (checks soil below, randomTicks.ts:34-39), Dirt → `spreadGrass` (reads 4 neighbor column tops, randomTicks.ts:48-59), Kelp → `growKelp` (randomTicks.ts:67-82). Every handler edits via `state.blockChanges.set` + `worldMeshDirty` and persists for free through the block diff.
+- **Limitation for redstone:** random ticks only visit the **top block of a column** near a player, on a slow probabilistic interval — unsuitable for deterministic redstone timing. Use this only for slow ambient behavior.
+
+**Fixed-timer block behavior:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/explosion.ts`
+
+- **TNT fuse is the reference for a fixed countdown.** `primeTnt(state,x,y,z,emit)` seeds `state.primedTnt.set(idx, TNT_FUSE_SECONDS)` (explosion.ts:137-142). `tickPrimedTnt(state, dt, deps)` (explosion.ts:149-178), called each frame from `GameEngine.step`, decrements every entry by `dt`, deletes entries whose cell is no longer TNT (explosion.ts:160-162), and fires the effect at ≤0 (explosion.ts:164-176). Detonations are collected then applied after the loop to avoid mutating the map mid-iteration (explosion.ts:151-153, 173).
+- **The pattern a button's 1-second pop-back or a repeater delay follows exactly this:**
+  1. On interaction (`interactLever`/`interactButton`), swap the block to its "on" id and `state.&lt;yourMap&gt;.set(idx, DELAY_SECONDS)`.
+  2. Add a `tick&lt;Feature&gt;(state, dt, …)` system, register it in `GameEngine.step`, that counts down each entry, verifies the block is still the "on" id, and on expiry swaps back to the "off" id via `blockChanges.set` (+ `worldMeshDirty`), deleting the map entry.
+  3. Make the timer map transient like `primedTnt` (session-only) unless you need it to survive reload — a mid-timer save then reloads inert, which is exactly how mid-fuse TNT behaves (`docs/save-format.md:66`).
+
+---
+
+## Cross-cutting: the full checklist to add one new block
+
+`docs/adding-content.md:5-13` enumerates it (verified against code): (1) `BlockId` enum + `BLOCK_COLORS` + `HELD_BLOCK_COLORS` (blocks.ts) — atlas auto-sizes; (2) `BREAK_HARDNESS` in `lib/game/items.ts`; (3) `ITEM_DEFS` + `BLOCK_TO_SLOT` to make it placeable/mineable; (4) atlas paint branch (atlas.ts); (5) **non-cube/non-solid/transparent needs engine work in `meshing.ts` + `queries.ts`/`voxelWorld.ts`** (doors are the reference for custom bounds, glass for a separate render layer); (6) exhaustive `GROUP_BY_BLOCK` sound entry in `lib/game/audio/materials.ts` (typecheck fails without it); (7) lighting class (`opacity`/`emission` in lighting.ts). Craft-only blocks need **no `WORLDGEN_VERSION` bump**; worldgen-placed blocks do.
+
+**Key structural takeaways for redstone-lite:**
+- Power levels/on-off states → consecutive/paired BlockIds (door &amp; wheat precedent), which relight and remesh for free through the single `blockChanges.set` chokepoint and persist via the block diff with zero new save fields.
+- Non-cube shapes (wire flat overlay, lever handle) → the only precedent is doors via `pushBlockCuboid`, which is **X/Z-inset only; you must extend it to accept Y bounds** for anything flatter/shorter than full height.
+- Glow (redstone lamp/torch) → `emission()` case in lighting.ts + bright atlas pixels; the shader glow term already exists, no renderer change.
+- Timed behavior (button pop-back, repeater) → a per-frame `tick*` system over a transient `Map&lt;voxelIndex, seconds&gt;`, modeled on `state.primedTnt` / `tickPrimedTnt`.</result>
+<usage><subagent_tokens>110854</subagent_tokens><tool_uses>26</tool_uses><duration_ms>235765</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a91091856df730fa8</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/a91091856df730fa8.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore sim seams and multiplayer gating" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything needed. Here is the structured report.
+
+---
+
+# Redstone-lite feasibility report — monecraft
+
+Facts with `file:line` references. All paths absolute.
+
+## 1. Engine step order &amp; where a "redstone" system slots
+
+**Authoritative source:** `lib/game/engine/GameEngine.ts` `step(dt, input?)` at **`GameEngine.ts:530`**. The doc `docs/architecture.md:44-59` matches it. Verified per-frame order (non-replica, alive, not paused/sleeping):
+
+Pre-loop gates: pause (`:532`), replica early-return (`:549`), local-death freeze (`:577`), sleep freeze (`:593`).
+
+Per-player loop `stepPlayer` (`:600-610`, body at `:630`):
+1. Stuck/unstuck (`:646`)
+2. Player/vehicle motion (`:664-676`)
+3. Hunger/regen/starvation/status/water/lava/oxygen (`:681-703`, all in `systems/playerStats.ts`)
+4. **Mining + placement** `tickMining` (`:706`) — block edits happen here
+5. Fishing (`:707`)
+
+Then world-level systems (`:612-624`), in order:
+- `tickDayNight` (`:612`), `tickWeather` (`:613`)
+- `tickRandomBlocks` (`:614`) — `systems/randomTicks.ts`
+- spawn directors (`:615-617`)
+- `tickMobs` (`:618`) — mob AI + creeper explosions
+- **`tickPrimedTnt`** (`:619`) — TNT fuse countdown + detonation
+- `tickProjectiles` (`:620`), `tickThrownSpears` (`:621`), `tickBreeding` (`:622`), `tickRaid` (`:623`)
+- `tickDebugInfo` (`:624`), then `refreshSnapshot()` (`:626`)
+
+**Systems are plain functions over `GameState`**, invoked positionally in `step`; each receives `(state, dt, …deps)`. There is **no registry/scheduler** — the call order in `step` *is* the schedule (`docs/architecture.md:42`, `adding-content.md:148-150`). Deps like `this.rng`, `this.emit`, `this.surfaceYAt`, `this.mobTickDeps` (`GameEngine.ts:1511`) are passed explicitly.
+
+**Where redstone slots:** A redstone system reads block state and writes block edits, then those edits must be observed by TNT/doors/lamps the same tick. Best placement is **after `tickMining`/placement + interact (which produce lever/button/plate/wire changes) and immediately before `tickPrimedTnt` (`:619`)**, i.e. a new `tickRedstone(state, dt, {rng, emit})` call inserted at ~`:618`. Putting it before `tickPrimedTnt` lets "wire powered → `primeTnt`" ignite on the same tick it counts down. It should run after the per-player loop (so a lever toggled by `dispatch` this frame is visible) — the per-player loop finishes at `:610` before the world systems.
+
+Note: `dispatch` (lever right-click) runs **outside** `step` (event-driven, `GameEngine.ts:720`), mutating state before the next `step`, so redstone reads a consistent snapshot.
+
+## 2. The block-edit chokepoint (`lib/game/engine/blockChanges.ts`)
+
+Full file read. `createBlockChangeTracker(world)` returns `set/applySavedChanges/changes/drainEdits/drainEditsDetailed` (`blockChanges.ts:28`).
+
+`set(x,y,z,block)` (`:37-52`) is **the single chokepoint for every gameplay edit**. In order it:
+1. bounds-checks (`:38`)
+2. records worldgen baseline once per idx (`:40`)
+3. `world.set` (`:42`)
+4. **`applyEdit(world, world.light, x, y, z)`** — incremental relight (`:47`, from `@/lib/world`)
+5. updates the save delta set (drops the cell if restored to baseline) (`:48-50`)
+6. appends to the per-tick **`editJournal`** with `{block, prev}` (`:51`)
+
+**Remeshing is NOT in `set`.** Callers set `state.worldMeshDirty = true` themselves after a batch (e.g. `mining.ts:204,265`, `interact.ts:98`, `explosion.ts:101,175`, `randomTicks.ts:30`). The renderer reads/clears it (`GameRenderer.ts:612-614`; minimap `minimap.ts:79`). So a redstone edit must set `worldMeshDirty` once per tick if any block changed.
+
+**Observer vs poll:** There is **no observer/callback** on `set()` — nothing is notified "block changed at idx X." Systems **poll**. The `editJournal` is a *drain* channel, not an event bus: `drainEdits()` (`:71`) / `drainEditsDetailed()` (`:78`) are consumed by the **server room each tick** (`room.ts:439`) and by the replica's prediction ledger (`NetworkSession.ts:509,758`). A redstone system **cannot** use the journal as its change-feed (the server already drains it and it's last-write-wins). Redstone must **poll block state itself** — the precedent is `randomTicks.ts`, which samples columns and dispatches per-block handlers from a `RANDOM_TICK_HANDLERS` map (`adding-content.md:94-99`). A redstone graph would similarly scan/track its own power sources each tick.
+
+`mining.ts` → `set`: break path `mining.ts:178-206` (`blockBroken` emit at `:206`), placement `placeSelectedBlock` `mining.ts:210-267` (doors write two cells `:245-246`; `blockPlaced` emit `:266`). `interact.ts` right-click edits (doors, hoe, seeds, bone-meal) all funnel through `state.blockChanges.set`.
+
+## 3. TNT ignition path
+
+- **Torch → TNT ignite (today):** `tryUseHeldItem` in `interact.ts:291`, branch at `:311-315`: held item id `"torch"` aimed at `BlockId.Tnt` (id 49) calls `primeTnt(state, x, y, z, emit)`. This branch sits in the `placeBlock` precedence (`GameEngine.ts:934`, chain `:910-935`).
+- **`primeTnt`** (`explosion.ts:137-142`): sets `state.primedTnt.set(idx, TNT_FUSE_SECONDS)` (no-op if already lit) and emits `{type:"tntPrimed", x,y,z}`.
+- **State structure:** `state.primedTnt: Map&lt;number, number&gt;` — voxelIndex → seconds left on fuse; **session-only, never serialized** (`state.ts:328-329`; save-format confirms `save-format.md:66`). (Creeper fuses are separate: `MobState.fuseTimer`, `state.ts:144-145`.)
+- **Explosion entry point:** `tickPrimedTnt(state, dt, deps)` (`explosion.ts:149`) counts down, drops mined/overwritten TNT (`:160-161`), and on expiry clears the cell + calls `explode(...)` (`:173-177`). `explode` (`explosion.ts:58`) destroys blocks via `blockChanges.set` (`:92-95`), chain-primes neighbor TNT (`:79-87`), damages players/mobs, emits `{type:"explosion"}` (`:133`). Ticked at `GameEngine.ts:619`.
+- **Where "powered → ignite" hooks:** call the exported **`primeTnt(state, x, y, z, emit)`** from the redstone system when a wire/plate/torch adjacent to a `BlockId.Tnt` cell becomes powered. It's already the shared ignition primitive (`adding-content.md:60-63`). No new explosion plumbing needed.
+
+## 4. Pressure-plate needs ("standing on block X" per-tick precedent)
+
+The precedent is in **`lib/game/engine/systems/playerStats.ts`**, which samples `world.get()` at the player's foot/body/head cell every tick:
+- `tickWaterExposure` (`playerStats.ts:122`): `world.get(floor(x), floor(y + PLAYER_HEIGHT*0.5), floor(z))` (`:125-128`)
+- `tickLavaExposure` (`:150`): checks **underfoot** `floor(py-0.1)`, feet `floor(py)`, and body `floor(py+PLAYER_HEIGHT*0.5)` (`:162-165`) — the exact "standing on block below feet" pattern a pressure plate wants
+- `tickOxygen` (`:192`): head cell `floor(y + EYE_HEIGHT)` (`:207-211`)
+
+These iterate the single primary player; a plate system would loop `state.players.values()` (multiplayer-aware, as `explode` does at `explosion.ts:108`) and, for mobs, `state.mobs`. **There is no cactus-contact or farmland-trample mechanic** — cactus appears only as a footstep material (`audio/materials.ts:30`); no `Cactus` damage code exists in `systems/`. So the water/lava/oxygen exposure checks are the only "standing on block" precedent, and they poll per-tick from within the per-player step (`stepPlayer`, `GameEngine.ts:701-703`). A pressure-plate check would naturally live as a new world-system call in `step` (near `:614`) or inside `stepPlayer`.
+
+## 5. Multiplayer / replica gating
+
+**Replica (`replica: true`, `GameEngineOptions` `GameEngine.ts:201`, field `:228`):** `step` takes the early-return branch at **`GameEngine.ts:549-571`**. A replica runs **only**: local player motion prediction (`:554`), predictive mining for the crack overlay (`:559`), `recordTick` display stats (`:563`), `tickDayNight` (`:566`), `tickWeather` (`:567`), debug (`:568`). **Everything else is skipped** — mobs, spawns, random ticks, TNT, projectiles, breeding, raid, vitals — because it's replicated state written by `NetworkSession`, not simulated (comment `:543-548`).
+
+**Block-edit replication (the "block journal"):** Server tick loop `room.ts:426` calls `engine.step(dt)` (`:433`), then `consumeEvents()` (`:438`) and **`state.blockChanges.drainEdits()`** (`:439`). The drained `[voxelIndex, blockId]` array rides the `TickMessage.blocks` field (`room.ts:465`; protocol `protocol.ts:172-176`, "the replica's world mutation channel"). Events ride `TickMessage.ev` (`:466`, `protocol.ts:177-178` "block edits ride these"). The replica applies `blocks` via `NetworkSession.applyBlocks` (`NetworkSession.ts:495-510`), which calls `state.blockChanges.set(x,y,z,block)` (relights locally, `:507`) and sets `worldMeshDirty` (`:510`); events route to audio at `NetworkSession.ts:560`.
+
+**Server-side sim change reaching clients (e.g. a door opening from the tick loop, not a command):** Any edit through `blockChanges.set` on the server is captured by `drainEdits()` and broadcast in `blocks` — **automatically, no per-mechanic wire code**. This is exactly how server-side TNT/explosion craters and door toggles already replicate today: `explode`/`tickPrimedTnt` write via `blockChanges.set` (`explosion.ts:92-95,174`), get drained (`room.ts:439`), and appear on clients. `dirtySinceStore` is flagged for persistence on `blockPlaced`/`blockBroken`/`explosion` events (`room.ts:440`).
+
+**Verdict on the redstone question:** Yes — **a redstone tick system running server-only (skipped on replicas via the `:549` branch) with all edits flowing through `blockChanges.set` replicates for free** via the `blocks` journal, identical to how TNT craters and doors already work online. Add a one-shot event (e.g. `leverToggled`/`lampLit`) to carry the sound cue on `ev`. Because redstone lives in the skipped part of `step`, replicas won't double-simulate; they just receive the resulting block edits + events.
+
+## 6. Events + audio
+
+**Pattern:** systems call the injected `emit(event)` → buffered in `GameEngine.emit` (`GameEngine.ts:1270-1284`, single chokepoint that also runs advancement observation) → drained by `consumeEvents()` (`:1263`). The `GameEvent` union is in `state.ts:524-586`. The shell/audio consume events: `audioDirector.ts` `handleEvent(event)` (`audioDirector.ts:76`) switches on `event.type`.
+
+Relevant existing mappings (`audioDirector.ts`):
+- `explosion` → `EXPLOSION_SOUND` (`:280-281`)
+- `tntPrimed` → `TNT_FUSE_SOUND` (`:283-284`)
+- `doorToggled` → `PLACE_SOUNDS.wood`, gain varies by `event.open` (`:326-327`) — door open/close event emitted at `interact.ts:99` (`{type:"doorToggled", open}`)
+
+**Where lever-click / power-on sounds ride:** Add new variants to `GameEvent` (`state.ts:524`), emit from the redstone system via injected `emit`, and add cases in `audioDirector.ts` `handleEvent`. This is the documented "A new sound" seam (`adding-content.md:73-75`). Continuous hums (e.g. a lit lamp) would instead derive from state in the director's `sync` (same doc). Events carry `x,y,z` for positional audio/particles (see `tntPrimed`, `explosion`).
+
+## 7. `docs/adding-content.md` checklist
+
+**A new block** (`adding-content.md:5-13`):
+1. `BlockId` enum + `BLOCK_COLORS` + `HELD_BLOCK_COLORS` in `lib/world/blocks.ts` (atlas auto-generates the tile) (`:7`)
+2. Atlas paint branch in `lib/world/atlas.ts` if it needs detail (`:8-11`)
+3. `BREAK_HARDNESS`, `BLOCK_TO_SLOT`, `rollBlockDrops`, an `ITEM_DEFS`/recipe if craftable
+4. **Exhaustive** `GROUP_BY_BLOCK` sound entry in `lib/game/audio/materials.ts` — typecheck fails without it (`:12`, `:6`)
+
+**A new mechanic** (`adding-content.md:148-150`): add a system module under `lib/game/engine/systems/` (a function over `GameState`), give it a slot in the `GameEngine.step` sequence, put tunables in `lib/game/config.ts`, add a `Command` variant if UI-triggered, and write a headless test next to it.
+
+Other directly relevant seams in the same doc:
+- **Interactive block (right-click)** `:79-84`: register in `INTERACTIVE_BLOCKS` + branch in `tryInteractBlock` (`interact.ts`). Lever/button toggling would live here. Notes the craft-only-BlockId = no `WORLDGEN_VERSION` bump rule (`:84`).
+- **Explosion** `:60-63`: reuse `explode(...)` — do not build a new subsystem.
+- **Random-tick behavior** `:94-99`: `RANDOM_TICK_HANDLERS` map — the polling precedent for a redstone-lite spread if you don't want a full graph.
+- **New sound** `:73-75`.
+- **Transient session entity** `:102-105`.
+
+## 8. Save / worldgen impact rules
+
+Confirmed against `docs/save-format.md` (current `SaveData` version **17**, `WORLDGEN_VERSION` **11**, `save-format.md:5,85`):
+
+- **Craft-only new BlockIds appended → NO `WORLDGEN_VERSION` bump.** Explicit precedents: BrewingStand id 51 (`:62`), EnchantingTable id 52 (`:61`), Anvil/Grindstone (`:57`), Sapling id 50 (`:64`), TNT itself (`:66`). Rule stated at `adding-content.md:84` and `:99`: appending at the end of the enum keeps saved ids from shifting; craft-only blocks touch no generation. Redstone blocks (lever/button/plate/wire/torch/lamp/TNT-already-exists) appended after id 57 = **no worldgen bump**, no save-schema bump, as long as they're crafted not generated.
+
+- **Block-state-as-id-variant rides the `changes` diff, no schema bump — the doors precedent.** Doors are 16 contiguous BlockIds encoding facing/open/upper (`blocks.ts:38-55`, `doors.ts:35-48`); a door toggle is just two `blockChanges.set` writes (`interact.ts:96-97`) that persist in the ordinary block diff. So a wire's power level or a lamp's lit/unlit encoded as separate BlockIds persists **for free** in `changes` with no new field. (General rule: "any block write … rides the `changes` diff" — `save-format.md:64`, `adding-content.md:94-99`.)
+
+- **Session-only sim state is never serialized.** `state.primedTnt` and creeper `fuseTimer` are session-only (`save-format.md:66`, `state.ts:328`). A redstone system whose power state is **recomputed each tick from block layout** needs no persistence at all — a mid-tick "powered" flag is transient like a lit fuse. A save written mid-signal reloads with blocks in their last-written id state and re-derives power on first tick.
+
+- **When redstone WOULD force a save version bump:** only if it introduces **per-voxel auxiliary state that must persist and cannot be encoded as a block-id variant** — the container precedent, **v4** `blockEntities` (`save-format.md:71`, "first per-block metadata"), keyed by `world.index`. Examples that would need it: a repeater's configurable delay, a comparator/counter value, or a wire's exact signal strength if you refuse to burn 15 BlockIds for it — anything stored in a new `Map&lt;voxelIndex, …&gt;` like `state.containers`. That requires a new optional `SaveData` field + `version` bump + migration (`save-format.md:105`, `:103`). If instead every stateful redstone cell is a distinct appended BlockId (the door pattern), **no bump** is needed.
+
+- **Worldgen bump only if redstone blocks are placed by generation** (they won't be for craft-only), per `adding-content.md:108-111` / `save-format.md:103`.
+
+---
+
+### Bottom line for the design
+A `tickRedstone(state, dt, deps)` system inserted at `GameEngine.ts:~618` (after the per-player loop and placement, before `tickPrimedTnt`), polling block state (no observer exists on `blockChanges.set`), writing all effects through `state.blockChanges.set` + `worldMeshDirty`, calling the existing `primeTnt` for TNT and door-id writes for doors, and emitting new `GameEvent`s for lever/lamp sounds, will: (a) run server-only because replicas skip that half of `step` (`:549`), (b) replicate every edit for free via `drainEdits`→`TickMessage.blocks` (`room.ts:439`, `:465`), and (c) require **no save/worldgen version bump** as long as redstone blocks are craft-only appended BlockIds and any block-state is encoded as id variants (doors precedent) rather than a new per-voxel `Map` (which would be the container-style v-bump).</result>
+<usage><subagent_tokens>95971</subagent_tokens><tool_uses>30</tool_uses><duration_ms>290335</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ad5ed0736d8815a6d</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/ad5ed0736d8815a6d.output</output-file>
+<status>completed</status>
+<summary>Agent "Design redstone-lite implementation plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>No Write tool is available in this read-only context, so I'll deliver the full plan as my response.
+
+---
+
+# Implementation Plan: `feat/redstone-lite`
+
+Player-buildable power circuits: lever, button (timed pop-back), pressure plate, redstone torch (inverter), redstone wire, and consumers (doors, TNT, a new glowing lamp). **Zero save bump (stays v17), zero worldgen bump (stays 11), zero binary assets, multiplayer rides the existing server-authoritative block-delta pipeline for free.** All verified facts from the brief re-confirmed against current source.
+
+## 1. Design decisions (settled, with rationale)
+
+### D1. Signal model: binary, BFS budget 15, slope-climbing wire
+Binary on/off with a wire-step budget of `REDSTONE_WIRE_RANGE = 15` counted only across wire→wire hops. Gives the "wire runs out" feel with exactly **2 wire ids** instead of 16 strength variants (state-as-BlockId stays cheap). Wire connects to candidate wire neighbors at the 4 horizontal offsets **at the same Y and at ±1 Y** (8 probes/cell) — Minecraft-like slope climbing, unconditional (no "cut by block above" check; that refinement isn't worth the complexity in lite). Wire additionally *powers* all 6 face neighbors of its cell (that's how it powers a torch's support block, a door cell, a lamp, TNT).
+
+### D2. Recompute: tracked-set + fixed-cadence full recompute + per-pass self-heal (option a)
+- `state.redstone.cells: Set&lt;voxelIndex&gt;` — **session-only, never serialized**.
+- **Seeded at boot** by scanning `state.blockChanges.changes()` for redstone-family ids. This is complete because every redstone block is craft-only ⇒ player-placed ⇒ present in the save diff (BrewingStand/Anvil precedent).
+- **Maintained at exactly one seam**: successful placement in `placeSelectedBlock` calls `trackRedstoneCell`. No other producer needed.
+- **Self-heal covers everything else**: each recompute pass iterates `cells` and drops any index whose current block is no longer a redstone id (mining, explosions, server-applied edits, any overwrite — none of them need to know redstone exists). It also pops any **overlay component whose support block vanished** (→ Air, no drop; the explosion that removed the support almost certainly vaporized the component too at blastResistance 0.4) and any **ButtonOn with no timer entry** (the post-reload heal — a save mid-press reloads pressed, first pass pops it back).
+- **Fixed cadence**: an accumulator inside the redstone state runs the recompute every `REDSTONE_TICK_SECONDS = 0.1` (engine dt ≤ `MAX_STEP_SECONDS` 0.05, so at most one recompute per step). This makes the torch clock deterministic (~0.2 s period for a 1-torch loop) instead of rAF-rate-dependent, and bounds cost to 10 Hz over player-scale circuits. No dirty flag: a full pass over a few-hundred-cell set at 10 Hz is trivial, and a stable circuit **writes nothing** (writes only on state change), so no remesh/relight/net traffic when idle.
+
+### D3. Shapes, solidity, support
+Six "overlay" (non-cube, non-colliding) ids — wire, lever×2, button×2, plate×2, torch×2 — plus the lamp as a plain full cube. Handling per function:
+
+| Seam | Change |
+|---|---|
+| `lib/world/meshing.ts` `pushBlockCuboid` (:217) | add `minY`/`maxY` params (door call site passes `0, 1`) |
+| `lib/world/meshing.ts` block loop (:242) | `isRedstoneOverlay(block)` branch → `pushBlockCuboid` with `redstoneBounds(block)`; **no** neighbor culling (door precedent) |
+| `lib/world/meshing.ts` cull condition (:254) | add `&amp;&amp; !isRedstoneOverlay(neighbor)` so faces behind a wire/lever aren't culled |
+| `lib/world/queries.ts` `collidesAt` (:132) | `if (isRedstoneOverlay(block)) continue;` before the door branch — components never collide; players/mobs stand on the block below, feet occupying the plate cell (exactly what plate detection needs) |
+| `lib/world/voxelWorld.ts` `highestSolidY` (:71) | exempt `isRedstoneOverlay` alongside `isDoorBlock` (spawn/mob ground finding) |
+| `lib/world/voxelWorld.ts` `isSolid` | **unchanged** (stays true) — keeps `voxelRaycast` able to target components for mining/interact, same trade the doors made |
+| `lib/world/lighting.ts` `opacity` (:49) | overlays → `0` (a wire must not black out its cell); lamp stays default-opaque (an opaque emitter, the Lava precedent) |
+
+Bounds (in `redstoneBounds`, doors.ts-style): wire `y 0–0.07`, full x/z with 1/16 inset; plate `y 0–0.07` off / `0–0.04` on, 1/16 inset; button `0.3–0.7` x/z, `y 0–0.15` off / `0–0.08` on (pressed reads visually — on/off are different ids so different bounds are free); lever `0.35–0.65` x/z, `y 0–0.45` (handle direction painted per on/off tile); redstone torch `0.4–0.6` x/z, `y 0–0.65`.
+
+**Placement rule** (all overlays): target cell Air/Water AND `world.isSolid(tx, ty-1, tz)` AND below is not itself an overlay/door. Refund-and-return on failure (door-branch precedent in `placeSelectedBlock`). **Support-break cascade**: in `tickMining`, after committing a break, if the cell above held an overlay, break it too and route its drop through `addBlockDrop` to the mining player (kelp-cascade precedent, mining.ts:182-193 — there is no ground-item entity in this game, so pop-off drops must be player-attributed or nothing).
+
+### D4. Torch inverter semantics — no self-feedback by construction
+A redstone torch sits on its support block (below). Rule: **a torch powers its 6 neighbors *except* its support cell**; **a torch's next state is OFF iff its support cell is in this pass's powered set**. Because a torch never powers its own support, no exclusion hack is needed — self-oscillation within one pass is impossible. The recompute is a synchronous single-pass update (all next-states computed from the current grid, then applied), i.e. a clocked cellular update at 10 Hz: a NOT gate has one 0.1 s delay; a torch clock oscillates at 5 Hz. Sane, deterministic, tunable via `REDSTONE_TICK_SECONDS`. (Real-MC "torch burnout" hysteresis: explicitly deferred.)
+
+### D5. Doors: edge-triggered forcing
+`state.redstone.prevDoorPowered: Set&lt;lowerHalfIndex&gt;` (session-only). Rising edge (newly powered) → force both halves open via `doorBlock(facing, true, ...)` + `doorToggled` emit; falling edge → force closed. Between edges, manual `interactDoor` works untouched — matching Minecraft (you *can* hand-close a powered door; the next power *edge* reclaims it) and never fighting the player at 10 Hz. Pair consistency reuses the doors.ts pair logic exactly as `interactDoor` does (interact.ts:89-101). A door is "powered" when either of its two cells is in the powered set (wire beside the door or a source/wire on the block next to it reaches it via the 6-neighbor powering rule).
+
+### D6. Pressure plates: players AND mobs
+Both — traps are the fun. Occupancy per pass: for each player, cell `(floor(px), floor(py + 0.05), floor(pz))` (feet cell — matches the collidesAt skip: feet rest in the plate cell); for each mob, `(floor(mx), floor(my − halfHeight + 0.05), floor(mz))` (**MobState.position is body center** — state.ts:125). Cost: |players| + |mobs| lookups at 10 Hz against a small plate subset of `cells`. Plate id flips on change only.
+
+### D7. Recipes &amp; progression (all from existing materials — worldgen deferral honored)
+- **Redstone Dust**: `1 Gold Ore + 1 Coal → 8 Redstone Dust` — gold (conductor) is gated behind a tier-3 pick, coal is the powder carrier; 8/craft keeps wire affordable. *Explicit deferral note in CHANGELOG/docs: redstone ore worldgen comes with a future `WORLDGEN_VERSION` batch.*
+- **Lever**: `1 Cobble + 1 Planks → 1 Lever`
+- **Stone Button**: `1 Cobble → 2 Stone Button`
+- **Pressure Plate**: `2 Planks → 1 Pressure Plate`
+- **Redstone Torch**: `1 Redstone Dust + 1 Wood → 2 Redstone Torch` (mirrors the torch recipe shape)
+- **Redstone Lamp**: `4 Redstone Dust + 2 Glass → 1 Redstone Lamp`
+
+All results are `kind: "block"` ⇒ they land in the **Building** recipe-book category automatically (`KIND_TO_CATEGORY`, recipes.ts:677). Recommend *not* adding a "Redstone" category in lite (that touches `RecipeCategory` + order + `recipeCategory()`); flag as an open question. Item-source hints ("craft it") derive automatically from the recipes (`itemSources.ts`).
+
+## 2. BlockId layout (exact — appended, ids 58–69)
+
+Even = off, odd = on; `on(b) = b | 1`, `off(b) = b &amp; ~1` (58 is even, so the parity trick is sound; contiguous family check `58 ≤ b ≤ 69`).
+
+```ts
+// lib/world/blocks.ts — append after CoralBlue = 57. Redstone-lite: power state is
+// id-parity (even off / odd on) so toggles ride the save diff like doors do.
+RedstoneWire = 58,      RedstoneWireOn = 59,
+Lever = 60,             LeverOn = 61,
+RedstoneButton = 62,    RedstoneButtonOn = 63,
+PressurePlate = 64,     PressurePlateOn = 65,
+RedstoneTorchOff = 66,  RedstoneTorch = 67,   // item places the LIT torch (67)
+RedstoneLamp = 68,      RedstoneLampOn = 69
+```
+
+12 ids; ~186 remain free. Items place the even (off) variant except the torch (places 67). Uses no per-voxel aux state ⇒ **no save schema bump** (doors precedent); craft-only ⇒ **no WORLDGEN_VERSION bump** (Anvil precedent).
+
+## 3. New modules
+
+### `lib/world/redstone.ts` (mirrors doors.ts — pure id math + bounds, no engine imports)
+```ts
+export function isRedstoneBlock(b: number): b is BlockId;      // 58..69
+export function isRedstoneOverlay(b: number): boolean;         // 58..67 (non-cube, non-colliding)
+export function isRedstoneOn(b: number): boolean;              // family &amp;&amp; (b &amp; 1) === 1
+export function redstoneOn(b: BlockId): BlockId;               // b | 1
+export function redstoneOff(b: BlockId): BlockId;              // b &amp; ~1
+export function isWire/isLever/isButton/isPlate/isRedstoneTorch/isRedstoneLamp(b): boolean;
+export type RedstoneBounds = { minX; maxX; minY; maxY; minZ; maxZ };
+export function redstoneBounds(b: number): RedstoneBounds | null;
+export const REDSTONE_PLACEABLE_OVERLAYS: readonly BlockId[];  // placement rule gate
+```
+Re-export the needed names from `lib/world/index.ts`.
+
+### `lib/game/engine/systems/redstone.ts` (the system)
+```ts
+export type RedstoneState = {
+  cells: Set&lt;number&gt;;               // tracked redstone cells (session-only)
+  buttonTimers: Map&lt;number, number&gt;;// pressed button → seconds left (primedTnt pattern)
+  prevDoorPowered: Set&lt;number&gt;;     // lower-door indices powered last pass (edge detection)
+  timer: number;                    // accumulator to REDSTONE_TICK_SECONDS
+};
+export function createRedstoneState(): RedstoneState;
+export function seedRedstoneCells(state: GameState): void;              // boot: scan blockChanges.changes()
+export function trackRedstoneCell(state: GameState, x, y, z): void;     // placement seam
+export function pressButton(state: GameState, x, y, z, emit): boolean;  // interact seam
+export function toggleLever(state: GameState, x, y, z, emit): boolean;  // interact seam
+export function tickRedstone(state: GameState, dt: number, emit: EmitGameEvent): void;
+```
+
+**tickRedstone pseudocode** (collect-then-apply, single `worldMeshDirty` — explosion.ts discipline; **never touches `drainEdits`**, which is the server's):
+
+```
+timer += dt; if timer &lt; REDSTONE_TICK_SECONDS return; timer = 0   // ≤1 pass per step
+changed = false
+
+// Phase 1 — inputs &amp; self-heal (iterate cells; deletions safe on a Set)
+occupied = feet cells of all players + all mobs (D6 formulas)
+for idx of rs.cells:
+  b = world.blocks[idx]
+  if !isRedstoneBlock(b): cells.delete(idx); buttonTimers.delete(idx); continue
+  if isRedstoneOverlay(b) &amp;&amp; support below is not solid non-overlay:
+      blockChanges.set(x,y,z, Air); cells.delete(idx); changed = true; continue   // orphan pop
+  if isPlate(b) &amp;&amp; (occupied.has(idx)) !== isRedstoneOn(b):
+      blockChanges.set → flipped id; emit plateToggled{on}; changed = true
+  if b === RedstoneButtonOn:
+      t = buttonTimers.get(idx)                       // undefined after reload → heal
+      if t === undefined || t - REDSTONE_TICK_SECONDS &lt;= 0:
+          blockChanges.set → RedstoneButton; buttonTimers.delete; changed = true
+      else buttonTimers.set(idx, t - REDSTONE_TICK_SECONDS)
+
+// Phase 2 — power graph from the CURRENT grid (post phase-1)
+powered = Set(); wireBudget = Map&lt;idx, number&gt;; queue = []
+for idx of cells where block ∈ {LeverOn, RedstoneButtonOn, PressurePlateOn, RedstoneTorch(on)}:
+  for n of 6 neighbors, SKIPPING the below-neighbor when the source is a torch:   // D4
+    powered.add(n)
+    if isWire(block(n)): relaxBudget(n, REDSTONE_WIRE_RANGE)
+while queue: (w, budget) = pop
+  powered.add(w); powered.add(each of w's 6 neighbors)          // wire powers what it touches
+  if budget &gt; 1: for c of 8 wire-step candidates (4 horiz × Y ∈ {0,+1,−1}):
+    if isWire(block(c)): relaxBudget(c, budget − 1)             // keep best budget per cell
+// relaxBudget: enqueue only if new budget &gt; recorded budget (bounded, no revisits)
+
+// Phase 3 — outputs (write only on change)
+for idx of cells:
+  b = block(idx)
+  if isWire(b)          &amp;&amp; (wireBudget.has(idx)) !== isRedstoneOn(b): flip; changed = true
+  if isRedstoneLamp(b)  &amp;&amp; powered.has(idx)      !== isRedstoneOn(b): flip; emit lampToggled{on}; changed = true
+  if isRedstoneTorch*(b): want = !powered.has(idx below); if want !== isRedstoneOn(b): flip; changed = true
+// Consumers OUTSIDE the tracked set — discovered by scanning the powered set:
+doorPowered = Set()
+for idx of powered:
+  b = block(idx)
+  if isDoorBlock(b): doorPowered.add(lower-half index via doorState)
+  else if b === Tnt: primeTnt(state, x, y, z, emit)             // no-op if already lit
+for lower of doorPowered − prevDoorPowered: force both halves open (doorBlock pair logic); emit doorToggled{open:true}; changed = true
+for lower of prevDoorPowered − doorPowered: if still a door: force closed; emit doorToggled{open:false}; changed = true
+prevDoorPowered = doorPowered
+
+if changed: state.worldMeshDirty = true
+```
+
+Doors and TNT need **no tracking** — they're found through the powered set, so explosions/mining of consumers need zero bookkeeping.
+
+## 4. Every seam, file by file
+
+| File | Change |
+|---|---|
+| `lib/world/blocks.ts` | 12 enum ids (§2); `BLOCK_COLORS` entries for **all 12** (atlas auto-sizes off this map — blocks.ts:138 / atlas.ts:13; a missing entry = garbage UVs); `HELD_BLOCK_COLORS` for the 6 placeable ids |
+| `lib/world/redstone.ts` | **new** (§3) + export via `lib/world/index.ts` |
+| `lib/world/atlas.ts` | paint branches in `drawTile`: wire (gray dust cross / bright red when on), lever (cobble pad + stick angled per on/off), button (small pad, lower when pressed), plate (flat outline, dimmer when pressed... brighter when on), redstone torch (torch motif with red flame; dark tip for off), lamp (glowstone-style lattice: dull ochre off, saturated bright-yellow pixels on — the shader's `vLight.y` glow term does the rest, GameRenderer.ts:57; **no renderer change**) |
+| `lib/world/meshing.ts` | `pushBlockCuboid` gains `minY`/`maxY`; overlay branch; cull-condition exemption (§D3) |
+| `lib/world/lighting.ts` | `opacity`: overlays → 0; `emission`: `RedstoneTorch` (67) → 7, `RedstoneLampOn` → 15. Toggles relight automatically via the `blockChanges.set → applyEdit` chokepoint (blockChanges.ts:47) |
+| `lib/world/queries.ts` | `collidesAt` overlay skip |
+| `lib/world/voxelWorld.ts` | `highestSolidY` overlay exemption |
+| `lib/game/items.ts` | `ITEM_DEFS`: `redstone` (Redstone Dust, kind `block`, blockId `RedstoneWire`), `lever`, `stone_button`, `pressure_plate`, `redstone_torch` (blockId 67), `redstone_lamp` — all block-kind ⇒ auto isometric icons (spritePixels.ts:956), **no sprite grids needed**; `BLOCK_TO_SLOT` for all 12 ids (on &amp; off → same item); `BREAK_HARDNESS`: overlays 1, lamp 3 (config.test.ts enforces hardness for every droppable block) |
+| `lib/game/recipes.ts` | 6 recipes (§D7) |
+| `lib/game/audio/materials.ts` | 12 `GROUP_BY_BLOCK` entries (exhaustive — typecheck fails until present): wire `sand` (powder), lever/torch `wood`, button/plate `stone`, lamp `glass` |
+| `lib/game/audio/soundParams.ts` | one `switchClick` SoundDef (ZZFX) |
+| `lib/game/audio/audioDirector.ts` | route `leverToggled` / `buttonPressed` / `plateToggled` → switchClick (lampToggled: silent or soft click); `doorToggled`/`tntPrimed` already handled (:326/:283) |
+| `lib/game/engine/state.ts` | `GameState.redstone: RedstoneState` (session-only, documented like `primedTnt` at :329); `GameEvent` += `leverToggled {on}`, `buttonPressed`, `plateToggled {on}`, `lampToggled {on}` |
+| `lib/game/engine/systems/redstone.ts` | **new** (§3) |
+| `lib/game/engine/systems/interact.ts` | `InteractiveKind` += `"lever" | "button"`; `INTERACTIVE_BLOCKS` entries for Lever/LeverOn/RedstoneButton (+ ButtonOn → consume-true no-op, the "return true even when refused" rule); branches call `toggleLever`/`pressButton` |
+| `lib/game/engine/systems/mining.ts` | `placeSelectedBlock`: overlay support rule + refund (door-branch pattern) + `trackRedstoneCell` after any successful redstone placement (lamp included); `tickMining`: overlay-above cascade pop with player-attributed drop (kelp pattern) |
+| `lib/game/engine/GameEngine.ts` | constructor: `state.redstone = createRedstoneState()`; after `blockChanges.applySavedChanges(save.changes)` (:286) → `seedRedstoneCells(state)`; `step`: `tickRedstone(state, dt, this.emit)` **between `tickMobs` (:618) and `tickPrimedTnt` (:619)** — after the player loop (this frame's lever/button interactions and fresh mob positions are visible) and before the TNT countdown (wire→TNT ignition starts its fuse the same tick). Replicas never reach this line (early return :549-571) ⇒ **server-only automatically** |
+| `lib/game/config.ts` | `REDSTONE_TICK_SECONDS = 0.1`, `REDSTONE_WIRE_RANGE = 15`, `REDSTONE_BUTTON_PRESS_SECONDS = 1.0` |
+| Multiplayer | **no changes**: redstone writes ride the journal the room drains (room.ts:439) into `TickMessage.blocks`; events ride `ev`. The system reads only its own `cells` set — it must not (and does not) call `drainEdits` |
+
+Optional (flag to user): a `leverToggled`-keyed stat + "Circuit Breaker" advancement row in `advancements.ts` — two declarative entries, zero logic.
+
+## 5. Save / reload / self-heal summary
+
+- Power state = id parity; lever/plate/wire/lamp/torch states persist in the diff and are **re-derived to consistency within one redstone tick of load** (first pass recomputes everything from the grid).
+- Pressed button + empty `buttonTimers` after reload → popped back on first pass (§D2).
+- `prevDoorPowered` empty after reload → a still-powered door registers as a rising edge and re-forces open (idempotent if already open — write-on-change suppresses the churn; emit doorToggled only when a cell actually flips).
+- Explosion/mining destroying circuit cells → self-heal deletion; orphaned overlays popped.
+
+## 6. Test plan
+
+**New suites**
+- `lib/world/redstone.test.ts` (doors.test.ts mirror): id parity math, family/overlay predicates, bounds present for all overlay ids, on/off round-trip.
+- `lib/game/engine/systems/redstone.test.ts` (headless, explosion.test.ts state pattern — minimal `GameState` cast, small `VoxelWorld`, event array): lever→wire→lamp lights (and unlights); wire budget: 15th cell powers, 16th doesn't; step-up/down wire continuity; torch inverts (support powered → off) and does not self-feed; torch clock oscillates at 2×`REDSTONE_TICK_SECONDS`; button pops back after `REDSTONE_BUTTON_PRESS_SECONDS` and heals with an empty timer map; plate presses under a player and under a mob, releases when vacated; door rising/falling edges force open/closed, manual toggle respected between edges; powered TNT gets a `primedTnt` entry; self-heal drops a cell overwritten to Air; orphan overlay pops when support removed; stable circuit performs zero `blockChanges` writes across passes (the no-churn guarantee).
+- Existing suites gaining cases: `lighting.test.ts` (lamp on/off emission, overlay opacity 0), `meshing`-adjacent assertions if any exist for door bounds (overlay cuboid Y-bounds), `mining.test.ts` (cascade pop + drop; overlay placement support rule + refund), `interact.test.ts` (lever/button branches consume the click), `GameEngine.multiplayer.test.ts` (server step with a lever circuit → flipped wire ids appear in `drainEdits`; replica step never runs tickRedstone), `config.test.ts` / `materials.test.ts` / sprite integrity pass automatically once tables are filled.
+- **E2E**: no new scenario warranted — the feature is headless-testable; but run `bun run test:e2e` because meshing/renderer-adjacent code changed (AGENTS.md rule). Manual visual pass required (below).
+
+## 7. Docs (ship with the change, per AGENTS.md)
+
+- `docs/manual.md`: new "Redstone" player-guide section (placing wire, lever vs button vs plate, the torch-as-inverter + NOT/clock recipe, powered doors, TNT triggering, lamp).
+- `docs/reference.md`: 12 blocks + 6 items + 6 recipes in the tables.
+- `docs/adding-content.md`: extend "A new block" step 5 with the overlay-bounds seam (`redstoneBounds` + `pushBlockCuboid` minY/maxY) and add a short "A powered/redstone component" pointer (tracked-set + tick pattern).
+- `docs/tuning.md`: the 3 new tunables with trade-offs (tick vs responsiveness/traffic, wire range, button window).
+- `docs/testing.md`: coverage-map rows for the two new suites.
+- `docs/architecture.md`: one line in the step order (tickRedstone slot) + the "server-only via replica early-return" note.
+- `CHANGELOG.md`: feature entry, explicitly noting **no save/worldgen impact** and the **redstone-ore worldgen deferral**.
+
+## 8. Commit slicing (`feat/redstone-lite`, each slice lint/typecheck/test-green)
+
+1. `feat(world): redstone block ids, helpers, atlas tiles, overlay meshing, lighting classes` — blocks.ts, redstone.ts (+index), atlas.ts, meshing.ts (incl. minY/maxY refactor), lighting.ts, queries.ts, voxelWorld.ts, materials.ts (exhaustive map forces it here), redstone.test.ts, lighting cases. Inert content — nothing obtainable yet.
+2. `feat(items): redstone items, drops, recipes` — items.ts, recipes.ts, config.test additions ride automatically.
+3. `feat(engine): redstone power system` — state.ts (redstone state + events), systems/redstone.ts, interact.ts, mining.ts (placement rule + cascade), GameEngine.ts wiring, config.ts tunables, systems/redstone.test.ts + interact/mining/multiplayer cases.
+4. `feat(audio): switch click routing` — soundParams.ts, audioDirector.ts (+tests).
+5. `docs: redstone-lite manual/reference/tuning/testing + CHANGELOG`.
+
+## 9. Verification checklist
+
+- Gate: `bun run lint`, `bun run typecheck`, `bun run format:check`, `bun test`, `bun run build`; `bun run test:e2e` (meshing/renderer touched).
+- Confirmations: save loads a pre-feature v17 world unchanged (no migration code touched); `WORLDGEN_VERSION` untouched; `generation.ts` untouched (worldgen hash tests must not re-baseline); no new files in `public/`, no binary assets.
+- **Manual visual pass** (`bun run dev`): 12 atlas tiles read correctly (esp. on/off contrast); overlay cuboids sit flush (wire flat, pressed button visibly lower); lamp glows in a dark room at night and torch-red tint is acceptable; held-item tints; walking over wire/plates doesn't snag (collision skip); plate triggers underfoot; lever/button click sounds; a NOT gate and a 2-torch clock behave; TNT fires off a wire; a powered door opens and hand-closes between edges. Multiplayer spot-check (local online dev, docs/online.md): guest sees host's lever flip lamp/wire with ≤1-tick lag.
+
+## 10. Risks &amp; open questions
+
+**Risks**
+- **Clock churn**: an oscillating circuit sets `worldMeshDirty` + relights + broadcasts a handful of block deltas every 0.1–0.2 s. Same cost class as mining spam and bounded by circuit size; stable circuits cost zero (write-on-change). Flagged in tuning.md; `REDSTONE_TICK_SECONDS` is the throttle.
+- **Save-diff growth**: each wire cell adds one diff entry (it would anyway, being player-placed); on/off flips mutate entries in place — no growth. A world saved mid-clock reloads consistent after one pass.
+- **`pushBlockCuboid` signature change** touches the door path — covered by existing door meshing behavior; keep the refactor mechanical.
+- **Floor-mount-only components** (no wall buttons/levers, no facing ids) — a deliberate lite simplification; add facing variants later as new id blocks if wanted.
+- AO/`hasSupportUnderPlayer` treat overlay cells as solid in two cosmetic spots — negligible, matches the door trade-off; noted, not changed.
+
+**Open questions for the user**
+1. Dedicated "Redstone" recipe-book category (touches `RecipeCategory` union/order) or keep everything under **Building** (recommended for lite)?
+2. Dust recipe balance: `1 Gold Ore + 1 Coal → 8` — happy with the gold gate, or prefer a cheaper coal/gunpowder path?
+3. Include the optional lever advancement/stat?
+4. Lamp brightness 15 and redstone-torch 7 (dimmer than a normal torch's 14) — confirm.
+5. Pressure plate flavor: single "Pressure Plate" (planks recipe) or wood/stone variants (recommend single).
+
+### Critical Files for Implementation
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/blocks.ts
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/redstone.ts (new; pattern source: /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/explosion.ts)
+- /Users/hutusi/workspace/ai/david/monecraft/lib/world/meshing.ts
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/systems/mining.ts
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts</result>
+<usage><subagent_tokens>160571</subagent_tokens><tool_uses>42</tool_uses><duration_ms>633159</duration_ms></usage>
+</task-notification>
+
+---
+
+let me re-select the choices
