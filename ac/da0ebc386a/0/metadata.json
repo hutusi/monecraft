@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "acda0ebc386a",
+  "session_id": "87ffd6d2-0fbf-4ddd-8a68-b6d40a8216b6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T15:36:24.194518Z",
+  "branch": "feat/nether",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/types.ts",
+    "lib/game/items.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/game/itemSources.ts",
+    "lib/game/recipes.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/engine/systems/interact.test.ts",
+    "lib/game/items.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "54262edaf383",
+  "checkpoint_transcript_start": 237,
+  "transcript_lines_at_start": 237,
+  "token_usage": {
+    "input_tokens": 6976,
+    "cache_creation_tokens": 70000,
+    "cache_read_tokens": 10349239,
+    "output_tokens": 34818,
+    "api_call_count": 46
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-06T15:36:24.16723Z",
+    "agent_lines": 308,
+    "agent_removed": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 308,
+    "total_lines_changed": 318,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
