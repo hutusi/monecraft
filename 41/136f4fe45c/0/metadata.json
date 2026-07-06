@@ -1,0 +1,20 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "41136f4fe45c",
+  "session_id": "387fb11e-dc86-4116-8e8d-66e6c084564a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T12:22:20.394237Z",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "17eade054c96",
+  "token_usage": {
+    "input_tokens": 50551,
+    "cache_creation_tokens": 663096,
+    "cache_read_tokens": 52381704,
+    "output_tokens": 158744,
+    "api_call_count": 172
+  }
+}
