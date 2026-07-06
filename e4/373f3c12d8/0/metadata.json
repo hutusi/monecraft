@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e4373f3c12d8",
+  "session_id": "387fb11e-dc86-4116-8e8d-66e6c084564a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T11:50:00.911749Z",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/ui/spritePixels.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "17eade054c96",
+  "checkpoint_transcript_start": 351,
+  "transcript_lines_at_start": 351,
+  "token_usage": {
+    "input_tokens": 621,
+    "cache_creation_tokens": 18004,
+    "cache_read_tokens": 2354323,
+    "output_tokens": 7614,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-06T11:50:00.886724Z",
+    "agent_lines": 86,
+    "agent_removed": 1,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 86,
+    "total_lines_changed": 87,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
