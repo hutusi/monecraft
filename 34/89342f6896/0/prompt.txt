@@ -1,0 +1,627 @@
+start the IndexedDB saves work, what do you think?
+
+---
+
+<task-notification>
+<task-id>a4dbebb5d4b1bdc1a</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/a4dbebb5d4b1bdc1a.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore save write/read path" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture of the save write/read path. Here is the structured report.
+
+---
+
+# Save System Map — monecraft (current localStorage path)
+
+## 1. `lib/game/save.ts` — exported functions
+
+The module is **entirely synchronous** and storage-injectable (`storage: Storage = localStorage` on the two I/O functions). It has no async/Promise anywhere.
+
+**The two localStorage touch points:**
+
+- **`readSave(saveKey: string, storage: Storage = localStorage): SaveData | null`** — `save.ts:278`
+  - Calls `storage.getItem(saveKey)` (`:280`), `JSON.parse` (`:282`), then runs the full **v1→v17 migration chain** (`:317-332`). Validates `seed` finite + `changes` is array (`:300`), requires final `version === 17` and `players` array (`:333-334`).
+  - Wrapped in `try/catch` (`:279`, `:336-338`) — **any throw (parse error, corrupt data) returns `null`**, never throws.
+
+- **`writeSave(saveKey: string, data: SaveData, storage: Storage = localStorage): void`** — `save.ts:362`
+  - Body is a single line: `storage.setItem(saveKey, JSON.stringify(data))` (`:363`).
+  - **No try/catch, no QuotaExceededError handling, no size check.** A quota/parse failure throws to the caller. (Contrast: `lib/game/manifest.ts:42` `writeManifest` *does* swallow quota in a try/catch; `save.ts` does not.)
+
+**No `persistGame` or `serialize` in this file.** `persistGame` lives in the hook (§2); `serialize()` is a method on `GameEngine` (§5). The rest of `save.ts` is pure snapshot/restore helpers (no storage): `serializeVehicles`/`restoreVehicles`, `inventorySlotsSnapshot`, `serializeEquippedArmor`/`restoreEquippedArmor`, `serializeContainers`/`readContainers`, `serializeLootedChests`/`readLootedChests`, `serializeEffects`/`restoreEffects`, `serializeStats`/`restoreStats`, `restoreAdvancements`, `serializeMobs`/`restoreMobs`/`isPersistentMob`, `restoreInventorySlots`, `restoreSelectedSlot`, `restoreDayClock`, `restoreHearts`, `restoreHungerLevel`, `restoreXp`, `restoreGameMode`, `restoreDifficulty`, `restoreHardcore`, `restoreGameOver`, `restoreSpawnPoint`, `restorePlayerPosition`, and the 16 `migrateSaveVNtoVN+1` functions.
+
+**Key format:** `worldSaveKey(worldId)` = `"minecraft_world_save_" + worldId` — defined `lib/game/worlds.ts:66-68` (prefix constant `WORLD_SAVE_PREFIX` at `worlds.ts:58`). For cloud worlds the id is `cloud:&lt;serverWorldId&gt;` and for online it is `online:&lt;serverWorldId&gt;` (`components/GameShell.tsx:60`, `:65-77`), so the localStorage key is `minecraft_world_save_cloud:&lt;id&gt;`. Legacy single-world key was `minecraft_save_v7` (`SAVE_KEY` in `lib/game/config.ts`, used only by `legacyMigration.ts`).
+
+---
+
+## 2. Every call site of save/persist
+
+The hook's private helper (all writes funnel through it):
+```
+persistGame(api, saveKey, onMessage)   lib/game/useMinecraftGame.ts:88-95
+  try { writeSave(saveKey, api.serialize()); onMessage("Saved"); }
+  catch { onMessage("Save failed"); }   // the ONLY guard around writeSave
+```
+Everything here is **synchronous** (localStorage). The cloud mirror (`syncCloudSave`, `:321-333`) is the only async piece — fire-and-forget `void pushSave(...)`.
+
+| Trigger | File:line | Sync/async ctx | What happens after |
+|---|---|---|---|
+| **Autosave interval** | `useMinecraftGame.ts:391-396` — `autoSave` fn defined `:391`, `window.setInterval(autoSave, AUTOSAVE_INTERVAL_MS)` `:396` | sync callback on a timer | `AUTOSAVE_INTERVAL_MS = 15000` (`config.ts:361`, i.e. **15 s**). Online worlds early-return (`:392`). Calls `persistGame` (flashes "Saved") then `syncCloudSave(engine, true)` (cloud push, notify-on-conflict). |
+| **`beforeunload`** | `window.addEventListener("beforeunload", autoSave)` `:397`; removed `:505` | sync, in unload | Same `autoSave` fn — persists + cloud push. |
+| **Unmount cleanup** | cleanup return `:488-518`; the save block `:494-498` | sync (React effect cleanup) | If `skipUnmountSaveRef.current` is true it is reset to false and **save is skipped** (`:494`); else (and not online) `persistGame(gameEngine, saveKey, () =&gt; {})` **silent, no toast** (`:496`) + `syncCloudSave(gameEngine, false)` (`:497`, covers Save&amp;Quit / Fast Refresh). Then disposes renderer/audio/input, clears interval, removes listeners. |
+| **`skipUnmountSaveRef`** set by Load | `loadNow` `:637` | — | Set true right before `scheduleTimeout(() =&gt; opts.onReloadWorld(), 120)` (`:638`) so the remount re-reads the on-disk blob instead of overwriting it. First checks `if (!readSave(saveKeyRef.current))` → "No save found" and bails (`:630-633`). |
+| **`skipUnmountSaveRef`** set by Reset | `resetNow` `:646` | sync | `localStorage.removeItem(saveKeyRef.current)` (`:642`), sets flag, `scheduleTimeout(onReloadWorld, 500)` (`:647`); wrapped in try/catch → "Reset failed" (`:648`). Remount boots a fresh world from the stored seed. |
+| **Hardcore force-save on gameOver** | `:426-429` (inside the rAF event loop) | sync, per-frame event drain | On `event.type === "gameOver" &amp;&amp; !online`: `persistGame(gameEngine, saveKey, () =&gt; {})` **silent** (`:427`) + `syncCloudSave(gameEngine, false)` (`:428`). Persists permadeath immediately so closing the tab reloads the dead world spectating. |
+| **`saveNow`** (manual Save) | `:622-628` | sync | Online → "The server saves online worlds"; else `persistGame(engine, saveKeyRef.current, flashMessage)` (toasts) + `syncCloudSave(engine, true)`. |
+| **`quitToWorlds`** (Save &amp; Quit) | `:652-658` | sync | If `engine &amp;&amp; !online`: `persistGame(engine, saveKeyRef.current, flashMessage)` (`:656`) **before** `opts.onQuitToWorlds()` — because the interval is cleared on unmount and `beforeunload` won't fire on in-app nav. |
+
+**No `visibilitychange` or `pagehide` save handler exists.** The only `visibilitychange` listener is in `lib/game/input/touchInputController.ts:233` and is purely for input/pause, not persistence. `beforeunload` is the sole page-lifecycle save hook.
+
+---
+
+## 3. Read path (world start/join)
+
+- **Load-on-boot is synchronous and blocking during init.** The engine is constructed in the canvas mount **callback ref `attachMount`** (commit phase), which calls `readSave(saveKeyRef.current)` inline and passes it to `new GameEngine({ save, seed, worldType, gameMode, difficulty, hardcore })` — `useMinecraftGame.ts:246-267`, the read at `:258`. `GameEngine` then replays deltas via `blockChanges.applySavedChanges` synchronously in its constructor. Online worlds skip this entirely: `onlineRef.current?.engine ?? new GameEngine(...)` (`:255-256`) — the server owns the replica.
+- **Missing/corrupt save handling:** `readSave` returns `null` for absent, unparseable, wrong-version, or NaN-seed data (`save.ts:300`, `:333-338`), and `GameEngine` treats `save: null` as "fresh world from seed" (see `attachMount` comment `:251-253`). So corrupt = silently boots a new world from the stored `WorldMeta.seed`. Field-level corruption inside a valid blob is clamped/dropped by the `restore*` validators (unknown item ids, NaN coords, out-of-range enchant levels, etc.).
+- **Other read sites:**
+  - `WorldSelect.tsx:100` — `readSave(worldSaveKey(world.id))` in `uploadToCloud`, to get the blob to push (a world with no save yet pushes nothing).
+  - `loadNow` `:630` — existence probe before triggering a reload.
+  - `legacyMigration.ts:29` — one-time read of the legacy `minecraft_save_v7` key, copied to a new world key (`writeSave` `:40`), old key removed (`:42`). Gated on the profiles manifest being absent.
+  - `server/persistence.ts:37` — server-side reuse of `readSave` via a one-key `Storage` shim over a gunzipped blob (multiplayer save-on-leave; not the browser path).
+
+---
+
+## 4. Cloud saves — `lib/game/cloudSaves.ts`
+
+All functions are **async** and storage-injectable. They do **not** touch the world-save localStorage key; they only manage a per-device sync-cursor blob `minecraft_cloud_stamps_v1` (`STAMPS_KEY`, `cloudSaves.ts:15`) mapping `cloudWorldId → updatedAt` string, via `readStamps`/`writeStamp` (`:19-35`).
+
+- **Serialization:** `gzipJson(value)` (`:37-40`) — `JSON.stringify` → `CompressionStream("gzip")` → `Uint8Array`. `gunzipJson` is the inverse (`:42-45`). The **same `SaveData` object** produced by `engine.serialize()` is what gets gzipped — no separate cloud schema.
+- **`pushSave(cloudWorldId, save, storage): Promise&lt;"saved"|"conflict"|"error"&gt;`** (`:50-71`): gzips `save`, `PUT /api/worlds/:id/save` with headers `content-type: application/gzip`, `x-save-version: String(save.version)`, `x-base-updated-at:` the stored cursor (or `""`). `409` → `"conflict"` (`:63`); on success reads `{updatedAt}` from JSON and `writeStamp` advances the cursor (`:65-66`). Whole thing in try/catch → `"error"`.
+- **`pullSave`** (`:87-92`) and internal **`fetchCloudSave`** (`:74-84`): `GET /api/worlds/:id/save`, reads `x-updated-at` header + gunzips the body. `pullSave` advances the cursor.
+- **`pullCloudSaveIfNewer(cloudWorldId, storage): Promise&lt;{adopt:true,save}|{adopt:false}&gt;`** (`:103-110`): open-time reconcile. Returns `{adopt:false}` when there's no blob/offline (`:105`) or when `result.updatedAt === cursor` (unchanged since last sync, `:107`); otherwise advances cursor and returns `{adopt:true, save}` (`:108-109`). Last-write-wins with a stale-guard.
+
+**Interaction with the local write path (ordering &amp; newness):**
+- **Local write ⟶ cloud push (write side):** in the hook, `syncCloudSave` runs *after* every `persistGame` (autosave `:393-394`, gameOver `:427-428`, unmount `:496-497`, saveNow `:625-627`). It is fire-and-forget (`void pushSave(...)`, `:325`) so the fetch survives unmount. Guarded by `cloudIdRef` (only cloud-linked SP worlds), skipped when `onlineRef.current` is set, and latched off after a `"conflict"` via `cloudConflictRef` (`:324`, `:326-329`) so it stops clobbering another device.
+- **Cloud pull ⟶ local write (read side):** `GameShell.tsx` reconciles on open **before** mounting the game: `openWorld` (`:164-180`) and `playCloud` (`:199-213`) call `await pullCloudSaveIfNewer(world.cloudId)` and, only if `decision.adopt`, `writeSave(worldSaveKey(...), decision.save)` (`:172`, `:205`) — writing the remote blob to localStorage *then* booting from disk like any other world. Errors fall through to the local copy.
+- **Newness comparison is the string `updatedAt` stamp** from the server, compared against the device's stored cursor — *not* a timestamp inside the SaveData blob. The blob carries no `updatedAt`/mtime field.
+
+Server side: `app/api/worlds/[id]/save/route.ts` — `GET` returns raw gzip bytes with `x-updated-at`/`x-save-version` headers; `PUT` enforces `x-base-updated-at` optimistic-concurrency (mismatch → 409) and a **4 MiB body cap** (`route.ts:40`: `blob.byteLength &gt; 4*1024*1024 → "invalid"`).
+
+---
+
+## 5. Save blob shape &amp; size
+
+**Shape** (`SaveData`, `lib/game/types.ts:389-408`; built by `GameEngine.serialize()` at `engine/GameEngine.ts:1174-1191`):
+```
+{
+  version: 17,               // schema version field — present, drives readSave migration
+  seed: number,
+  worldType: WorldType,
+  difficulty, hardcore,
+  changes: Array&lt;[number, number]&gt;,   // ← the heavy part: [voxelIndex, blockId] pairs
+  players: SavedPlayer[],    // v17 wraps SP as [{ id:"local", position, inventorySlots,
+                             //   equippedArmor, selectedSlot, gameMode, gameOver, hearts,
+                             //   hunger, effects, xp, stats, advancements, spawnPoint }]
+  dayClock, blockEntities: SavedContainer[], lootedChests: number[],
+  mobs: SavedMob[], vehicles: SavedVehicle[], villagesSeeded: true
+}
+```
+`SavedPlayer` at `types.ts:365-380`; the full versioned type chain is `SaveDataV1`…`SaveDataV16` then `SaveData` (v17) at `types.ts:144-408`. There have been **17 schema versions**; `readSave` migrates any older blob forward on load.
+
+**Encoding / size:**
+- **The world diff (`changes`) is a plain JSON array of `[voxelIndex, blockId]` number pairs** — computed by `createBlockChangeTracker().changes()` = `[...changedBlocks.entries()]` (`engine/blockChanges.ts:67-69`). **No RLE, no base64, no bit-packing.** It's stored as **delta-against-worldgen-baseline**: a block restored to its generated value drops out of the set (`blockChanges.ts:48-51`), so an untouched world serializes to `changes: []`.
+- **Local persistence is uncompressed** — `writeSave` does `JSON.stringify(data)` straight into localStorage (`save.ts:363`). So on-disk size is roughly the JSON text length; each block edit costs ~8-15 chars (e.g. `[1234567,42],`). A heavily-terraformed world can reach hundreds of KB to low MB of JSON. Inventory/mobs/containers are small by comparison.
+- **Cloud persistence is gzipped** — the same blob through `gzipJson` (`cloudSaves.ts:37-40`), and the server rejects anything over **4 MiB gzipped** (`save/route.ts:40`). The `[idx,block]` integer stream compresses very well.
+
+**Relevance to an IndexedDB move:** the write is a single synchronous `localStorage.setItem(JSON.stringify(...))` with **no quota guard**, called from four sync contexts including `beforeunload` and the effect-cleanup teardown (`:496-498`) and the in-app-nav `quitToWorlds` (`:656`); the read is a single synchronous `getItem`+`JSON.parse` on the render-commit path inside `attachMount` (`:258`) feeding the `GameEngine` constructor. Both are the load-bearing sync assumptions an async IndexedDB store would have to reconcile.</result>
+<usage><subagent_tokens>84155</subagent_tokens><tool_uses>21</tool_uses><duration_ms>170371</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ac6b7ca40cd4d1f46</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/ac6b7ca40cd4d1f46.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore storage keys and migration precedent" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have gathered a complete picture. Here is the structured report.
+
+---
+
+# Storage Inventory &amp; Migration Report — monecraft
+
+## 1. All localStorage keys
+
+Nine distinct localStorage keys, plus one sessionStorage key. All key names are defined as exported constants; all reader/writer functions take an injectable `storage: Storage = localStorage` parameter (for tests).
+
+| Key | Constant / location | Stores | Rough size | Owning module | Read during render/init? |
+|---|---|---|---|---|---|
+| `minecraft_profiles_v1` | `PROFILES_KEY` — `lib/game/profiles.ts:29` | `ProfilesManifest = { version:1, profiles: Profile[], activeProfileId }`; each `Profile = {id, name, skinId, createdAt}` | Small (identity only, grows with # profiles) | `lib/game/profiles.ts` | Yes — `getProfile` in render `components/GameShell.tsx:315`; `readProfiles` in `components/menu/ProfileSelect.tsx` render. Also gates the legacy migration. |
+| `minecraft_worlds_v1` | `WORLDS_KEY` — `lib/game/worlds.ts:57` | `WorldsManifest = { version:1, worlds: WorldMeta[] }` — the world **index** (metadata only, no save blob) | Small–medium (~200 B per world) | `lib/game/worlds.ts` | **Yes, synchronously in render** — `worldsForProfile` at `components/menu/WorldSelect.tsx:86` and `components/menu/ProfileSelect.tsx:126`; `getWorld` at `components/GameShell.tsx:316`,`272`. |
+| `minecraft_world_save_&lt;worldId&gt;` | prefix `WORLD_SAVE_PREFIX` — `lib/game/worlds.ts:58`; key built by `worldSaveKey()` `worlds.ts:66` | One `SaveData` blob per world (block diff, containers, mobs, players, inventory, etc.) — the **heavy** payload | **Large / unbounded** (grows with edits) | `lib/game/save.ts` (`readSave`/`writeSave`) | **No** — read only in the canvas callback-ref (commit phase) `lib/game/useMinecraftGame.ts:258`, and in event handlers (`loadNow:630`, `saveNow:625`, `uploadToCloud` `WorldSelect.tsx:100`). Never in a render body. |
+| `minecraft_save_v7` | `SAVE_KEY` — `lib/game/config.ts:366` | Legacy single-world `SaveData` blob (pre-multi-world era) | Large (legacy) | `lib/game/config.ts` | Read **once** by the legacy migration only (`legacyMigration.ts:29`), then removed. Otherwise unused. |
+| `minecraft_skin_v1` | `SKIN_SETTINGS_KEY` — `lib/game/skinSettings.ts:4` | `{ skinId }` — legacy global skin preference | Tiny | `lib/game/skinSettings.ts` | Read by the migration to seed the default profile (`legacyMigration.ts:35`). Module still exports read/write, but skin identity now lives per-profile in `minecraft_profiles_v1`. |
+| `minecraft_audio_v1` | `AUDIO_SETTINGS_KEY` — `lib/game/audio/settings.ts:4` | `{ master, music, muted }` volume prefs | Tiny | `lib/game/audio/settings.ts` | Read after mount in an effect, not render — `useMinecraftGame.ts:165`. |
+| `minecraft_touch_v1` | `TOUCH_SETTINGS_KEY` — `lib/game/input/touchSettings.ts:12` | `{ mode: "auto"|"on"|"off" }` touch-controls pref | Tiny | `lib/game/input/touchSettings.ts` | Read after mount in an effect, not render — `useMinecraftGame.ts:174`. |
+| `minecraft_online_v1` | `ONLINE_USED_KEY` — `lib/auth/client.ts:36` | The string `"1"` — "has this browser ever used online features" flag | Tiny (flag) | `lib/auth/client.ts` (`onlineUsed`/`markOnlineUsed`) | Read in `refreshOnlineUser` callback (effect-driven) `components/GameShell.tsx:133`. |
+| `minecraft_cloud_stamps_v1` | `STAMPS_KEY` — `lib/game/cloudSaves.ts:15` | `Record&lt;cloudWorldId, updatedAt&gt;` — per-cloud-world last-sync **cursors** (last-write-wins guard) | Tiny | `lib/game/cloudSaves.ts` | Read/written only inside async push/pull functions, never render. |
+| `monecraft_active_session` *(sessionStorage, not localStorage)* | `SESSION_KEY` — `components/GameShell.tsx:85` | `{ profileId, worldId }` tab-resume pointer | Tiny | `components/GameShell.tsx` | Read in the mount effect `GameShell.tsx:270`. Intentionally sessionStorage so a fresh tab cold-starts. |
+
+Key relationship: **manifests (`minecraft_worlds_v1`, `minecraft_profiles_v1`) are read synchronously during render; the heavy save blobs (`minecraft_world_save_&lt;id&gt;`) are only read in commit/effect/event-handler paths** — never during render. This matters for your migration: an async IndexedDB read for the blob would not block any render path today, whereas moving the manifest to async would.
+
+All manifest writes go through `writeManifest` (`lib/game/manifest.ts:42`), which swallows quota/privacy-mode failures. Save writes use `writeSave` (`lib/game/save.ts:362`) — a bare `storage.setItem(...)` that can throw; callers wrap it (`persistGame` try/catch `useMinecraftGame.ts:88-95`; migration try/catch `legacyMigration.ts:38-50`).
+
+---
+
+## 2. Existing migration precedent — `lib/game/legacyMigration.ts`
+
+The one existing copy-then-remove migration. Single exported function `migrateLegacySave(deps)` (`legacyMigration.ts:23`).
+
+- **What it migrates:** the pre-multi-world single save at `minecraft_save_v7` (`SAVE_KEY`) + the global skin at `minecraft_skin_v1` → folds them into a default `"Player"` profile (carrying the old skin) plus one world named `"My World"` whose blob is a copy of the legacy save.
+- **Copy-then-remove pattern (the precedent you asked about), `legacyMigration.ts:38-50`:**
+  1. `writeSave(worldSaveKey(world.id), legacy, storage)` — copy the blob to the new per-world key first.
+  2. Then `storage.removeItem(SAVE_KEY)` in a nested try/catch. Comment (`:39`): "Copy (not move) so a mid-migration failure can never lose the original." A quota failure during the copy (both blobs briefly resident) is swallowed — the world record still exists and reboots fresh from its stored seed; the legacy key is left intact.
+- **Idempotency:** gated on **absence of the profiles manifest** — `if (storage.getItem(PROFILES_KEY) !== null) return;` (`:27`). The profiles manifest's *presence* is the "already migrated" flag (survives a rollback that re-creates the legacy key). A brand-new player (no legacy save) creates nothing and returns early (`:33`) so the menu prompts profile creation.
+- **Where/when it runs (call site):** exactly one — `components/GameShell.tsx:268`, inside the mount `useEffect` (`GameShell.tsx:266`), synchronously before the session-pointer resume logic. Imported at `GameShell.tsx:12`. Runs once per mount, client-side only.
+- **How it's tested:** `lib/game/legacyMigration.test.ts` (Bun). Uses an in-memory `fakeStorage` (`:11`) implementing the `Storage` interface, and `seqDeps` for deterministic ids/clock (`:29`). Four cases: folds save+skin into profile/world and asserts blob copied to per-world key + `SAVE_KEY` removed + audio settings untouched (`:35`); brand-new player creates nothing (`:59`); idempotent second run is a no-op (`:67`); missing skin falls back to default (`:79`).
+
+This is the template to mirror for a localStorage→IndexedDB blob move: copy to new store, verify, then remove old key, gated on an idempotency flag.
+
+---
+
+## 3. Existing IndexedDB usage
+
+**None.** Confirmed:
+- No `indexedDB`, `IDBDatabase`, `IDBFactory`, `openDB`, or `idb` references anywhere in `lib/`, `components/`, `app/`, or `server/` (grep returned empty).
+- `package.json` has **no** `idb`, `idb-keyval`, `dexie`, or any IndexedDB wrapper. Relevant deps are `better-auth`, `drizzle-orm`, `postgres`, `next`, `react`, `three`, `zzfx` (client persistence is 100% localStorage / sessionStorage).
+- The only browser storage API besides Web Storage is the **Cache Storage API** (`caches.*`), used exclusively by the service worker (`public/sw.js`) and cleaned up by `components/ServiceWorkerRegistration.tsx:24`. That is app-shell caching, unrelated to game saves.
+
+Server-side persistence (cloud saves) is Postgres via Drizzle (`db/schema.ts`, `server/persistence.ts`, `app/api/worlds/[id]/save/route.ts`) — orthogonal to browser storage.
+
+---
+
+## 4. Service worker — `public/sw.js`
+
+Does **not** cache or interact with game saves / localStorage at all. It is purely an offline **app-shell** cache:
+- Caches only: the `/` shell HTML (network-first, `handleNavigation` `sw.js:155`), `/_next/static/*` immutable assets (cache-first, `cacheFirst:168`, capped at `MAX_ASSETS=100`), and the manifest/icon routes (stale-while-revalidate `:180`).
+- The `classify()` function (`sw.js:39`) **bypasses** everything else — explicitly all `/api/*` (`:43`), cross-origin (the game server), non-GET, and RSC/prefetch payloads. Comment `:11-13`: "online features can't be broken by a stale cache."
+- No `IndexedDB`, no `localStorage` (a service worker cannot access Web Storage anyway), and no `message`/`sync`/`fetch`-of-save handling. It uses the Cache Storage API only.
+
+Relevance to offline saves: the SW makes the **game code** available offline (so the localStorage-backed engine boots with no network), but it plays **no role** in persisting or reading world saves. Moving saves to IndexedDB would be transparent to it. Note `SW_VERSION = "v1"` (`sw.js:19`) and the activate handler deletes only caches prefixed `monecraft-` (`:203`) — it will not touch an IndexedDB database.
+
+---
+
+## 5. Worlds manifest (`minecraft_worlds_v1`) lifecycle
+
+Owned by `lib/game/worlds.ts`. The manifest stores **per-world metadata separate from the save blob** — `WorldMeta` (`worlds.ts:21-42`): `{ id, profileId, name, seed, worldType, gameMode, difficulty, hardcore, worldgenVersion, createdAt, lastPlayedAt, cloudId? }`. The heavy `SaveData` lives in a separate `minecraft_world_save_&lt;id&gt;` key (`worlds.ts:1-7` docstring: "the heavy per-world saves stay separate so the index reads cheaply"). Note `gameMode`/`difficulty` in the meta are the *initial* values chosen at creation; the *current* switchable values live inside the save blob (`worlds.ts:27-30`).
+
+CRUD, all persisting via `writeManifest(WORLDS_KEY, ...)`:
+- **Create:** `createWorld` (`worlds.ts:144`) — appends a `WorldMeta`, resolves the seed once, sets `createdAt`/`lastPlayedAt`. Does **not** write a save blob (the blob is written later on first autosave). Refuses an unknown profile (`:162`).
+- **Update lastPlayed:** `touchWorld` (`worlds.ts:207`) — bumps `lastPlayedAt` (drives most-recent-first sort). Called on open at `GameShell.tsx:166`.
+- **Rename:** `renameWorld` (`worlds.ts:196`). **Cloud link:** `linkWorldCloud` (`worlds.ts:186`) sets `cloudId` (used by "Upload to cloud").
+- **Delete (blob cleanup):** `deleteWorld` (`worlds.ts:219`) — removes the entry from the index **and** `storage.removeItem(worldSaveKey(id))` in a try/catch (`:223-227`, "A failed blob cleanup just leaves an orphaned key"). Called from `WorldSelect.tsx:168` (delete button) and `GameShell.tsx:329` (hardcore game-over erase).
+- **Cascade delete:** `deleteWorldsForProfile` (`worlds.ts:232`) — on profile deletion, filters out all of a profile's worlds and removes each save blob (`:237-243`). Note `deleteProfile` (`profiles.ts:125`) does **not** touch worlds — the caller must call `deleteWorldsForProfile` first (`profiles.ts:120-124` docstring); `ProfileSelect.tsx:7` imports both.
+- **Read:** `readWorlds` (`worlds.ts:124`) is total — drops malformed entries via `sanitizeWorld`, falls back to `DEFAULT_WORLDS_MANIFEST` on unknown version. `worldsForProfile` (`worlds.ts:137`) filters by `profileId`, sorts by `lastPlayedAt` desc.
+
+Deletion of a **cloud-materialized** world (id `cloud:&lt;id&gt;`) removes its cache blob at `GameShell.tsx:355` (only after the server confirms the row delete).
+
+---
+
+## 6. "Does this world have a save?" decision
+
+There is **no explicit "has a save?" check gating a Continue button.** The world-list UI is driven entirely by the **manifest** (`minecraft_worlds_v1`), not by save-blob presence:
+
+- `components/menu/WorldSelect.tsx:86` lists `worldsForProfile(profile.id)` — every world in the manifest is shown regardless of whether a `minecraft_world_save_&lt;id&gt;` blob exists yet. Clicking a card calls `onPlay(world.id)` (`:181`) directly; there is no separate "Continue vs New" state. A world with no blob simply boots fresh from its stored `seed`.
+- The engine boot reads the blob lazily and tolerates absence: `readSave(saveKeyRef.current)` at `lib/game/useMinecraftGame.ts:258` returns `null` for a missing/corrupt key, and `GameEngine` regenerates from `seed`. `readSave` (`save.ts:278`) is total — returns `null` on absence, parse error, or invalid shape.
+- The only places that read the **full blob** are: the engine boot (commit callback, `useMinecraftGame.ts:258`), and `uploadToCloud` which calls `readSave(worldSaveKey(world.id))` at `WorldSelect.tsx:100` to decide whether there's a blob worth pushing (`:112`: `cloud &amp;&amp; save ? await pushSave(...) : "saved"` — an empty world links and lets the first autosave upload the blob).
+- `loadNow` (`useMinecraftGame.ts:630`) does a **key-existence-via-full-read**: `if (!readSave(saveKeyRef.current))` → flashes "No save found". This deserializes the whole blob just to test presence — a spot where key-existence would suffice.
+
+Implication for your migration: no UI reads the save blob to render the world list, so an async IndexedDB blob read is compatible with the existing synchronous manifest-driven list. The blob is only touched at boot (already in a commit callback), in cloud-upload, and in `loadNow` (which currently over-reads for a mere presence check).
+
+---
+
+### Extra notes for your plan (facts, not design)
+
+- `worldSaveKey(id)` (`worlds.ts:66`) is the single chokepoint constructing every blob key — including the synthetic `cloud:&lt;id&gt;` keys used by account single-player worlds (`GameShell.tsx:172`,`205`,`355`). Any store migration must cover both plain and `cloud:`-prefixed ids.
+- All blob reads/writes funnel through exactly two functions — `readSave`/`writeSave` in `lib/game/save.ts` (both take injectable `storage`) — plus one raw `localStorage.removeItem(saveKeyRef.current)` in `resetNow` (`useMinecraftGame.ts:642`) and the two `removeItem` calls in `worlds.ts` (`deleteWorld:224`, `deleteWorldsForProfile:239`) and one in `GameShell.tsx:355`. That is the full set of blob mutation sites.
+- Blob writes happen synchronously and frequently: autosave every `AUTOSAVE_INTERVAL_MS = 15000` (`config.ts:361`, wired at `useMinecraftGame.ts:396`), plus `beforeunload` (`:397`), visibility/pagehide (`:427`), unmount cleanup (`:496`), and manual Save (`:625`). `beforeunload`/unmount paths are synchronous today — an async IndexedDB write would not complete inside a `beforeunload` handler.
+- The `Storage`-injection test pattern (in-memory `fakeStorage` implementing the `Storage` interface, e.g. `legacyMigration.test.ts:11`, `save.test.ts`, `worlds`/`profiles` tests) is used throughout; an IndexedDB layer would need an equivalent async test double.</result>
+<usage><subagent_tokens>88880</subagent_tokens><tool_uses>35</tool_uses><duration_ms>208007</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a273a698ac9217f22</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/a273a698ac9217f22.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore save tests and docs" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything I need. Here's the structured report.
+
+---
+
+# Saves test + docs landscape (pre-IndexedDB migration)
+
+## Key finding on IndexedDB
+There is **zero** IndexedDB usage anywhere in the codebase, tests, or docs. `grep -riE "indexeddb|fake-indexeddb|idb"` over `*.ts/tsx/toml/json/md` (excluding node_modules/.next) returns nothing. `package.json` has no `fake-indexeddb` or `idb` dependency. All persistence today is `localStorage` (world saves, manifests) plus `sessionStorage` (active-world resume) and a server blob API (cloud saves). See item 7 for the env implications.
+
+---
+
+## 1. Unit/integration tests for `lib/game/save.ts`, persistence, legacy migration
+
+### `/Users/hutusi/workspace/ai/david/monecraft/lib/game/save.test.ts` (1206 lines)
+The primary save suite. Storage is faked, not stubbed globally: a local `memoryStorage(initial)` helper (lines 77–89) returns a hand-rolled `Storage` object backed by a `Map` (`getItem/setItem/removeItem/key/length/clear`). Every test passes this explicitly as the injectable third arg to `readSave(KEY, storage)` / `writeSave(KEY, save, storage)` — no happy-dom `localStorage` and no global stub is used.
+
+What it asserts (describe blocks):
+- **save round-trip** (170–199): `writeSave`→`readSave` preserves every field; a stored flat v16 blob reads back as migrated v17; legacy `inventoryCounts` shape still parses (result `version===17`, `players[0].inventorySlots` undefined).
+- **v1→v2 … v16→v17 migrations** — one describe per step (201–1205). Each tests the pure `migrateSaveVNtoVN+1` function directly plus a `readSave` chain from a stored old blob to `version===17`. Notable: v1→v2 slot packing/merging/overflow (201–282); v11→v12 armor moves out of inventory (575–609); **v16→v17** wraps flat fields into `players:[{id:"local",…}]`, renames `player`→`position`, rewrites pet `owner:"player"`→`"local"` (1119–1205).
+- **container / lootedChests / effects / stats / advancements / mobs / vehicles** serialize+restore round-trips and garbage-dropping (324–1117).
+- **stat restoration helpers** (835–868): clamping, null-on-missing, float-position preservation.
+- **readSave rejects corrupt data** (870–898): missing key, malformed JSON, unknown future version (18), non-numeric seed, non-array changes, JSON `null`/primitives → all `null`.
+- **inventorySlotsSnapshot** (900–911): only persisted fields kept.
+
+Helpers: `sampleSaveV16()` (94–123), `samplePlayer()` (126–147), `sampleSave()` v17 (150–163), `writeSaveV16()` (166–168) which casts a v16 blob through `writeSave` so `readSave` re-runs the players migration.
+
+### `/Users/hutusi/workspace/ai/david/monecraft/lib/game/legacyMigration.test.ts` (85 lines)
+Covers `migrateLegacySave` (the one-time fold of the legacy single-world `SAVE_KEY` = `minecraft_save_v7` into profile+world). Its own `fakeStorage(initial)` Map-backed `Storage` (11–23). `seqDeps(storage)` (29–32) injects deterministic `now`/`uid`. Asserts (34–84): legacy save + global skin fold into a default "Player" profile and one world; blob copied to per-world key `worldSaveKey`, legacy key removed, audio settings untouched; brand-new player creates nothing; idempotency (second run no-op); skin fallback to default.
+
+### `/Users/hutusi/workspace/ai/david/monecraft/lib/game/worlds.test.ts` (248 lines)
+Per-world save-key derivation and manifest CRUD. Own `fakeStorage` Map stub (22–34). Relevant to saves: `worldSaveKey("abc")` === `minecraft_world_save_abc` (65–67); `deleteWorld` removes both index entry and save blob (100–108); `deleteWorldsForProfile` cascades blobs for one profile only (110–123); corrupt/unknown-version manifest fallback (125–140); cloud-link `cloudId` persistence (227–247).
+
+### `/Users/hutusi/workspace/ai/david/monecraft/lib/game/cloudSaves.test.ts` (88 lines)
+gzip codec + open-time reconcile. Own `fakeStorage` (7–19). `gzipJson`/`gunzipJson` round-trip and compression assertion (21–39) — relies on Bun's native `CompressionStream`. `pullCloudSaveIfNewer` (41–87): stubs `globalThis.fetch` (restored in `afterEach`) returning a gzipped save + `x-updated-at` header; asserts adopt-on-first-download, keep-local-when-unchanged, adopt-when-remote-advanced, keep-local-on-failure. Sync cursor stored under `minecraft_cloud_stamps_v1`.
+
+### `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.test.ts`
+Engine-level serialize↔boot round-trips (no Storage — operates on the in-memory `SaveData` object from `engine.serialize()`). `describe("persistence")` at line 1543: restores edits/inventory/position (1544–1564), revert-to-baseline drops the delta (1566–1575), `save.version===17` carries clock/stats/spawn/gameMode (1577–1595). Also: world-type round-trip (107–111), corrupt non-finite coords load onto safe ground (129–133), chest contents round-trip (660–669), looted-set re-roll guard (707–716), door state through block diff (950–953), camera mode never persisted (1079–1084).
+
+### Storage-stubbing pattern summary
+Every unit/integration save test uses a **hand-written Map-backed `Storage` fake passed explicitly** into the injectable `storage` param (default `= localStorage` in `save.ts` lines 278, 362). happy-dom is registered globally (`tests/setup.ts`) but the save tests do **not** rely on its `localStorage`. `bun test` env is set up via `bunfig.toml` → `preload = ["./tests/setup.ts"]`.
+
+---
+
+## 2. E2E (Playwright) tests touching saves
+
+Config: `/Users/hutusi/workspace/ai/david/monecraft/playwright.config.ts`. Shared helper: `/Users/hutusi/workspace/ai/david/monecraft/e2e/helpers.ts`.
+
+### Shared e2e helper — `e2e/helpers.ts`
+The `gamePage` fixture (lines 9–65) is the shared seeding path. `page.addInitScript` (29–49) seeds two localStorage manifests **only when absent** (so a test's own writes survive reload):
+- `minecraft_profiles_v1` → `{version:1, profiles:[{id:"e2e-profile",name:"Tester",skinId:"default",createdAt:1}], activeProfileId:"e2e-profile"}` (33–37).
+- `minecraft_worlds_v1` → `{version:1, worlds:[{id:"e2e-world",profileId:"e2e-profile",name:"Test World",seed:1337,worldgenVersion,createdAt:1,lastPlayedAt:1}]}` (38–45).
+- `minecraft_touch_v1` when `touchMode==="on"` (46).
+Fixture then drives menus ("Play locally" → profile → world), waits on `window.__monecraft`. Also exports `calmDaytime`, `playerPosition`, `acquirePointerLock`, `itemCount`. All assertions go through the `window.__monecraft` debug handle (declared in `useMinecraftGame.ts` 82–86), not pixels.
+
+### `e2e/smoke.e2e.ts` — save-across-reload assertions (uses the seeded fixture; no own `addInitScript`)
+- **"a chest opens, stores an item, and keeps it across a reload"** (144–193): builds a chest, moves grass into slot 0, then at 184–187 reads the tab's world id from `sessionStorage.getItem("monecraft_active_session")` and manually writes `localStorage.setItem("minecraft_world_save_"+worldId, JSON.stringify(engine.serialize()))`, `page.reload()`, asserts the container slot restores as `"grass"` (191–192).
+- **"inventory edits persist across a plain reload, with no explicit save"** (195–218): moves a stack, reloads WITHOUT saving; asserts the app's unmount/leave-save persisted it (isolates the leave-save from the 15s autosave).
+- **"picking a skin persists across a reload"** (259–277): reads/reloads via `minecraft_profiles_v1` (267).
+- **"saving from the pause menu persists the world across a reload"** (280–300): Escape → "Save Game", reads `localStorage.getItem("minecraft_world_save_"+worldId)`, asserts non-null, `.seed===seed`, `.version===17` (291–293), reloads, asserts seed and position survive.
+
+### `e2e/cloudSaves.e2e.ts` (120 lines)
+Own `addInitScript` (39–46) seeds only `minecraft_profiles_v1` (id `cloud-profile`). Full single-player cloud round-trip against the pglite Next stack: registers an account, creates local world "Roamer", places a distinctive Stone block in mid-air (73–82), Save &amp; Quit, "Upload to cloud" → card flips to Synced, deletes local copy, **clears the sync cursor** via `localStorage.removeItem("minecraft_cloud_stamps_v1")` (101) to simulate a fresh device, downloads via `/api/worlds`, asserts the mid-air Stone block survived push→delete→pull (112–113).
+
+### `e2e/accountSp.e2e.ts` (~120 lines)
+Account-mode single-player cross-device journey. Persistence is **server-side** (no localStorage seeding). Proves `window.__monecraft.net == null` (SP, no game server), places a Stone marker, "Save &amp; Quit to Worlds" (the unmount pushes the blob — server-polled), then a **fresh browser context** signs into the same account and finds the marker (75–119).
+
+### `e2e/menu.e2e.ts` (134 lines)
+Starts from empty storage (drives real create-profile/world menus). Save-relevant: **"reloading resumes the world being played"** (84–96) — creates world seed 777, `page.reload()`, asserts the tab resumes the same world with no menu click (session-resume behavior). Also "switch between worlds without a reload" uses a `window.__noReload` marker to prove in-app switch (22–53); the Save &amp; Quit button is exercised at 43.
+
+### `e2e/pwa.e2e.ts`
+Own `addInitScript` (38–54) seeds the same `minecraft_profiles_v1` + `minecraft_worlds_v1` manifests as the fixture; asserts full offline single-player play after one online visit (not a save-content assertion, but seeds save manifests).
+
+### `e2e/touch.e2e.ts`
+Imports the shared `helpers.ts` fixture (so it seeds manifests via the fixture) but makes no save assertions.
+
+### Not touching saves
+`e2e/multiplayer.e2e.ts` and `e2e/determinism.e2e.ts` do not use localStorage (server-persisted / seed-digest respectively).
+
+---
+
+## 3. Component tests touching game shell / `useMinecraftGame` mount/unmount save behavior
+
+There is **no direct component test of `useMinecraftGame`'s mount/unmount autosave** — that behavior is only covered end-to-end (the smoke.e2e "plain reload, no explicit save" and pause-menu tests above). The hook's save lifecycle lives in `/Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts`:
+- `persistGame` writes `writeSave(saveKey, api.serialize())` (88–95).
+- `saveKeyRef = useRef(worldSaveKey(opts.world.id))` (122).
+- `autoSave` on `setInterval(AUTOSAVE_INTERVAL_MS)` + `beforeunload` (391–397); online worlds skip localStorage entirely (392, comment 388).
+- **Unmount cleanup persists** (488–498) so progress survives Fast Refresh; skipped for Load/Reset via `skipUnmountSaveRef`.
+- `resetNow` does `localStorage.removeItem(saveKeyRef.current)` (642); `quitToWorlds` persists synchronously before leaving (652–658).
+
+Shell-level save wiring in `/Users/hutusi/workspace/ai/david/monecraft/components/GameShell.tsx`: `writeSave` on cloud-adopt (172, 205), `localStorage.removeItem` for cloud key (355).
+
+Component tests that exercise the save **UI surface** (mocked callbacks, not real persistence):
+- `/Users/hutusi/workspace/ai/david/monecraft/components/game/PauseMenu.test.tsx` — clicks "Save Game" / "Load Save" / "Save &amp; Quit to Worlds" and asserts `onSave` called once (27, 42–46); shows transient save message (69–71); Save Game hidden in some modes (170–175). Callbacks are mocks; no storage.
+- `/Users/hutusi/workspace/ai/david/monecraft/components/menu/WorldSelect.test.tsx` — cloud upload/download/synced-badge UI with a mocked `onlineClient`; `localStorage.clear()` in setup (59); creates worlds via real `createWorld` into happy-dom localStorage (155–156); asserts Upload vs Synced button per local world (152–170).
+- `/Users/hutusi/workspace/ai/david/monecraft/components/menu/ProfileSelect.test.tsx` — references localStorage (manifest-backed); no world-save assertions.
+
+---
+
+## 4. `docs/save-format.md` — current contents summary
+
+Full path `/Users/hutusi/workspace/ai/david/monecraft/docs/save-format.md` (108 lines). Everything here is localStorage-centric and will need IDB updates.
+
+- **Schema** (1–44): `SaveData` version **17**, defined in `lib/game/types.ts`. Since v17, per-player fields live in `players: SavedPlayer[]` (single `"local"` entry in SP); world-level fields stay top-level. Field-by-field contract: `seed`, `worldType`, `gameMode`, `difficulty`, `hardcore`, `gameOver`, `changes` (block diff), inventory slots (durability/enchantments/customName), `xp`, equipped armor, selected slot, position, `dayClock/hearts/hunger`, `spawnPoint`, `blockEntities` (chests), `effects`, `lootedChests`, `stats`, `advancements`, `mobs`, `vehicles`. Light is never serialized (derived cache). Oxygen/burn timers transient.
+- **Storage location (line 34)** — the load-bearing line for the migration: *"Each world's `SaveData` is stored in its own localStorage key, `minecraft_world_save_&lt;worldId&gt;` (`worldSaveKey` in `lib/game/worlds.ts`). Read/write and restore validation live in `lib/game/save.ts` — `readSave`/`writeSave` take the key as a parameter and the `Storage` is injectable for tests."* Legacy single-world key `SAVE_KEY = minecraft_save_v7` read once by migration. Audio prefs under separate global `minecraft_audio_v1`.
+- **Version history** (46–75): full v1→v17 changelog plus `WORLDGEN_VERSION` bumps; unknown future versions rejected.
+- **Profiles &amp; worlds** (77–93): three localStorage keys — `minecraft_profiles_v1`, `minecraft_worlds_v1`, `minecraft_world_save_&lt;worldId&gt;`; all `{version:1,…}` envelopes with total readers. `worldgenVersion` per-world replaces the old whole-store `SAVE_KEY` bump. Shell remembers active world in `sessionStorage`. Legacy migration gated on absence of `minecraft_profiles_v1` (91–93).
+- **Autosave** (95–97): *"Every 15s via `setInterval`, plus on `beforeunload`, all writing to the active world's `minecraft_world_save_&lt;id&gt;` key. 'Save &amp; Quit to Worlds' also persists synchronously before leaving, because the interval is cleared on unmount and `beforeunload` does not fire on an in-app world switch."*
+- **Compatibility rules** (99–107): diffs-against-terrain (bump `WORLDGEN_VERSION`); SHA-256 worldgen characterization tests; shape changes require `version` bump; round-trip tests in `lib/game/save.test.ts` + `GameEngine.test.ts`; durable-gear one-per-slot; note save-format/worldgen impact in PRs.
+
+Things that will need updating for IDB: line 34 (storage backend + injectable `Storage` sync API), the Autosave section (synchronous `setItem`/`beforeunload` assumptions — IDB is async and `beforeunload` can't await), and the Profiles &amp; worlds three-keys description.
+
+---
+
+## 5. `docs/testing.md` — save/persistence coverage-map entries &amp; storage policy
+
+Full path `/Users/hutusi/workspace/ai/david/monecraft/docs/testing.md` (94 KB; coverage map is a table).
+
+- **Line 5** (env policy): *"`bun test` … The shared setup (`tests/setup.ts`, preloaded via `bunfig.toml`) registers happy-dom so React component tests run under the same runner; the game engine itself needs no DOM."*
+- **Line 23 — "Save format" row → `lib/game/save.test.ts`**: round-trips incl. v4→v5/v5→v6/v6→v7, `lootedChests`, `effects`, `xp`, per-slot `enchantments` (round-trips + unknown-id/garbage dropping + level clamping); additive enchant/effect ids ride existing fields with no bump; legacy-shape parsing; durable-stack splitting; corrupt-data rejection; `restorePlayerPosition` float-coords/reject-non-finite; v13→v14 mobs; v15→v16 vehicles.
+- **Line 27 — "Profiles &amp; worlds" row → `lib/game/{profiles,worlds,legacyMigration}.test.ts`**: manifest CRUD + total readers, seed resolution, per-profile filtering, per-world key derivation, cascade delete, one-time legacy migration (copy-then-remove, idempotency, audio untouched).
+- **Line 17 — "Online accounts &amp; worlds"**: includes `lib/game/cloudSaves.test.ts` (LWW save-blob stale guard, gzip codec round-trip).
+- **Line 26 — "Advancements &amp; stats"** and **Line 35 — "Villages, professions &amp; raids"**: both cite `lib/game/save.test.ts` for stats/advancements and villager-profession save round-trips.
+- **Line 30 — "Simulation" → `GameEngine.test.ts`**: raft/ship persistence, corrupt non-finite coords loading safe, world-type serialize/restore, dungeon re-roll guard, "saves".
+- **Line 43 — "Audio settings"**: *"own localStorage key, not the world save."*
+- **Line 51 — "Browser E2E" → `e2e/smoke.e2e.ts`**: includes "save via pause menu across reload".
+- **Line 54 — "Browser E2E (cloud saves)" → `e2e/cloudSaves.e2e.ts`, `e2e/accountSp.e2e.ts`**: full descriptions of the SP cloud round-trip and cross-device journey.
+- **Line 58 — "Game modes"**: mode "persists through save".
+
+Stated storage-testing policy: no explicit "how storage is faked" statement, but line 5 sets the happy-dom/preload policy, and lines 73/75 note happy-dom's missing capabilities (**no 2D canvas context** line 73, **no `AudioContext`** line 75) with the seam-testing convention — no mention of IndexedDB.
+
+---
+
+## 6. `docs/architecture.md` — persistence/save layer &amp; engine step order
+
+Full path `/Users/hutusi/workspace/ai/david/monecraft/docs/architecture.md` (54 KB).
+
+Persistence layer:
+- **Line 23** (`GameShell` above `useMinecraftGame`): profile→world→play state machine; runs one-time legacy migration on mount; renders `MinecraftGame` keyed by `world.id` (+ reload nonce). Switching/Load/Reset changes the key → React unmounts → cleanup disposes renderer/audio/input and **clears rAF + autosave** → fresh mount, no page reload. Tab's active world in `sessionStorage`. `useMinecraftGame` persists to `minecraft_world_save_&lt;id&gt;`. Cloud-linked worlds mirror via `cloudSaves.pushSave` + reconcile via `pullCloudSaveIfNewer` (adopt only when remote advanced past this device's cursor); cloudId is a local-manifest field, not part of the save format.
+- **Line 36** (`GameEngine.ts`): owns `GameState`, `dispatch`, `step`, **serializes saves**, `subscribe`/`getSnapshot`; `addPlayer`/`removePlayer` restore/serialize a player's persisted v17 slice.
+- **Line 139** (`config.ts`): "autosave interval, the legacy `SAVE_KEY`, and `WORLDGEN_VERSION`."
+- **Line 140** (`save.ts`): *"versioned (de)serialization with an injectable `Storage` and a per-world save key (`worldSaveKey`, `lib/game/worlds.ts`); `profiles.ts`/`worlds.ts` hold the manifests, `legacyMigration.ts` folds an old single save into them."*
+- **Line 110**: volume settings under `minecraft_audio_v1`, never part of world save.
+- **Line 188** (client-only rule): *"never touch `window`/`document`/localStorage at module top level … The engine itself must stay DOM-free so it keeps running under `bun test`."*
+
+Engine step order &amp; autosave:
+- **Line 44** header: "### Per-frame step order (in `GameEngine.step`)".
+- **Line 46 — step 0 (pause gate)**: *"while `state.paused`, `step` refreshes the snapshot and returns — mobs, day clock, mining, and stats all freeze (**autosave still serializes fine**)."* This is the only step-order mention of autosave.
+- Other persistence-touching mechanics described: Vehicles (61), Villages/raids reload de-dup (67), Hardcore force-save on gameOver (73), block-entities/chests `serialize()` (79), dungeon loot persisted set (81), online replica skips localStorage (124).
+
+---
+
+## 7. Test environment &amp; IndexedDB
+
+- **Env setup**: `bunfig.toml` → `[test] preload = ["./tests/setup.ts"]`. `tests/setup.ts` (24 lines) captures native `fetch`/`WebSocket` before happy-dom overrides them (line 10), then `GlobalRegistrator.register()` (line 15) from `@happy-dom/global-registrator` v20.10.2, and registers a `@testing-library/react` `cleanup()` in `afterEach` (19–23). No other preload/setup file; no polyfills registered.
+- **happy-dom does NOT provide IndexedDB.** happy-dom v20.10.2 (`node_modules/happy-dom`) has no IndexedDB implementation: `node_modules/happy-dom/lib/` has no `indexed`/`idb` directory, and grep for `indexeddb` across the entire `node_modules/happy-dom/` and `node_modules/@happy-dom/` trees returns **no matches**. So after `GlobalRegistrator.register()`, `globalThis.indexedDB` / `IDBFactory` are undefined — IDB-backed code will throw under `bun test` unless a polyfill is added.
+- **No polyfill present.** No `fake-indexeddb` (or any `idb` package) in `package.json` devDependencies; no global registration anywhere. The current save tests dodge this entirely by injecting a Map-backed `Storage` fake into `readSave`/`writeSave` rather than touching any browser storage global.
+- **Bun-native globals that DO work in tests**: `CompressionStream`/`DecompressionStream` (used by `cloudSaves.ts` 38/43 and exercised by `cloudSaves.test.ts`) resolve from Bun's runtime, not happy-dom — so Bun does provide those Web Streams globals, but **not** IndexedDB.
+- **Implication for the migration**: to unit/integration-test an IDB-backed save layer under `bun test`, a polyfill such as `fake-indexeddb` would need to be added and registered (either in `tests/setup.ts` after happy-dom registration, or via a new preload). The existing injectable-`Storage` pattern (`storage: Storage = localStorage`) is the abstraction seam the tests rely on; an IDB backend would need an analogous injectable async interface for the suites in item 1 to keep their Map-fake approach. E2E (Playwright/real Chromium) already has native IndexedDB, so `e2e/*` would work unchanged aside from the manual `localStorage.setItem`/`getItem` save assertions in `smoke.e2e.ts` (184–192, 287–293) and the cursor clear in `cloudSaves.e2e.ts` (101).</result>
+<usage><subagent_tokens>120691</subagent_tokens><tool_uses>32</tool_uses><duration_ms>255192</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a3207f32c977ef78b</task-id>
+<tool-use-id>toolu_01KD28DmXeq5o8fd3PP7cLoa</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/17190350-8048-4d6e-a7f7-8012a5b3e365/tasks/a3207f32c977ef78b.output</output-file>
+<status>completed</status>
+<summary>Agent "Design IndexedDB saves migration plan" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>The Write tool isn't available in this session, so I'll deliver the full plan as my response.
+
+---
+
+# Implementation Plan: Move World Saves from localStorage to IndexedDB
+
+Branch: `feature/idb-saves` off `main`. Scope: ONLY the `minecraft_world_save_&lt;worldId&gt;` blobs move to IndexedDB. Manifests (`minecraft_profiles_v1`, `minecraft_worlds_v1`), prefs, cloud stamps, and the session pointer stay in localStorage. SaveData stays v17 — only the container moves.
+
+All facts below were re-verified against the current tree; every file:line in the brief checks out (one correction: the legacy-migration comment in the brief says "v1→v5 chain" at `legacyMigration.ts:29` but the chain is v1→v17 — irrelevant to the design).
+
+## 1. Core design decisions (with rationale)
+
+**D1 — Store the SaveData object (structured clone), not a JSON string.**
+Refactor `lib/game/save.ts` to extract the pure validate+migrate chain as `parseSave(value: unknown): SaveData | null`; `readSave(key, storage)` becomes `parseSave(JSON.parse(storage.getItem(key)))` with the same try/catch → null semantics. Rationale:
+- The server's sync `readSave` path (`server/persistence.ts:37` one-key Storage shim) keeps working byte-for-byte unchanged.
+- IDB reads skip a `JSON.parse` of a multi-hundred-KB string on boot; writes skip `JSON.stringify` in the unload handler (structured clone happens inside `put()` — roughly the same cost, but only one serialization instead of stringify-then-clone).
+- `GameEngine.serialize()`/`serializePlayer` (verified at `GameEngine.ts:1174-1191`, `:1130-1147`) produce only plain objects/arrays/numbers/strings/null — structured-clone-safe, no THREE vectors leak through.
+- Corruption/tamper safety is unchanged: every IDB read still flows through `parseSave` (full v1→v17 migration + validation), so a hand-edited or truncated record degrades to `null` exactly like today.
+
+**D2 — Hand-rolled IDB wrapper, injectable async store, localStorage-adapter fallback.**
+One DB `minecraft` (matches the `minecraft_*` key family), one object store `worldSaves`, IDB version 1, keyed by raw `worldId` (including synthetic `cloud:&lt;id&gt;` ids — they're plain strings, valid IDB keys). No `idb`/`dexie` dependency. If `indexedDB` is undefined or `open()` rejects (private modes), the store flips permanently (for the session) to a localStorage-backed adapter using the existing `worldSaveKey(id)` keys — i.e., degraded mode is exactly today's behavior, including today's quota risk.
+
+**D3 — Per-key write queue with latest-wins coalescing; reads are read-your-writes.**
+The store keeps `latest: Map&lt;worldId, SaveData | null&gt;` (null = tombstone) set synchronously on every `write`/`remove`, plus a single in-flight flusher per key. `read()` short-circuits to `latest` when present — so a remount read can never see a stale blob regardless of IDB timing. This solves hard problem 2 without touching React commit ordering: React runs the old mount's cleanup (which enqueues the write synchronously) before the new mount's effects (which issue the read).
+
+**D4 — Boot read moves to GameShell (option a): a `WorldSaveGate` preloads the blob and passes it down as a prop.**
+`attachMount` stays synchronous; `new GameEngine({ save: initialSave, ... })`. Chosen over async-attachMount because: it mirrors the existing cloud-adopt preload (already async in `openWorld`/`playCloud`); it avoids StrictMode/cancellation hazards in the callback ref (`reactStrictMode: true` is on — verified in `next.config.mjs`); and the Load/Reset reload-nonce flow slots in cleanly by moving the existing React `key` from `MinecraftGame` up onto the gate, so a nonce bump unmounts the old game (enqueueing its write or skipping via `skipUnmountSaveRef`) before the gate's fresh read — which the queue then orders correctly.
+
+**D5 — Unload flush: replace `beforeunload` with `pagehide` + `visibilitychange→hidden`, starting the IDB put synchronously; NO localStorage emergency mirror.** Full justification in §4.
+
+**D6 — Migration: lazy per-key copy-then-delete on read, plus an eager background sweep at GameShell mount.** Details in §3.
+
+## 2. New modules
+
+### `lib/game/idbKv.ts` (~80 lines, client-safe: no `indexedDB` touched at module top level)
+
+```ts
+export type AsyncKv = {
+  /** Resolves false when IDB is unusable here (missing global, open() failed). */
+  ready(): Promise&lt;boolean&gt;;
+  get(key: string): Promise&lt;unknown&gt;;                 // undefined when absent
+  put(key: string, value: unknown): Promise&lt;void&gt;;    // resolves on tx.oncomplete (durable)
+  delete(key: string): Promise&lt;void&gt;;
+  /** Starts a put synchronously on an already-open connection (unload path). False if not open. */
+  tryPutSync(key: string, value: unknown): boolean;
+};
+export function createIdbKv(dbName: string, storeName: string, factory?: IDBFactory): AsyncKv;
+```
+
+Implementation notes:
+- Lazy `open()` on first op, cached connection promise. `onupgradeneeded` → `createObjectStore(storeName)`. `onclose`/`onversionchange` → null the cached connection so the next op reopens.
+- `put`/`delete` resolve on `transaction.oncomplete` (not request `onsuccess` — request success fires before durable commit; the "Saved" toast must mean committed).
+- `factory` param is the test seam for `fake-indexeddb`'s `IDBFactory` — no global registration needed.
+
+### `lib/game/saveStore.ts` (~150 lines)
+
+```ts
+export type WorldSaveStore = {
+  read(worldId: string): Promise&lt;SaveData | null&gt;;
+  write(worldId: string, data: SaveData): Promise&lt;void&gt;;  // queued, latest-wins; resolves when durable
+  remove(worldId: string): Promise&lt;void&gt;;
+  /** Unload-safe fire-and-forget: begins the IDB put synchronously when possible. */
+  flushWrite(worldId: string, data: SaveData): void;
+  /** Copies every localStorage `minecraft_world_save_*` blob into IDB (idempotent sweep). */
+  migrateAll(): Promise&lt;void&gt;;
+};
+export function createWorldSaveStore(deps?: { kv?: AsyncKv; storage?: Storage }): WorldSaveStore;
+/** App-wide singleton (lazily builds its kv on first use — SSR-import safe). */
+export const worldSaves: WorldSaveStore;
+export function requestPersistentStorage(): void;  // opportunistic navigator.storage.persist()
+```
+
+Semantics:
+- **read(id)**: (1) if `latest` has an entry → return it (tombstone → null). (2) `kv.get(id)` → if a record exists → `parseSave(record)`. (3) LS fallback: `readSave(worldSaveKey(id), storage)` → if non-null, migrate this key (§3) and return it. (4) null.
+- **write(id, data)**: set `latest`, kick the per-key flush loop (`put` whatever is latest at execution time; on success, if `latest` still holds that exact value, clear it AND opportunistically `storage.removeItem(worldSaveKey(id))` — a lingering un-migrated LS copy is now stale, deleting it both prevents shadow-resurrection and frees quota on the first save). Returned promise resolves when this-or-newer data is durable.
+- **remove(id)**: synchronously `storage.removeItem(worldSaveKey(id))` (cheap, closes the LS-shadow window immediately), set tombstone in `latest`, enqueue `kv.delete`.
+- **flushWrite(id, data)**: set `latest` (so any racing read sees it), then `kv.tryPutSync(id, data)`; if the connection isn't open (never warmed / browser closed it), fall back to `void write(...)` — best effort.
+- **Fallback mode**: if `await kv.ready()` is false (checked once, memoized), all ops go straight to `storage` under `worldSaveKey(id)` via `readSave`/`writeSave` — current behavior preserved verbatim, quota throws surface as rejected `write()` → "Save failed" toast, same as today.
+- `requestPersistentStorage`: `void navigator.storage?.persist?.().catch(() =&gt; {})`, guarded for SSR/tests.
+
+No import cycles: `saveStore` imports `save.ts` (parseSave/readSave/writeSave) and `worlds.ts` (`worldSaveKey`, `WORLD_SAVE_PREFIX`); neither imports it back (`worlds.ts` gains a lazy `import("./saveStore")` — see §5).
+
+## 3. Migration mechanism &amp; failure semantics
+
+Mirrors `legacyMigration.ts` copy-then-delete semantics per key:
+
+1. Copy: `await kv.put(id, parsed)` — LS original untouched until this durably commits.
+2. Verify implicitly via `put` resolving on `tx.oncomplete`.
+3. Delete: `storage.removeItem(worldSaveKey(id))` inside its own try/catch (a failed delete just leaves a shadowed, quota-wasting copy that the next successful `write()` cleanup removes).
+
+Failure semantics:
+- IDB put fails mid-migration → LS blob remains authoritative; `read` returned the parsed data anyway (play proceeds); next read retries the migration. **During any transitional/failed state, reads find the blob** because the read order is IDB-record-presence first, LS fallback second.
+- Corrupt LS blob (`readSave` → null) → return null, leave the blob in place (never destroy data we couldn't parse).
+- Idempotent: re-running sees the IDB record and no-ops. Concurrent lazy-read-migration + sweep on the same key serialize through the per-key queue of the shared singleton.
+
+**Eager sweep** `migrateAll()`: iterate `localStorage` **by key prefix** `WORLD_SAVE_PREFIX` (index iteration, not the worlds manifest — this also catches `cloud:&lt;id&gt;` blobs, which have **no manifest entry**, and orphans), migrating sequentially. Fired (fire-and-forget, try/caught) from the GameShell mount effect right after `migrateLegacySave()` — which deliberately still writes to localStorage (it's sync, Storage-injectable, and fully tested); the sweep picks its output up immediately. No presence flag needed: emptiness of the prefix scan is the natural terminal state, and per-key idempotency makes re-runs free.
+
+## 4. Unload-save design
+
+Replace the `beforeunload` → `autoSave` registration (`useMinecraftGame.ts:397`) with:
+
+```ts
+const flushSave = () =&gt; {
+  if (online) return;
+  worldSaves.flushWrite(worldId, gameEngine.serialize());  // silent — no toast
+  syncCloudSave(gameEngine, true);
+};
+const onVisibility = () =&gt; { if (document.visibilityState === "hidden") flushSave(); };
+window.addEventListener("pagehide", flushSave);
+document.addEventListener("visibilitychange", onVisibility);
+```
+
+(Deregister both in the cleanup; the 15s interval autosave keeps its "Saved" toast; the flush is silent so tab-switching doesn't toast-spam — but `syncCloudSave` keeps `notify=true` so a rare cloud conflict still warns when the player returns.)
+
+Browser-behavior justification:
+- **Unload event order** (all modern engines): `beforeunload` → `visibilitychange(hidden)` → `pagehide` → `unload`. `visibilitychange→hidden` and `pagehide` both fire on reload and same-tab navigation — so the e2e "plain reload persists" flow is covered twice; the claim in the brief is correct.
+- **Mobile coverage**: iOS Safari and Android background-kill never reliably fire `beforeunload`; `pagehide` is the reliable navigation/close signal on iOS, and `visibilitychange→hidden` is the Page-Lifecycle-recommended "last reliable moment" for app-switch (which happens seconds-to-minutes before a background process kill — the put has ample time). This *shrinks* today's mobile data-loss window from ≤15s (autosave only) to ~0 on app-switch.
+- **Does an IDB put started in the handler commit?** Two layers: (1) Chromium and Firefox complete transactions that were created with requests queued before document teardown (the backing-store work continues in the browser process); WebKit does in current versions, historically flakier. (2) Independent ordering guarantee for the reload case: IDB readwrite transactions on the same object store acquire scope locks **in creation order across connections**, so the new document's boot-read transaction queues behind the old document's write transaction — the reload can't read-around the write; the only failure mode is the write tx being aborted outright.
+- **bfcache bonus**: dropping `beforeunload` improves back/forward-cache eligibility (Safari/Firefox disqualify pages with beforeunload handlers) — relevant for the PWA. On a bfcache restore, `pageshow` resumes the still-mounted game; the interval keeps running; no handler changes needed.
+- **Emergency localStorage mirror: rejected.** It reintroduces the quota throw for exactly the oversized worlds being rescued, and a successful mirror next to a successful IDB put leaves a stale LS copy that the LS-fallback read path could resurrect later (e.g. after a partial site-data clear), silently rolling the world back. The residual risk (a browser aborting an unload-started tx) is bounded by the 15s autosave plus the earlier `visibilitychange` flush.
+- **Connection warmth**: `tryPutSync` needs an open connection; the boot read (shell preload) opens it long before any unload. If the browser closed it (`onclose`), flushWrite degrades to an async `write` — best effort, backstopped by autosave.
+
+## 5. Call-site changes, file by file
+
+### `lib/game/save.ts`
+- Extract `export function parseSave(value: unknown): SaveData | null` = lines 300–335 of today's `readSave` (the seed/changes guards + v1→v17 chain + players check), try/caught.
+- `readSave` delegates: parse the raw string, call `parseSave`. Signature, defaults, and null-on-failure behavior unchanged → server (`server/persistence.ts:37`), `legacyMigration.ts:29`, and all existing tests untouched.
+- `writeSave` unchanged (still used by `legacyMigration`, the saveStore LS-fallback, and tests).
+
+### `lib/game/useMinecraftGame.ts`
+- Options: add `initialSave: SaveData | null`. Replace `saveKeyRef` with `worldIdRef = useRef(opts.world.id)` (the store takes worldIds; drop the `worldSaveKey` import).
+- `persistGame(api, worldId, onMessage)` (`:88-95`): serialize inside try/catch (serialize failure → "Save failed" synchronously), then `void worldSaves.write(worldId, data).then(() =&gt; onMessage("Saved"), () =&gt; onMessage("Save failed"))`.
+- `attachMount` (`:246-267`): `save: onlineRef.current ? null : initialSaveRef.current` — no storage read; stays sync.
+- Autosave interval (`:391-396`): unchanged shape (fire-and-forget persist + cloud sync).
+- Unload handlers: as §4 (replaces `:397` and its cleanup removal at `:505`).
+- Unmount cleanup (`:494-498`): unchanged logic; `persistGame` now enqueues — D3 guarantees the next mount's gate read sees it (Fast Refresh, world switch).
+- gameOver force-save (`:426-429`): unchanged shape.
+- `saveNow` (`:622-628`): unchanged shape; toast now fires on durable commit.
+- `loadNow` (`:629-639`): async probe — `void worldSaves.read(worldId).then((save) =&gt; { if (!save) return flashMessage("No save found", 1400); flashMessage("Loaded"); skipUnmountSaveRef.current = true; scheduleTimeout(() =&gt; opts.onReloadWorld(), 120); })`. (Race-safe: the gate read after remount awaits the queue anyway.)
+- `resetNow` (`:640-651`): `localStorage.removeItem` → `void worldSaves.remove(worldId).then(ok, () =&gt; flashMessage("Reset failed"))`; keep `skipUnmountSaveRef` + the 500ms reload timer (the tombstone makes even an early remount read return null).
+- `quitToWorlds` (`:652-658`): keep calling `persistGame` before `onQuitToWorlds()` — it now just enqueues; navigation no longer needs to block because a quick re-open's gate read awaits the queue. (The duplicate unmount-save that follows coalesces via latest-wins.)
+
+### `components/GameShell.tsx`
+- Add internal `WorldSaveGate({ worldId, children })`: effect keyed on `worldId` runs `worldSaves.read(worldId)` (cancellation-guarded for StrictMode double-invoke), renders the neutral `&lt;div className="menu-screen" /&gt;` until resolved, then `children(save)`.
+- `"play"` branch (`:314-337`): wrap in `&lt;WorldSaveGate key={`${world.id}:${reloadNonce}`} worldId={world.id}&gt;` and drop the key from `MinecraftGame`; pass `initialSave={save}`.
+- `"play-cloud"` branch (`:339-365`): same with `worldId={`cloud:${screen.world.id}`}` and key `` `cloud:${screen.world.id}:${reloadNonce}` ``; the cloud-delete at `:355` becomes `void worldSaves.remove(`cloud:${screen.world.id}`)`.
+- `"play-online"` (`:367-387`): `initialSave={null}` directly, no gate.
+- `openWorld` (`:172`): `if (decision.adopt) await worldSaves.write(worldSaveKeyId → worldId, decision.save)` (already async; awaiting keeps "Opening…" honest). Same at `playCloud` (`:205`) with `cloud:${world.id}`.
+- Mount effect (`:266-284`): after `migrateLegacySave()`, add `void worldSaves.migrateAll().catch(() =&gt; {})`, and `requestPersistentStorage()` gated on `readWorlds().worlds.length &gt; 0` (returning players only — avoids Firefox's permission prompt on first visit; see open questions).
+
+### `components/MinecraftGame.tsx`
+- Props: add `initialSave: SaveData | null`; pass through to `useMinecraftGame` (`:122`).
+
+### `components/menu/WorldSelect.tsx`
+- `uploadToCloud` (`:97-121`): move the read inside the async chain — `void worldSaves.read(world.id).then((save) =&gt; createOnlineWorld({...}).then(async (cloud) =&gt; { ... }))` (or make the handler `async`). Drop the `readSave`/`worldSaveKey` imports if now unused.
+
+### `lib/game/worlds.ts`
+- `deleteWorld` (`:219-229`) and `deleteWorldsForProfile` (`:232-245`): keep the sync manifest write and the injected-`storage.removeItem` (existing tests and injected-storage semantics intact), and add fire-and-forget IDB cleanup: `void import("./saveStore").then(({ worldSaves }) =&gt; worldSaves.remove(id)).catch(() =&gt; {})` — dynamic import keeps this pure-manifest module free of an eager client-store dependency (nothing in `server/` or `app/` imports `worlds.ts`; verified) and inert under bun test (fallback mode no-ops against happy-dom localStorage). The duplication with the store's own `removeItem` is idempotent.
+
+### `lib/game/legacyMigration.ts` — no change (see §3).
+### `server/persistence.ts`, `lib/game/cloudSaves.ts` — no change.
+
+## 6. Test plan
+
+**devDependency**: `fake-indexeddb` (^6). **No `tests/setup.ts` change** — inject `new IDBFactory()` per test instead of global registration, so happy-dom's environment stays untouched for every other suite.
+
+- **`lib/game/save.test.ts`** (extend): `parseSave` direct-object cases — valid v16 object migrates to v17; garbage/undefined/missing-seed → null; ensures the IDB read path (object in, no JSON hop) has first-class coverage.
+- **`lib/game/idbKv.test.ts`** (new, fake-indexeddb `IDBFactory` per test): put/get/delete round-trip with structured-clone fidelity (nested arrays like `changes`); `get` of a missing key → undefined; `ready()` false + op rejection with a throwing/undefined factory; `tryPutSync` false before open, true after a warming `get`.
+- **`lib/game/saveStore.test.ts`** (new, hand-rolled Map-backed `AsyncKv` fake with deferred-controlled `put`): read-empty → null; write→read round-trip; **read during in-flight write returns the pending value** (hard problem 2); latest-wins coalescing (3 rapid writes → final value wins; assert ≤2 puts); `remove` tombstone shadows both IDB and an LS copy; **migration**: LS blob + empty IDB → read returns data, IDB record created, LS key gone; put-failure during migration → data still returned, LS retained; corrupt LS blob → null, LS retained; post-write LS-copy cleanup; **fallback mode** (kv.ready → false): ops hit the injected `Storage` under `worldSaveKey`, including quota-throw → rejected write; `migrateAll` prefix-scan catches manifest-less `cloud:` keys and is idempotent.
+- **`lib/game/worlds.test.ts`**: existing delete tests keep passing (injected-storage removal preserved); no new assertions required.
+- **E2E** (real Chromium, native IDB):
+  - `e2e/helpers.ts`: add `readWorldSave(page)` — `page.evaluate` opening `indexedDB.open("minecraft")` and getting the active session's worldId from the `worldSaves` store; add `saveViaPauseMenu(page)` (Escape → "Save Game" → wait for the "Saved" text, which now means durably committed).
+  - `smoke.e2e.ts:184-192` (chest persistence): replace the manual `localStorage.setItem(serialize())` with the real path — close the chest panel, `saveViaPauseMenu`, reload. (Alternative kept in reserve: raw-IDB put via evaluate, if the UI hop proves brittle.)
+  - `smoke.e2e.ts:287-293`: after "Saved" appears, assert via `readWorldSave(page)` (seed + `version === 17`) instead of `localStorage.getItem`.
+  - `smoke.e2e.ts:195-218` (plain-reload persistence): **unchanged** — it becomes the acceptance test for the pagehide/visibilitychange flush surviving `page.reload()`.
+  - `cloudSaves.e2e.ts` / `accountSp.e2e.ts` / `pwa.e2e.ts`: no save-blob assertions (verified) — run them to confirm the async adopt/write timing.
+
+## 7. Docs
+
+- `docs/save-format.md`: line 34 storage-location paragraph (IDB DB/store, `parseSave`, LS fallback + lazy migration); Autosave section (~95-97: 15s interval + pagehide/visibilitychange flush + Save &amp; Quit enqueue); Profiles &amp; worlds section (~79: three LS keys → two LS manifests + one IDB store); Legacy migration section (sweep note).
+- `docs/architecture.md`: ~line 23 (`save.ts` row → add `saveStore.ts`/`idbKv.ts`), ~139-140 persistence bullets, line 110's "localStorage persistence is skipped" → "local persistence", keep line 188's client-only convention (still true).
+- `docs/testing.md`: coverage-map rows for save format / profiles &amp; worlds; note the `fake-indexeddb` injection pattern (no global registration).
+- `CHANGELOG.md` entry; `docs/manual.md` if it mentions where saves live (grep during implementation).
+
+## 8. Commit slicing (each slice keeps the verify gate green)
+
+1. `refactor(save): extract parseSave from readSave` — save.ts + parseSave tests. Pure refactor, zero behavior change.
+2. `feat(save): async world-save store over IndexedDB` — idbKv.ts, saveStore.ts, fake-indexeddb devDep, both new test files. Nothing wired yet.
+3. `feat(save): route world saves through the IndexedDB store` — useMinecraftGame, GameShell (gate + sweep + persist request), MinecraftGame, WorldSelect, worlds.ts, plus the e2e updates (they must land with the switch to stay green).
+4. `docs(save): document the IndexedDB save store` — docs + CHANGELOG.
+
+## 9. Verification checklist
+
+- `bun run lint`, `bun run typecheck`, `bun run format:check`, `bun test`, `bun run build` (the CI verify set), plus `bun run test:e2e` (shell/renderer touched — required per AGENTS.md).
+- Manual: dev-server Fast Refresh mid-edit → edits survive the remount (queue ordering); pause-menu Load / Reset / Save; Save &amp; Quit → immediately re-open the same world; DevTools → Application → IndexedDB shows `minecraft/worldSaves` and the LS blob keys gone after the sweep; Firefox private window → play/save/reload works via the LS fallback; a cloud-linked world round-trips (upload, edit, pull on another profile); hardcore game-over → world deleted from both stores.
+- Targeted: reload mid-game with DevTools offline (flush + boot from IDB); mobile Safari spot-check of app-switch → relaunch persistence if a device is available.
+
+## 10. Risks &amp; open questions for you to decide
+
+1. **Unload-commit residual risk** (flagged, accepted?): an IDB tx started in `pagehide` is not spec-guaranteed to commit; in practice Chromium/Firefox/modern WebKit complete it, the reload case is additionally protected by cross-connection tx ordering, and worst-case loss is bounded by the 15s autosave + the earlier `visibilitychange` flush. Recommendation: accept; no LS mirror (rationale in §4).
+2. **`navigator.storage.persist()` UX**: Firefox shows a user-facing permission prompt; Chrome decides silently. Recommendation: request only when ≥1 world exists (returning players). Alternatives: always, or skip entirely.
+3. **Object vs JSON string in IDB**: plan recommends the object + `parseSave` (D1). If you'd rather keep byte-identical parity with the cloud/gzip pipeline, storing the JSON string and reading through a one-key shim (like the server) is a ~20-line variant with slightly slower boots.
+4. **Dropping `beforeunload` entirely** (D5): strictly-better coverage + bfcache eligibility, but it's a behavior change worth a conscious yes.
+5. **Storage eviction**: IDB is best-effort storage like LS; a browser under pressure can clear it (persist() mitigates). Multi-tab same-world play remains last-write-wins with no coordination — unchanged from today, out of scope.
+6. **DB naming**: `minecraft` / `worldSaves` proposed (matches the `minecraft_*` key family); say the word if you prefer `monecraft`.
+
+### Critical Files for Implementation
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/save.ts
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts
+- /Users/hutusi/workspace/ai/david/monecraft/components/GameShell.tsx
+- /Users/hutusi/workspace/ai/david/monecraft/lib/game/worlds.ts
+- /Users/hutusi/workspace/ai/david/monecraft/e2e/smoke.e2e.ts</result>
+<usage><subagent_tokens>120058</subagent_tokens><tool_uses>28</tool_uses><duration_ms>616965</duration_ms></usage>
+</task-notification>
