@@ -109,3 +109,13 @@ If a Monitor is armed (check TaskList), keep `delaySeconds` at 1200–1800s — 
 ---
 
 check code reviews on the pr
+
+---
+
+<task-notification>
+<task-id>b1w043zl2</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/387fb11e-dc86-4116-8e8d-66e6c084564a/tasks/b1w043zl2.output</output-file>
+<status>completed</status>
+<summary>Background command "Run world+game suites and static checks" completed (exit code 0)</summary>
+</task-notification>
