@@ -1,0 +1,20 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "fe2f9b18f7b3",
+  "session_id": "87ffd6d2-0fbf-4ddd-8a68-b6d40a8216b6",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T17:32:05.070745Z",
+  "branch": "feat/nether",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "54262edaf383",
+  "token_usage": {
+    "input_tokens": 99026,
+    "cache_creation_tokens": 947756,
+    "cache_read_tokens": 169441753,
+    "output_tokens": 307135,
+    "api_call_count": 383
+  }
+}
