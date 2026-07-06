@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "15c620af793c",
+  "session_id": "387fb11e-dc86-4116-8e8d-66e6c084564a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T12:54:54.333307Z",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/systems/redstone.ts",
+    "lib/game/engine/systems/mining.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "17eade054c96",
+  "token_usage": {
+    "input_tokens": 76995,
+    "cache_creation_tokens": 824132,
+    "cache_read_tokens": 103879088,
+    "output_tokens": 250364,
+    "api_call_count": 267
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-06T12:54:54.267581Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 172,
+    "human_modified": 5,
+    "human_removed": 0,
+    "total_committed": 172,
+    "total_lines_changed": 183,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}

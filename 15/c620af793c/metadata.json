@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "15c620af793c",
+  "strategy": "manual-commit",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/redstone.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/15/c620af793c/0/metadata.json",
+      "transcript": "/15/c620af793c/0/full.jsonl",
+      "content_hash": "/15/c620af793c/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 76995,
+    "cache_creation_tokens": 824132,
+    "cache_read_tokens": 103879088,
+    "output_tokens": 250364,
+    "api_call_count": 267
+  }
+}
