@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f92542d18eef",
+  "strategy": "manual-commit",
+  "branch": "feat/redstone-lite",
+  "checkpoints_count": 2,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/f9/2542d18eef/0/metadata.json",
+      "transcript": "/f9/2542d18eef/0/full.jsonl",
+      "content_hash": "/f9/2542d18eef/0/content_hash.txt",
+      "prompt": "/f9/2542d18eef/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 41519,
+    "cache_creation_tokens": 1019673,
+    "cache_read_tokens": 62122046,
+    "output_tokens": 223823,
+    "api_call_count": 223
+  }
+}
