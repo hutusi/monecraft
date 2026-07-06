@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3ab1d4ab44a3",
+  "strategy": "manual-commit",
+  "branch": "feat/nether",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/materials.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/config.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/portal.test.ts",
+    "lib/game/engine/systems/portal.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/game/useMinecraftGame.ts",
+    "lib/ui/spritePixels.test.ts",
+    "lib/ui/spritePixels.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts",
+    "lib/world/lighting.ts",
+    "lib/world/meshing.ts",
+    "lib/world/voxelWorld.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3a/b1d4ab44a3/0/metadata.json",
+      "transcript": "/3a/b1d4ab44a3/0/full.jsonl",
+      "content_hash": "/3a/b1d4ab44a3/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 17049,
+    "cache_creation_tokens": 115341,
+    "cache_read_tokens": 31539772,
+    "output_tokens": 69283,
+    "api_call_count": 74
+  }
+}
