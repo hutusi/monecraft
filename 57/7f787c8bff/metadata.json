@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "577f787c8bff",
+  "strategy": "manual-commit",
+  "branch": "feat/nether",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/saveStore.test.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/57/7f787c8bff/0/metadata.json",
+      "transcript": "/57/7f787c8bff/0/full.jsonl",
+      "content_hash": "/57/7f787c8bff/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12942,
+    "cache_creation_tokens": 76847,
+    "cache_read_tokens": 14705299,
+    "output_tokens": 26114,
+    "api_call_count": 43
+  }
+}
