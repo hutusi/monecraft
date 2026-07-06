@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d6445d9f57cf",
+  "strategy": "manual-commit",
+  "branch": "feat/nether",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/engine/systems/mining.test.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/items.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d6/445d9f57cf/0/metadata.json",
+      "transcript": "/d6/445d9f57cf/0/full.jsonl",
+      "content_hash": "/d6/445d9f57cf/0/content_hash.txt",
+      "prompt": "/d6/445d9f57cf/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24539,
+    "cache_creation_tokens": 416162,
+    "cache_read_tokens": 3728825,
+    "output_tokens": 40484,
+    "api_call_count": 27
+  }
+}
