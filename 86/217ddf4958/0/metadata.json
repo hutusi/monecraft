@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "86217ddf4958",
+  "session_id": "17190350-8048-4d6e-a7f7-8012a5b3e365",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T01:29:07.409361Z",
+  "branch": "feature/idb-saves",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "3a41a9471e97",
+  "token_usage": {
+    "input_tokens": 22668,
+    "cache_creation_tokens": 337965,
+    "cache_read_tokens": 17477685,
+    "output_tokens": 109307,
+    "api_call_count": 103
+  },
+  "session_metrics": {
+    "turn_count": 4
+  }
+}
