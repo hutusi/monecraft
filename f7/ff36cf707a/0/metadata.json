@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f7ff36cf707a",
+  "session_id": "17190350-8048-4d6e-a7f7-8012a5b3e365",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T05:37:46.452508Z",
+  "branch": "feat/redstone-lite",
+  "checkpoints_count": 0,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "e2dde2136e9c",
+  "checkpoint_transcript_start": 1394,
+  "transcript_lines_at_start": 1394,
+  "token_usage": {
+    "input_tokens": 6361,
+    "cache_creation_tokens": 90816,
+    "cache_read_tokens": 40299343,
+    "output_tokens": 50291,
+    "api_call_count": 70
+  },
+  "session_metrics": {
+    "turn_count": 13
+  }
+}
