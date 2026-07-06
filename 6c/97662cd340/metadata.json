@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "6c97662cd340",
+  "strategy": "manual-commit",
+  "branch": "feat/nether",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/game/engine/systems/spawnDirector.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6c/97662cd340/0/metadata.json",
+      "transcript": "/6c/97662cd340/0/full.jsonl",
+      "content_hash": "/6c/97662cd340/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 98504,
+    "cache_creation_tokens": 927263,
+    "cache_read_tokens": 161605314,
+    "output_tokens": 301036,
+    "api_call_count": 372
+  }
+}
