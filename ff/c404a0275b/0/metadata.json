@@ -1,0 +1,71 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ffc404a0275b",
+  "session_id": "387fb11e-dc86-4116-8e8d-66e6c084564a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T14:25:11.342576Z",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/manual.md",
+    "docs/reference.md",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/engine/systems/vehicles.test.ts",
+    "lib/game/engine/systems/vehicles.ts",
+    "lib/world/meshing.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "969a6b56d5d5",
+  "token_usage": {
+    "input_tokens": 88020,
+    "cache_creation_tokens": 927262,
+    "cache_read_tokens": 162004039,
+    "output_tokens": 303878,
+    "api_call_count": 353
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-06T14:25:11.182085Z",
+    "agent_lines": 77,
+    "agent_removed": 10,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 77,
+    "total_lines_changed": 87,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 1,
+      "user_lines_removed": 0,
+      "agent_lines_added": 77,
+      "agent_lines_removed": 10,
+      "user_added_per_file": {
+        ".claude/scheduled_tasks.lock": 1
+      }
+    }
+  ]
+}
