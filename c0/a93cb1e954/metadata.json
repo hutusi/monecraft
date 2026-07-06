@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c0a93cb1e954",
+  "strategy": "manual-commit",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/render/vehicleVisuals.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c0/a93cb1e954/0/metadata.json",
+      "transcript": "/c0/a93cb1e954/0/full.jsonl",
+      "content_hash": "/c0/a93cb1e954/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18317,
+    "cache_creation_tokens": 66890,
+    "cache_read_tokens": 13267735,
+    "output_tokens": 23950,
+    "api_call_count": 38
+  }
+}

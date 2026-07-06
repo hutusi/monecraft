@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c0a93cb1e954",
+  "session_id": "387fb11e-dc86-4116-8e8d-66e6c084564a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-06T12:10:24.861142Z",
+  "branch": "feat/rails-drowned-slabs",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/audioDirector.ts",
+    "lib/game/audio/soundParams.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/render/vehicleVisuals.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "17eade054c96",
+  "checkpoint_transcript_start": 599,
+  "transcript_lines_at_start": 599,
+  "token_usage": {
+    "input_tokens": 18317,
+    "cache_creation_tokens": 66890,
+    "cache_read_tokens": 13267735,
+    "output_tokens": 23950,
+    "api_call_count": 38
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-06T12:10:24.816173Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 84,
+    "human_modified": 3,
+    "human_removed": 0,
+    "total_committed": 84,
+    "total_lines_changed": 87,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
