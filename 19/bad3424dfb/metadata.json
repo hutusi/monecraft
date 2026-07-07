@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "19bad3424dfb",
+  "strategy": "manual-commit",
+  "branch": "fix/e2e-ci-flakes",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/19/bad3424dfb/0/metadata.json",
+      "transcript": "/19/bad3424dfb/0/full.jsonl",
+      "content_hash": "/19/bad3424dfb/0/content_hash.txt",
+      "prompt": "/19/bad3424dfb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 48695,
+    "cache_creation_tokens": 761829,
+    "cache_read_tokens": 166304125,
+    "output_tokens": 475970,
+    "api_call_count": 418
+  }
+}
