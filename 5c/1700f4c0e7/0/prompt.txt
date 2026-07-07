@@ -1,0 +1,85 @@
+I want to use a new domain: mc.ainaive.com to replace the old one monecraft.vercel.app , what do you think?
+
+---
+
+<task-notification>
+<task-id>abac23f9fe76c78a2</task-id>
+<tool-use-id>toolu_01C3qds88MRWuhRZ8epCFrVg</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b9223e1f-c7d2-43a2-9c4c-e7b163f4a002/tasks/abac23f9fe76c78a2.output</output-file>
+<status>completed</status>
+<summary>Agent "Find domain and URL references" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture. No CSP config exists (the "csp" grep hits are false positives — base64 noise in `bun.lock` and the substring "ati**cSp**awn" in spawn-director code), and there is no `vercel.json`. Here are the findings.
+
+## Search results by category
+
+### 1. Literal `monecraft.vercel.app`
+Exactly one occurrence in the whole repo (docs only):
+- `/Users/hutusi/workspace/ai/david/monecraft/docs/deploy.md:127`
+  ```
+  | `BETTER_AUTH_URL`             | the deployed origin, e.g. `https://monecraft.vercel.app` |
+  ```
+  Related context in the same table/notes (no literal domain, but about this env var):
+  - `docs/deploy.md:138` — "&gt; Ordering / chicken-and-egg: `BETTER_AUTH_URL` is your Vercel origin and…"
+
+### 2. Other `*.vercel.app` / hardcoded `https://` production URLs
+- No other `*.vercel.app` literals anywhere.
+- The production game-server URL (Fly.io) is hardcoded only in docs/tests, never in app code:
+  - `/Users/hutusi/workspace/ai/david/monecraft/docs/deploy.md:108` — `https://monecraft-server.fly.dev` (browser connects over `wss://`)
+  - `docs/deploy.md:115` — `curl https://monecraft-server.fly.dev/health`
+  - `docs/deploy.md:129` — `` | `NEXT_PUBLIC_GAME_SERVER_URL` | `wss://monecraft-server.fly.dev` … | ``
+  - `docs/deploy.md:148` — `curl https://&lt;fly-app&gt;.fly.dev/health`
+  - `/Users/hutusi/workspace/ai/david/monecraft/server/fly.toml:6` — `app = 'monecraft-server'` (derives the fly.dev host)
+  - `/Users/hutusi/workspace/ai/david/monecraft/tests/sw.test.ts:73` — test uses `https://game-server.fly.dev/rooms` as a cross-origin example (asserts bypass)
+- Other `https://` URLs found are all non-production (GitHub badges/fonts/ZZFX designer docs, e.g. `README.md:3-4`, `app/fonts/OFL.txt:1`, `docs/architecture.md`, `lib/game/audio/soundParams.ts:6`) — not app URLs.
+
+### 3. URL-related environment variables &amp; base-URL helpers
+There is no `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`, `VERCEL_URL`, or any `getBaseUrl()` utility. The URL/origin env surface is:
+- `BETTER_AUTH_URL` (the app's own origin):
+  - `/Users/hutusi/workspace/ai/david/monecraft/lib/auth/server.ts:18` — `baseURL: options.baseURL ?? process.env.BETTER_AUTH_URL,`
+  - `/Users/hutusi/workspace/ai/david/monecraft/.env.example:10` — `BETTER_AUTH_URL=http://localhost:3000`
+  - `/Users/hutusi/workspace/ai/david/monecraft/playwright.config.ts:39` — `BETTER_AUTH_URL: "http://localhost:3000",`
+- `NEXT_PUBLIC_GAME_SERVER_URL` (realtime WS server, browser-read):
+  - `/Users/hutusi/workspace/ai/david/monecraft/.env.example:17` — `NEXT_PUBLIC_GAME_SERVER_URL=ws://localhost:8080`
+  - `/Users/hutusi/workspace/ai/david/monecraft/app/api/worlds/[id]/ticket/route.ts:24` — `return NextResponse.json({ ticket: result.ticket, gameServerUrl: process.env.NEXT_PUBLIC_GAME_SERVER_URL ?? null });`
+  - `/Users/hutusi/workspace/ai/david/monecraft/playwright.config.ts:41` — `NEXT_PUBLIC_GAME_SERVER_URL: "ws://localhost:18080"`
+- Runtime origin derived from the browser (not env), i.e. the app's own base URL is computed, never hardcoded:
+  - `/Users/hutusi/workspace/ai/david/monecraft/lib/auth/client.ts:20` — `baseURL: window.location.origin`
+  - `/Users/hutusi/workspace/ai/david/monecraft/lib/online/onlineClient.ts:66` — `` return `${window.location.origin}/join/${token}`; `` (invite/share link builder)
+- WS server URL consumption (client): `/Users/hutusi/workspace/ai/david/monecraft/lib/net/NetworkSession.ts:222` — `const socket = makeSocket(\`${serverUrl.replace(/\/$/, "")}/ws\`);` (serverUrl comes from the ticket response above); dev/local fallbacks `ws://localhost:8080` in `scripts/loadSim.ts:20` and `scripts/netProbe.ts:15`.
+- `DATABASE_URL` (not an app URL, but the other URL-shaped env): `db/index.ts:30-34` (`resolveDatabaseUrl()`), `drizzle.config.ts:10`, `.env.example:5`.
+
+### 4. Next.js metadata (metadataBase / openGraph / canonical / twitter)
+- `/Users/hutusi/workspace/ai/david/monecraft/app/layout.tsx:11-14` — the only `Metadata` export; it contains **only** `title` and `description`:
+  ```ts
+  export const metadata: Metadata = {
+    title: "Monecraft",
+    description: "Minecraft-like game built with Next.js + Three.js"
+  };
+  ```
+  There is **no** `metadataBase`, `openGraph`, `alternates.canonical`, or `twitter` anywhere in the repo. `themeColor` lives in the `viewport` export (`layout.tsx:17`).
+
+### 5. PWA surfaces (manifest + service worker)
+- Web manifest — `/Users/hutusi/workspace/ai/david/monecraft/app/manifest.ts` (generated `MetadataRoute.Manifest`, served at `/manifest.webmanifest`):
+  - `name: "Monecraft"` (line 7), `short_name: "Monecraft"` (8), `id: "/"` (10), `start_url: "/"` (11), `display: "standalone"` (12), no `scope` field; icons at `/icons/192|512|maskable` (18-22). All paths are relative — no absolute origin.
+- Service worker — `/Users/hutusi/workspace/ai/david/monecraft/public/sw.js`:
+  - Cache names keyed off `monecraft-` prefix: `SHELL_CACHE`/`ASSET_CACHE` (lines 20-21), version `v1` (19).
+  - `SHELL_URL = "/"` (22); `SHELL_EXTRAS = ["/manifest.webmanifest", "/icons/192", "/icons/512", "/icons/maskable"]` (24); `SHELL_EXTRA_PATHS` adds `/icon`, `/apple-icon` (26).
+  - Origin handling is dynamic, not hardcoded: `classify(request, origin)` compares against `self.location.origin` (line 212), and `if (url.origin !== origin) return "bypass";` (42) — cross-origin (game server) is never cached. `/api/` and `/sw.js` also bypass (43-44).
+  - `next.config.mjs:8-18` sets `Cache-Control: no-cache…` on `/sw.js` (no origins here).
+- SW tests — `/Users/hutusi/workspace/ai/david/monecraft/tests/sw.test.ts` uses `ORIGIN = "http://localhost:3000"` (line 13) and the cross-origin example `https://game-server.fly.dev/rooms` (73); PWA e2e in `e2e/pwa.e2e.ts:16-21` asserts the manifest `start_url === "/"`.
+
+### 6. CSP / Content-Security-Policy (connect-src / allowed origins)
+- None. There is no CSP anywhere — no `Content-Security-Policy` header, no `connect-src`/`script-src`/`default-src`, no `next.config` CSP, and no `vercel.json`. The only header configured is the `Cache-Control` on `/sw.js` in `next.config.mjs:8-18`. (Grep hits for "csp" were false positives: base64 strings in `bun.lock` and the substring in `tickAquati**cSp**awnDirector`.)
+
+---
+
+## Concise grouped summary
+- **`monecraft.vercel.app` literal:** only `docs/deploy.md:127` (example value for `BETTER_AUTH_URL`).
+- **Other prod URLs:** Fly game server `monecraft-server.fly.dev` in `docs/deploy.md:108,115,129,148` and `server/fly.toml:6`; a `game-server.fly.dev` test example in `tests/sw.test.ts:73`. No app code hardcodes any host.
+- **URL env vars:** `BETTER_AUTH_URL` (read in `lib/auth/server.ts:18`; defaults in `.env.example:10`, `playwright.config.ts:39`) and `NEXT_PUBLIC_GAME_SERVER_URL` (read in `app/api/worlds/[id]/ticket/route.ts:24`; `.env.example:17`, `playwright.config.ts:41`). App's own base URL is derived at runtime from `window.location.origin` (`lib/auth/client.ts:20`, `lib/online/onlineClient.ts:66`). No `NEXT_PUBLIC_APP_URL`/`SITE_URL`/`VERCEL_URL`/`getBaseUrl()`.
+- **Metadata:** `app/layout.tsx:11-14` — title + description only; no `metadataBase`/`openGraph`/`canonical`/`twitter` anywhere.
+- **PWA:** manifest in `app/manifest.ts` (`start_url`/`id` = "/", no `scope`, relative icon paths); `public/sw.js` uses dynamic `self.location.origin`, `SHELL_URL "/"`, cache prefix `monecraft-`, cross-origin bypass.
+- **CSP:** none present in the repo.</result>
+<usage><subagent_tokens>40210</subagent_tokens><tool_uses>14</tool_uses><duration_ms>109340</duration_ms></usage>
+</task-notification>
