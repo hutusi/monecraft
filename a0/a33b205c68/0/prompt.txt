@@ -1,0 +1,175 @@
+I have update the settings on vercel, push the commit, it will trigger the deploy on vercel
+
+---
+
+there are some improvements I found: 1. after loggin, click the profile, "Online Worlds" and "Singleplayer" which font is black, that is hard to see. 2. is it better to show the version(with commit sha?) on the right corner or some place on the welcome page. what do you think?
+
+---
+
+<task-notification>
+<task-id>a853a3fdc0aa57b9d</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b9223e1f-c7d2-43a2-9c4c-e7b163f4a002/tasks/a853a3fdc0aa57b9d.output</output-file>
+<status>completed</status>
+<summary>Agent "Find profile home tab color issue" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have the complete picture. Here is my precise mapping of the current rendering and styling.
+
+## 1. Where "Online Worlds" and "Singleplayer" are rendered
+
+Both labels are rendered in the same component, **`components/menu/OnlineWorldSelect.tsx`**, as two sibling `&lt;section&gt;` blocks (this is the "profile → Worlds" screen reached after signing in and picking a profile):
+
+- **`components/menu/OnlineWorldSelect.tsx:121`** — `&lt;h3 className="menu-online-title"&gt;Online Worlds&lt;/h3&gt;` inside `&lt;section className="menu-online"&gt;` (line 120)
+- **`components/menu/OnlineWorldSelect.tsx:175`** — `&lt;h3 className="menu-online-title"&gt;Singleplayer&lt;/h3&gt;` inside a second `&lt;section className="menu-online"&gt;` (line 174)
+
+The whole thing is wrapped by `MenuScreen` (`components/menu/MenuScreen.tsx:9-19`), which renders `.menu-screen` → `.menu-panel` and the dark background.
+
+## 2. The CSS controlling the text color (the bug)
+
+**`app/menu.css:346-350`**:
+```css
+.menu-online-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+```
+
+This rule sets **no `color` and no `text-shadow`**. Because these are `&lt;h3&gt;` elements, they fall back to the inherited/default text color. Tracing the ancestor chain — `.menu-online` (`app/menu.css:340-344`, only sets `border-top`), `.menu-panel` (`app/menu.css:16-22`, no color), `.menu-screen` (`app/menu.css:4-14`, no color, dark gradient background `linear-gradient(180deg, #2a2d3a 0%, #15171f 100%)`), and `html, body` (`app/base.css:38-57`, no `color` property) — **nothing sets a color**, so the browser default (black) applies. That is why the headings render black on the dark menu background.
+
+## 3. The established readable-text convention
+
+Color tokens are defined in **`app/base.css:1-31` (`:root`)**:
+- **`app/base.css:11`** — `--mc-text-light: #fcfcfc;` (the near-white menu text color)
+- **`app/base.css:12`** — `--mc-text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);`
+- `app/base.css:10` — `--mc-text: #404040;` (the *dark* token, used only on light inventory/panel surfaces, not menu chrome)
+
+Every other text element on this menu uses `color: var(--mc-text-light)` plus `text-shadow: var(--mc-text-shadow)`. Direct siblings/peers of the broken heading:
+- `.menu-title` — `app/menu.css:33-41` (`color: var(--mc-text-light)`, line 35)
+- `.menu-empty` — `app/menu.css:43-50` (line 45) — the "No online worlds yet…" / "No singleplayer worlds yet…" text right under these very headings
+- `.menu-note` — `app/menu.css:53-60` (line 55)
+- `.menu-logo` — `app/menu.css:24-31` (line 26)
+- `.menu-card-name` and `.mc-button` also use `--mc-text-light` (e.g. `app/menu.css:104`, `187`, `222`, `297`)
+
+So the established convention for readable heading/label text on the dark menu is: `color: var(--mc-text-light); text-shadow: var(--mc-text-shadow);`.
+
+## 4. Tab vs. active/inactive states
+
+These are **not tabs** — there is no active/inactive state. They are two always-visible stacked `&lt;section&gt;` headings (`OnlineWorldSelect.tsx:120` and `:174`), both using the identical `.menu-online-title` class, so both are affected the same way. The `opacity: 0.9` on the rule is just a mild dim (matching `.menu-title`'s `opacity: 0.85`), not a disabled/inactive treatment. There is no second color variant to report.
+
+## Summary
+
+- **File + rule to change:** `app/menu.css:346` — the `.menu-online-title` block. It is missing a `color` declaration, so both the "Online Worlds" and "Singleplayer" `&lt;h3&gt;` headings inherit the default black.
+- **The one component affected:** `components/menu/OnlineWorldSelect.tsx` (lines 121 and 175), both headings sharing that single class.
+- **Established readable-text convention to match:** set `color: var(--mc-text-light);` (`#fcfcfc`, from `app/base.css:11`) and, to be consistent with every sibling label, `text-shadow: var(--mc-text-shadow);` (`app/base.css:12`). No tab/active-state nuance applies.
+
+I have not made any changes — this is the current-state map only.</result>
+<usage><subagent_tokens>29380</subagent_tokens><tool_uses>11</tool_uses><duration_ms>75612</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a5763dfef938d5212</task-id>
+<tool-use-id>toolu_01ABxBEGp64VEAr8MddC1Y6X</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b9223e1f-c7d2-43a2-9c4c-e7b163f4a002/tasks/a5763dfef938d5212.output</output-file>
+<status>completed</status>
+<summary>Agent "Find welcome page + version surfacing" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have all the facts. Here is my report.
+
+## 1. Welcome / landing / menu-gate page component
+
+**`components/menu/WelcomeScreen.tsx`** (40 lines) is the first screen a logged-out user sees — the "Sign in" / "Play locally" gate.
+
+- It is rendered from **`components/GameShell.tsx:493`**: `return &lt;WelcomeScreen onSignIn={...} onPlayLocally={...} /&gt;;` — GameShell is the top-level screen state machine (`app/page.tsx` -&gt; `GameShell`), and `{ name: "welcome" }` is the logged-out root (GameShell.tsx:34-36).
+- Structure (WelcomeScreen.tsx:19-39): it wraps everything in `&lt;MenuScreen title="Welcome"&gt;`, then renders an optional offline `&lt;p className="menu-note"&gt;` (only when offline, line 26-28), the `Sign in` button (line 30-32), a `.menu-note` caption, the `Play locally` button (line 34-36), and a final `.menu-note` caption.
+
+The shared frame is **`components/menu/MenuScreen.tsx:9-18`**:
+```
+&lt;div className="menu-screen"&gt;
+  &lt;div className="menu-panel"&gt;
+    &lt;div className="menu-logo"&gt;Monecraft&lt;/div&gt;
+    &lt;div className="menu-title"&gt;{title}&lt;/div&gt;
+    {children}
+```
+
+Layout/where a badge could live (from `app/menu.css`):
+- `.menu-screen` (menu.css:4-14) is `position: fixed; inset: 0;` flex-centered — so an absolutely/fixed-positioned child badge in a corner (e.g. bottom-right) has a natural containing block here.
+- `.menu-panel` (menu.css:16-22) is a `flex-direction: column; gap: 8px; width: min(94vw, 420px)` card. There is **no footer element today** — the last thing in the panel is the trailing `.menu-note`. A badge could either be a corner-fixed element in `.menu-screen`, or an appended muted line at the bottom of the panel.
+
+## 2. Existing version display in the UI
+
+**None.** No version/build/SHA/commit string is shown anywhere in the UI. Grepping `version|v0.|commit|sha|build` across `app/ components/ lib/ server/` returned only unrelated matches: SHA-256 in worldgen (`lib/world/generationBaselines.ts:4`, `lib/world/netherGeneration.ts:13`), React "commit phase" code comments, and IndexedDB "commit" comments. The document title is just `"Monecraft"` (`app/layout.tsx:12`). The app does not surface a version number at all.
+
+## 3. Version source of truth
+
+- **`package.json:3`** → `"version": "0.14.0"`.
+- Note a discrepancy worth flagging: the newest git tag is **`v0.15.0`** and CHANGELOG's latest *released* heading is **`## [0.15.0] - 2026-07-06`** (`CHANGELOG.md:22`), sitting under a `## [Unreleased]` section (`CHANGELOG.md:5`). So `package.json` (0.14.0) currently **lags** the tags/CHANGELOG (0.15.0).
+- Git tags present: `v0.15.0` (latest), `v0.14.0`, `v0.13.0`, … down to `v0.2.0`.
+- Current HEAD short SHA (sanity check): **`3e24f39`**.
+
+## 4. Build-time env vars &amp; next.config.mjs structure
+
+**`next.config.mjs`** (21 lines) — full structure:
+- `reactStrictMode: true` (line 3)
+- `serverExternalPackages: ["@electric-sql/pglite"]` (line 7)
+- an `async headers()` returning a no-cache header for `/sw.js` (lines 8-18)
+- **No `env` block and no `define`/webpack config exists.** It is an ESM module (`.mjs`, `export default nextConfig`), so it *could* `import pkg from "./package.json"` and add an `env: { ... }` map — but nothing like that is present today.
+
+Existing `NEXT_PUBLIC_*` vars (all documented in `.env.example`):
+- `NEXT_PUBLIC_GAME_SERVER_URL` — `.env.example:17`; consumed at `app/api/worlds/[id]/ticket/route.ts:24`.
+- `NEXT_PUBLIC_NET_SIM_LATENCY_MS` — `.env.example:22`; consumed at `lib/net/NetworkSession.ts:144`.
+- `NEXT_PUBLIC_NET_SIM_JITTER_MS` — `.env.example:23`; consumed at `lib/net/NetworkSession.ts:145`.
+
+`VERCEL_GIT_COMMIT_SHA` is **not referenced anywhere** in the repo. There is **no `vercel.json`**.
+
+## 5. Small-text / muted styling convention
+
+The muted-caption convention a badge should match is **`.menu-note`** (`app/menu.css:53-60`):
+```
+.menu-note { text-align: center; color: var(--mc-text-light); font-size: 12px; opacity: 0.7; text-shadow: var(--mc-text-shadow); margin: -4px 0 10px; }
+```
+A related quiet-text style is **`.menu-footer-link`** (`app/menu.css:63-79`): `font-size: 12px; opacity: 0.7`, underlined, `:hover` → `opacity: 1`.
+
+Backing CSS variables (`app/base.css`):
+- `--mc-text-light: #fcfcfc;` (base.css:11)
+- `--mc-text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);` (base.css:12)
+
+So the established "muted small caption" recipe is: `color: var(--mc-text-light); font-size: 12px; opacity: 0.7; text-shadow: var(--mc-text-shadow);`.
+
+---
+
+## Summary
+
+**(a) Welcome page component + badge spot:** `components/menu/WelcomeScreen.tsx` (rendered from `components/GameShell.tsx:493`, framed by `components/menu/MenuScreen.tsx`). Best spots for a small corner badge: either a corner-fixed element inside the `.menu-screen` container (`app/menu.css:4`, already `position: fixed; inset: 0`) for a true corner badge, or an appended `.menu-note`-styled line at the bottom of the `.menu-panel`. Styling should match `.menu-note` (`app/menu.css:53`): 12px, `opacity: 0.7`, `var(--mc-text-light)`, `var(--mc-text-shadow)`.
+
+**(b) Current package.json version:** `0.14.0` (`package.json:3`) — though note git tags and CHANGELOG are already at `0.15.0`, so the field is one release behind.
+
+**(c) Cleanest mechanism for the commit SHA in the client bundle at build time on Vercel:** There is currently no `env` block in `next.config.mjs` and no `VERCEL_GIT_COMMIT_SHA` usage. Vercel automatically sets `VERCEL_GIT_COMMIT_SHA` at build time, but it is server-only unless exposed under a `NEXT_PUBLIC_` name. The cleanest available hook is to add an `env` block to `next.config.mjs` (it's already ESM, so it can also `import pkg from "./package.json"` for the version) mapping something like `NEXT_PUBLIC_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA` and `NEXT_PUBLIC_APP_VERSION: pkg.version` — which then inline into the client bundle, matching the existing `NEXT_PUBLIC_*` pattern already used for `NEXT_PUBLIC_GAME_SERVER_URL` etc. (This is fact-gathering only; I have not made any changes.)</result>
+<usage><subagent_tokens>38647</subagent_tokens><tool_uses>15</tool_uses><duration_ms>102373</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>btk7i42mc</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b9223e1f-c7d2-43a2-9c4c-e7b163f4a002/tasks/btk7i42mc.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the full test suite" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bf133bp9c</task-id>
+<tool-use-id>toolu_01Cgi1G5XEh9aiAEye6yhk7i</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/b9223e1f-c7d2-43a2-9c4c-e7b163f4a002/tasks/bf133bp9c.output</output-file>
+<status>completed</status>
+<summary>Background command "Run Playwright e2e suite" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+check code reviews on the pr, if need fix, fix, commit, but not push
