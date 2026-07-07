@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "1b4f215e719b",
+  "session_id": "b9223e1f-c7d2-43a2-9c4c-e7b163f4a002",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-07T12:24:01.303459Z",
+  "branch": "fix/e2e-ci-flakes",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "7ef4db4cac42",
+  "token_usage": {
+    "input_tokens": 47984,
+    "cache_creation_tokens": 720348,
+    "cache_read_tokens": 142238012,
+    "output_tokens": 439790,
+    "api_call_count": 385
+  },
+  "session_metrics": {
+    "turn_count": 41
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
