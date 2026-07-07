@@ -1,0 +1,65 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4093b20e7108",
+  "session_id": "b9223e1f-c7d2-43a2-9c4c-e7b163f4a002",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-07T11:01:15.365552Z",
+  "branch": "fix/e2e-ci-flakes",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "e2e/smoke.e2e.ts",
+    "e2e/touch.e2e.ts",
+    "playwright.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "808d1f283491",
+  "checkpoint_transcript_start": 1584,
+  "transcript_lines_at_start": 1584,
+  "token_usage": {
+    "input_tokens": 6412,
+    "cache_creation_tokens": 110367,
+    "cache_read_tokens": 35659023,
+    "output_tokens": 82915,
+    "api_call_count": 63
+  },
+  "session_metrics": {
+    "turn_count": 36
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-07T11:01:15.270814Z",
+    "agent_lines": 40,
+    "agent_removed": 14,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 40,
+    "total_lines_changed": 54,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 28,
+      "agent_lines_removed": 11
+    }
+  ]
+}

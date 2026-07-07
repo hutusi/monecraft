@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "4093b20e7108",
+  "strategy": "manual-commit",
+  "branch": "fix/e2e-ci-flakes",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "e2e/smoke.e2e.ts",
+    "e2e/touch.e2e.ts",
+    "playwright.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/40/93b20e7108/0/metadata.json",
+      "transcript": "/40/93b20e7108/0/full.jsonl",
+      "content_hash": "/40/93b20e7108/0/content_hash.txt",
+      "prompt": "/40/93b20e7108/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6412,
+    "cache_creation_tokens": 110367,
+    "cache_read_tokens": 35659023,
+    "output_tokens": 82915,
+    "api_call_count": 63
+  }
+}
