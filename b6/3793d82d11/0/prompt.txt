@@ -1,0 +1,203 @@
+the github ci e2e tests on main is success, but I check the log, it contails some error, what do you think? the error log is: bun run test:e2e
+  bun run test:e2e
+  shell: /usr/bin/bash -e {0}
+  env:
+    NEXT_TELEMETRY_DISABLED: 1
+$ playwright test
+[WebServer] $ next build
+[WebServer] $ next start
+
+Running 34 tests using 1 worker
+[WebServer] 2026-07-07T21:06:31.525Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy. Use a randomly generated secret for production.
+··×±::error file=e2e/determinism.e2e.ts,title=[chromium] › e2e/determinism.e2e.ts:13:5 › Chromium generates the same seed-1337 world bytes as the Bun baseline,line=25,col=54::  1) [chromium] › e2e/determinism.e2e.ts:13:5 › Chromium generates the same seed-1337 world bytes as the Bun baseline %0A    Error: no block edits before hashing%0A%0A    expect(received).toBe(expected) // Object.is equality%0A%0A    Expected: 0%0A    Received: 1%0A%0A      23 |   // digest mismatch can only ever mean cross-engine divergence.%0A      24 |   const editCount = await gamePage.evaluate(() => window.__monecraft!.engine.serialize().changes.length);%0A    > 25 |   expect(editCount, "no block edits before hashing").toBe(0);%0A         |                                                      ^%0A      26 |%0A      27 |   const digest = await gamePage.evaluate(async () => {%0A      28 |     // Copy: digest() wants a plain-ArrayBuffer view, and the copy pins the%0A        at /home/runner/work/monecraft/monecraft/e2e/determinism.e2e.ts:25:54
+·······························
+
+  1) [chromium] › e2e/determinism.e2e.ts:13:5 › Chromium generates the same seed-1337 world bytes as the Bun baseline 
+
+    Error: no block edits before hashing
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      23 |   // digest mismatch can only ever mean cross-engine divergence.
+      24 |   const editCount = await gamePage.evaluate(() => window.__monecraft!.engine.serialize().changes.length);
+    > 25 |   expect(editCount, "no block edits before hashing").toBe(0);
+         |                                                      ^
+      26 |
+      27 |   const digest = await gamePage.evaluate(async () => {
+      28 |     // Copy: digest() wants a plain-ArrayBuffer view, and the copy pins the
+        at /home/runner/work/monecraft/monecraft/e2e/determinism.e2e.ts:25:54
+
+    Error Context: test-results/determinism.e2e.ts-Chromiu-3a04b-d-bytes-as-the-Bun-baseline-chromium/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/determinism.e2e.ts-Chromiu-3a04b-d-bytes-as-the-Bun-baseline-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/determinism.e2e.ts-Chromiu-3a04b-d-bytes-as-the-Bun-baseline-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [chromium] › e2e/smoke.e2e.ts (7.5m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 flaky
+    [chromium] › e2e/determinism.e2e.ts:13:5 › Chromium generates the same seed-1337 world bytes as the Bun baseline 
+  33 passed (18.1m)
+Warning: [chromium] › e2e/smoke.e2e.ts took 7.5m
+Notice:   1 flaky
+    [chromium] › e2e/determinism.e2e.ts:13:5 › Chromium generates the same seed-1337 world bytes as the Bun baseline 
+  33 passed (18.1m)
+
+---
+
+<task-notification>
+<task-id>a9226b25f2078c753</task-id>
+<tool-use-id>toolu_01FpK8FUFmr2mNMssYtVjrDv</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/9c1db0f0-6f01-4a3a-8a60-ace76ce41b90/tasks/a9226b25f2078c753.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore determinism e2e test setup" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything I need. Here is the complete answer.
+
+## 1. Determinism test setup, params, and what it hashes
+
+**Test file:** `/Users/hutusi/workspace/ai/david/monecraft/e2e/determinism.e2e.ts` (full file, 38 lines).
+
+**Page setup** comes entirely from the shared `gamePage` fixture in `/Users/hutusi/workspace/ai/david/monecraft/e2e/helpers.ts:18-65`:
+- `addInitScript` (lines 29-49) runs on every navigation and seeds `localStorage` *only if absent*:
+  - `minecraft_profiles_v1` → one profile `e2e-profile`.
+  - `minecraft_worlds_v1` → one world `e2e-world` with **`seed: 1337`** and `worldgenVersion: WORLDGEN_VERSION` (helpers.ts:42). This is where seed 1337 enters — not a URL param.
+- Navigation is `page.goto("/")` (line 51), then it clicks through menus: "Play locally" → `profile-e2e-profile` → `world-e2e-world` (lines 54-56).
+- Readiness waits: `window.__monecraft !== undefined` (line 57), then `window.__monecraft.renderer.renderedTriangles() &gt; 0` (line 59) — i.e. the engine has already stepped and drawn frames before the test body runs.
+
+**URL/query params/flags:** None. There are no query params, and no "disable mobs / disable daycycle" test flags anywhere in the boot path (grep for `searchParams`/`URLSearchParams`/`disableMobs`/`dayCycle` in `lib/game`, `components`, `app` returns nothing). Instead the determinism test *manually* freezes the sim through the `window.__monecraft` debug handle (determinism.e2e.ts:17-20):
+- `window.__monecraft.engine.state.mobs = []` — removes all mobs.
+- `window.__monecraft.engine.dispatch({ type: "pause" })` — full sim freeze.
+
+**What it hashes/compares** (determinism.e2e.ts:24-37):
+- First guards `engine.serialize().changes.length === 0` (line 24-25) to prove no block edits happened during the boot window.
+- Then copies `window.__monecraft.engine.state.world.blocks` into a fresh `Uint8Array`, computes `crypto.subtle.digest("SHA-256", blocks)`, hex-encodes it (lines 27-35).
+- Compares against `WORLDGEN_BASELINES.full512Seed1337` = `"a1892258a5db6e01dc7365ab387439b6297fa2066d0013617a216ae578135f39"`, defined in `/Users/hutusi/workspace/ai/david/monecraft/lib/world/generationBaselines.ts:21`. That baseline is the digest for a **512×150×512** seed-1337 world, and the e2e world is exactly that size (see §3). It's the same constant `generation.test.ts:83` pins under Bun/JSC.
+
+## 2. `window.__monecraft`, `serialize()`, and the `changes` journal
+
+**Where exposed:** `/Users/hutusi/workspace/ai/david/monecraft/lib/game/useMinecraftGame.ts:443`:
+`window.__monecraft = { engine, renderer, input, audio, net }`. Type declared at useMinecraftGame.ts:85; deleted on unmount at line 571.
+
+**`engine.serialize()`** → `SaveData`, defined at `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/GameEngine.ts:1279-1325`. The overworld `DimensionSection` (lines 1282-1288) sets `changes: state.blockChanges.changes()`, plus `blockEntities`, `lootedChests`, `mobs`, `vehicles`; top-level adds `version`, `worldgenVersion`, `seed`, `worldType`, `difficulty`, `hardcore`, `players`, `dayClock`, `villagesSeeded`.
+
+**`changes` (the block-edit journal)** is produced by the `BlockChangeTracker` in `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/blockChanges.ts`:
+- `changes()` (blockChanges.ts:67-69) returns `[...changedBlocks.entries()]` as `[voxelIndex, blockId]` pairs — the delta set of player edits vs. the worldgen baseline.
+- **The single append/record chokepoint is `set(x, y, z, block)`** at blockChanges.ts:37-52. It records the pre-edit baseline (line 40), writes `world.set` (line 42), relights via `applyEdit` (line 47), and then either deletes the entry if the block was restored to baseline (line 49) or `changedBlocks.set(idx, block)` (line 50). It also journals into `editJournal` (line 51) for the multiplayer per-tick drain. `applySavedChanges` (line 54) is the boot-time replay path only.
+- Every gameplay mutation (mining, doors, farming, crop growth, TNT, portals, redstone) flows through this `set`, which is why an edit count of 0 means `world.blocks` is byte-identical to fresh generation.
+
+## 3. Does simulation run before the hash?
+
+**Yes — the game boots live and is already stepping before the test evaluates.**
+- Initial state is `paused: false` (GameEngine.ts:425).
+- The `requestAnimationFrame(clock)` loop starts at useMinecraftGame.ts:555; each frame calls `gameEngine.step(dt, ...)` via the accumulator (useMinecraftGame.ts:452). The `gamePage` fixture's wait for `renderedTriangles() &gt; 0` (helpers.ts:59) guarantees multiple steps have already run by the time the test body executes.
+- **Player is spawned** at engine construction (spawn point derived in the constructor; player added to `state.players`).
+- **Mobs are spawned** at construction via `spawnInitialMobs(this.state, this.rng, this.surfaceYAt)` (GameEngine.ts:499), plus village residents (lines 505-513). The game "boots at dawn with aggro hostiles near spawn" (helpers.ts:72-73).
+- **Time advances**: `tickDayNight` runs each unpaused step; day clock progresses from dawn until frozen.
+- **World size** is the default `{ WORLD_SIZE_X=512, WORLD_SIZE_Y=150, WORLD_SIZE_Z=512 }` (GameEngine.ts:321; constants at `/Users/hutusi/workspace/ai/david/monecraft/lib/world/blocks.ts:1-3`), since useMinecraftGame constructs `new GameEngine` without a `worldSize` (useMinecraftGame.ts:276-283). This matches the `full512Seed1337` baseline.
+
+**Pause/idle mode:** There is no boot-time idle mode. The engine runs freely from load. The determinism test is the thing that freezes it: it sets `state.mobs = []` and dispatches `pause`, after which `step()` early-returns on `state.paused` (GameEngine.ts:619-623 — "Full freeze: mobs, the day clock, mining, and stats all stop"). The pause command itself is at GameEngine.ts:1093-1106. So simulation *does* run during the boot window; the test's `editCount === 0` assertion (determinism.e2e.ts:24-25) proves that live window produced no block edits before the hash is taken. The digest itself is computed from a copied snapshot of `world.blocks` (determinism.e2e.ts:30), pinned at one instant.
+
+## 4. Test ordering, workers, and storage isolation
+
+**Config** `/Users/hutusi/workspace/ai/david/monecraft/playwright.config.ts`:
+- `workers: 1` (line 17), `fullyParallel: false` (line 14), `retries: CI ? 3 : 0` (line 16), `timeout: 60000` (line 19), single `chromium` project (line 26). `testMatch: "**/*.e2e.ts"`.
+
+**Ordering:** Files run in the single worker in alphabetical order: `accountSp` → `cloudSaves` → **`determinism`** (3rd) → `menu` → `multiplayer` → `portal` → `pwa` → `smoke` → `touch`.
+
+**Storage isolation:** The config sets **no `storageState`** and there's no global setup, so Playwright gives **each test its own fresh browser context** — `localStorage`, `sessionStorage`, and IndexedDB (`monecraft` DB, `worldSaves` store, per helpers.ts:116-144) all start empty for every test. So even though `cloudSaves`/`accountSp` run before `determinism` in the same worker, they cannot leak storage into it. `determinism`'s own state is created fresh by the `addInitScript` seeding (helpers.ts:29-49). The `if (!localStorage.getItem(...))` guards there only exist so a test's *own* mid-test reload preserves its writes — not for cross-test sharing.
+
+**Net:** The determinism test is well isolated; its only inputs are the fixture-seeded seed-1337 world manifest and the live-but-immediately-frozen engine, and it verifies both the zero-edit precondition and the cross-engine byte digest.</result>
+<usage><subagent_tokens>49843</subagent_tokens><tool_uses>20</tool_uses><duration_ms>155968</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a8597a278e238724b</task-id>
+<tool-use-id>toolu_01W4iauEZhTx49uRbgrZmb5f</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/9c1db0f0-6f01-4a3a-8a60-ace76ce41b90/tasks/a8597a278e238724b.output</output-file>
+<status>completed</status>
+<summary>Agent "Find early block-mutation sources" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have everything I need. Here is my analysis.
+
+## Summary
+
+The engine's single block-mutation chokepoint is **`BlockChangeTracker.set()`** at `/Users/hutusi/workspace/ai/david/monecraft/lib/game/engine/blockChanges.ts:37-52`. Every gameplay edit goes through `state.blockChanges.set(x,y,z,block)`, which writes the voxel, relights, records the save delta in `changedBlocks`, and appends to the per-tick `editJournal`. `serialize().changes` and `blockChanges.changes()` both read `changedBlocks`. **Only `blockChanges.set` feeds the `changes` journal** — a raw `world.set` does not — so that is the only path to worry about.
+
+The RNG is the crux: `GameEngine.ts:289` → `this.rng = options.rng ?? Math.random`. **All three production construction sites** (`useMinecraftGame.ts:276`, `server/room.ts:172`, `NetworkSession.ts:253`) pass **no `rng`**, so the live simulation uses **`Math.random` — fully nondeterministic**. Only unit tests inject a seeded rng. Worldgen itself is seeded/deterministic (`generation.ts` `rand`), but the *simulation* tick RNG is not.
+
+Tick loop: the browser shell uses `createAccumulator` (`tickDriver.ts:39`, frame-delta catch-up, ≤0.05s/step, ≤5 substeps = ≤0.25s/frame, excess dropped). It is **not a fixed count of ticks** — total simulated seconds ≈ wall time since mount. A slow CI runner spends longer between world-boot and any pause/assert, so **more sim seconds elapse → more random-tick intervals fire → higher cumulative chance of one autonomous edit.** The headless server uses `createFixedTicker` (fixed 20 Hz) instead.
+
+## The scenario this matches
+
+`e2e/determinism.e2e.ts:24-25` asserts `engine.serialize().changes.length === 0` right after pausing, with the load-bearing comment *"A fresh world has no random-tickable blocks."* That assumption is the bug surface. The `gamePage` fixture (`e2e/helpers.ts:57-59`) waits for `__monecraft` and for `renderedTriangles() &gt; 0` **before** the test pauses — so the rAF loop has already stepped for a wall-clock-dependent amount of time, and `tickRandomBlocks` runs on that whole window using `Math.random`.
+
+## Ranked culprits (autonomous, no player input, first seconds)
+
+**#1 — Grass spread, Dirt→Grass (most plausible).**
+- `randomTicks.ts:48-59` (`spreadGrass`), dispatched from `tickRandomBlocks` at `GameEngine.ts:701`.
+- Trigger: interval timer, every `RANDOM_TICK_INTERVAL_SECONDS = 0.5s` (`config.ts:319`); 64 samples (`RANDOM_TICK_SAMPLES`), radius 32 (`RANDOM_TICK_RADIUS`) around the idle player; converts an exposed **Dirt** top block to Grass at `GRASS_SPREAD_CHANCE = 0.18` (`config.ts:331`) if any 4-neighbour column tops out as Grass.
+- Why it exists at fresh boot: `generateWorld` runs `generateTerrain` (surface = Grass) **then** `carveCaves` (`generation.ts:164-165`); `carveSphere` (`generation.ts:251-268`) can breach the surface, removing the top Grass and **exposing the Dirt layer beneath as the new `highestSolidY`, adjacent to still-grass columns**. This is precisely the state commit `56b647d "feat(world): re-grass exposed dirt next to grass"` was built to heal. So seed 1337 near spawn very plausibly holds ≥1 exposed-dirt-next-to-grass column within radius 32.
+- Determinism: **nondeterministic** (`Math.random`). Produces **exactly one** Dirt→Grass `changes` entry, and its per-interval 18% roll means the longer pre-pause window on slow CI raises the cumulative fire probability. This is the strongest match for "one block edit, flaky on slow CI."
+
+**#2 — Kelp growth (secondary).**
+- `randomTicks.ts:67-82` (`growKelp`), same dispatch at `GameEngine.ts:701`.
+- Trigger: same 0.5s interval / 64 samples / radius 32; grows one Kelp block upward at `KELP_GROWTH_CHANCE = 0.20` (`config.ts:336`) if the sampled top solid block is Kelp with water clearance above.
+- Worldgen leaves growable kelp: `generation.ts:485-509` places kelp stalks shorter than `kelpMaxHeight` on ocean floors (commit `4309ab6`). Kelp is a *solid* cube (`blocks.ts:80-83`), so `highestSolidY` lands on it. Plausible only if spawn is coastal (kelp within 32).
+- Determinism: **nondeterministic** (`Math.random`), single-block edit.
+
+**#3 — Sapling→tree / crop growth (ruled out at fresh boot, listed for completeness).**
+- `randomTicks.ts:34-39` + `treeGrowth.ts:15-31` (multi-block), and `randomTicks.ts:26-31` (crops). Worldgen places no saplings/crops, so these can't fire until a player plants. Would each write many `changes`, not one.
+
+## Vectors I checked and ruled out for a fresh world
+
+- **Fluid flow (water/lava spread/settle): does not exist.** No `tickFluid/tickWater/tickLava/flow/settle` block-mutation system anywhere. Caves flood carved air with static Water/Lava at gen time (`generation.ts:307,320`) but nothing spreads it afterward. `tickWaterExposure`/`tickLavaExposure` (`GameEngine.ts:796-797`, `playerStats.ts`) only damage the player.
+- **Gravity / falling sand-gravel: does not exist.** No falling-block system; the "settle" hits are vehicle track-ends and player step-down, not block edits. Worldgen never leaves floating sand that a tick fixes.
+- **Redstone / rails: cannot fire in a fresh world.** `seedRedstoneCells` (`redstone.ts:55-59`) seeds `rs.cells` **only from `blockChanges.changes()`** (player-placed / save-diff blocks). A fresh worldgen world has zero changes, and `generation.ts`/`netherGeneration.ts`/`dungeon.ts` place no rails or redstone, so `tickRedstone` (`redstone.ts:138`, `GameEngine.ts:713`) has an empty cell set and edits nothing. (This only becomes a vector when *loading a save* that already contains redstone/rails.)
+- **Weather / snow: never mutates blocks.** `tickWeather` (`weather.ts:32`, `GameEngine.ts:700`) is cosmetic, pure function of `dayClock`, never persisted (`weather.ts:14-16`). No snow accumulation edits.
+- **Spawn directors: no block edits.** `tickHostile/Aquatic/SpawnerDirector` (`GameEngine.ts:702-704`) — `spawnDirector.ts` contains no `blockChanges.set`/`world.set`. They add mobs only; no block-clearing on spawn.
+- **Mobs: no block edits.** `tickMobs`/`mobAI.ts` has no `blockChanges.set`/`world.set` (no drowned-conversion, enderman, or zombie block-breaking implemented). "fire" hits are arrow firing.
+- **Portals, TNT, projectiles, spears, breeding, raid, coasting minecarts, dungeon:** none have source blocks/entities at fresh boot; `dungeon.ts` places no rails/minecarts/spawners.
+
+## Bottom line
+
+The one deterministically-worldgen-created / nondeterministically-triggered edit is **grass spread re-grassing a cave-exposed dirt block** (`randomTicks.ts:48-59` via `GameEngine.ts:701`), with **kelp growth** (`randomTicks.ts:67-82`) as the coastal alternative. Both ride `Math.random` (`GameEngine.ts:289`) on a 0.5s interval, and the frame-delta accumulator (`tickDriver.ts:39`) means a slow CI runner accrues more pre-assert sim time and thus more chances to fire the single edit that breaks `e2e/determinism.e2e.ts:25`'s `changes.length === 0` assumption.</result>
+<usage><subagent_tokens>78673</subagent_tokens><tool_uses>36</tool_uses><duration_ms>442832</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b7tcdzvt4</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/9c1db0f0-6f01-4a3a-8a60-ace76ce41b90/tasks/b7tcdzvt4.output</output-file>
+<status>completed</status>
+<summary>Background command "Run determinism e2e 5 times on alt port 3100" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bt0v84ibt</task-id>
+<summary>Monitor event: "determinism e2e 5x run finishing"</summary>
+<event>determinism e2e run produced output</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bt0v84ibt</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/9c1db0f0-6f01-4a3a-8a60-ace76ce41b90/tasks/bt0v84ibt.output</output-file>
+<status>completed</status>
+<summary>Monitor "determinism e2e 5x run finishing" stream ended</summary>
+</task-notification>
