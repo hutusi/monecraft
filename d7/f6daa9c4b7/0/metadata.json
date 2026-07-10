@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d7f6daa9c4b7",
+  "session_id": "6f98c144-ac18-4c31-a9e5-e4a8d6f4876e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T05:45:57.572404Z",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/useMinecraftGame.ts",
+    "components/GameShell.tsx",
+    "components/game/RosterPanel.tsx",
+    "app/hud.css",
+    "components/game/RosterPanel.test.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "81ee957e25d1",
+  "checkpoint_transcript_start": 1166,
+  "transcript_lines_at_start": 1166,
+  "token_usage": {
+    "input_tokens": 1234,
+    "cache_creation_tokens": 25396,
+    "cache_read_tokens": 9283774,
+    "output_tokens": 8639,
+    "api_call_count": 20
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T05:45:57.495939Z",
+    "agent_lines": 66,
+    "agent_removed": 11,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 66,
+    "total_lines_changed": 77,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "d7f6daa9c4b7",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "app/hud.css",
+    "components/GameShell.tsx",
+    "components/game/RosterPanel.test.tsx",
+    "components/game/RosterPanel.tsx",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d7/f6daa9c4b7/0/metadata.json",
+      "transcript": "/d7/f6daa9c4b7/0/full.jsonl",
+      "content_hash": "/d7/f6daa9c4b7/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1234,
+    "cache_creation_tokens": 25396,
+    "cache_read_tokens": 9283774,
+    "output_tokens": 8639,
+    "api_call_count": 20
+  }
+}
