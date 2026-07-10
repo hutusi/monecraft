@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b29ilwvc2</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/6f98c144-ac18-4c31-a9e5-e4a8d6f4876e/tasks/b29ilwvc2.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the nether-online e2e (attempt 6)" completed (exit code 0)</summary>
+</task-notification>
