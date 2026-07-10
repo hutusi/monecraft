@@ -1,0 +1,80 @@
+what's next features or improvements do you recommend?
+
+---
+
+<task-notification>
+<task-id>ae9428435eca3ac97</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-hutusi-workspace-ai-david-monecraft/6f98c144-ac18-4c31-a9e5-e4a8d6f4876e/tasks/ae9428435eca3ac97.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore client net replica side" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a comprehensive picture of the client online path. Here are my findings.
+
+## CLIENT ONLINE PATH — findings (file:line)
+
+The single most important fact for "Nether in multiplayer": **the wire protocol has no dimension concept anywhere**, and dimension travel is explicitly gated to single-player. Everything below flows from that.
+
+### 1. Replica engine
+
+The client runs a **full local `GameEngine` in "replica" mode**, not a thin replica — same class the server and SP use, constructed with `authority: "local", replica: true, bootPlayer: false` from the WELCOME seed. `lib/net/NetworkSession.ts:279-296`.
+
+- What the replica simulates vs. receives: `lib/game/engine/GameEngine.ts:207-214` (doc) and the actual gate `GameEngine.ts:636-646`. In replica mode `step()` advances **only** the local player's predicted movement + cosmetic mining progress + day-clock smoothing. Mobs, spawns, TNT, projectiles, vitals are **replicated**, never simulated.
+- Server block-changes land via `applyBlocks` → `state.blockChanges.set(...)` which relights locally, `NetworkSession.ts:521-537`, driven by the `tick` frame's `message.blocks`, `NetworkSession.ts:564`.
+- Mob poses: `upsertReplicaMob` + per-mob `PoseBuffer`, `NetworkSession.ts:427-465`; sampled into `state.mobs` in `afterFrame`, `NetworkSession.ts:847-854`.
+- Local-player private state (vitals, inventory, position when mounted) overwritten from `SelfDelta` in `applySelfDelta`, `NetworkSession.ts:467-497`.
+- **Client-side prediction**:
+  - Movement: replica `tickPlayerMotion` for the primary only, `GameEngine.ts:640-641`; pose streamed at tick rate in `afterFrame`, `NetworkSession.ts:809-826`.
+  - Placement: optimistic via `engine.predictPlaceBlock()` recorded in a **prediction ledger**, `NetworkSession.ts:311-314`; ledger in `lib/net/prediction.ts`.
+  - Mining: predictive break commits locally (`authority: "predict"`), `GameEngine.ts:642-646`; captured from the journal each frame and ledgered, `NetworkSession.ts:781-793`.
+  - Reconciliation/echo-suppression against the server journal: `NetworkSession.ts:521-537, 583-600`; expiry/revert `NetworkSession.ts:799-806`.
+- The command split (presentation stays local, gameplay goes up) is `engine.routeDispatch`, `NetworkSession.ts:300-319`, with `LOCAL_COMMANDS` at `NetworkSession.ts:76`.
+
+### 2. Remote players
+
+- Rendered by `lib/game/render/remotePlayerVisuals.ts` — one procedural humanoid + canvas name-tag sprite per entry in `state.players` minus the primary, `remotePlayerVisuals.ts:69-119`; name tag `makeNameTag` `:26-45`.
+- Driven from `GameRenderer.sync` → `remotePlayerVisuals.sync(state.players, state.primaryPlayerId, this.remotePlayerInfo, ...)`, `lib/game/render/GameRenderer.ts:227`; names/skins injected from the session, `useMinecraftGame.ts:372` and `GameRenderer.ts:102-103`.
+- Poses live in `state.players` (a `Map&lt;PlayerId, PlayerState&gt;`), written by interpolation sampling in `NetworkSession.afterFrame`, `NetworkSession.ts:838-846`, fed by per-player `PoseBuffer`s, `NetworkSession.ts:567-575`.
+- **Single-world-volume assumption (critical for your plan)**: every remote player is a `PlayerState` in the same `state.world`/`state.dimension` replica. There is no per-player dimension on the client — `RosterEntry` (`protocol.ts:84`) and `PlayerPose` (`protocol.ts:137`) carry only x/y/z/yaw/pitch. A far-away or "out of area" player is only distance-culled by rendering; there is no notion of a player being in a different dimension. `remotePlayerVisuals.sync` renders **all** of `state.players` unconditionally, so a player in another dimension would still draw at its raw coordinates.
+- Server-side pose validation also assumes one volume: `applyRemotePose`, `GameEngine.ts:555-579`.
+
+### 3. Dimension-sensitive presentation
+
+Dimension is a **construction-time** property of the engine (`state.dimension`, `state.ts:309-313`) and the renderer. Nothing switches live — swap-on-travel **remounts** engine+renderer together.
+
+- **Sky/fog/light/celestials/precipitation**: `lib/game/render/dimensionProfiles.ts` (whole file; `DIMENSION_PROFILES` `:28-50`). Renderer is built for `DIMENSION_PROFILES[gameEngine.state.dimension]`, `useMinecraftGame.ts:360` and `GameRenderer.create` `GameRenderer.ts:115`. `skyLightFloor` is **baked into the shader source**, so it genuinely cannot change without a renderer rebuild (`dimensionProfiles.ts:8, 15-25`).
+- **Minimap**: keys off `state.dimension === "nether"` per frame for the roofed-column scan, `lib/game/render/minimap.ts:55`; color logic `lib/game/render/minimapColors.ts:11`. (Minimap reads `state.dimension` live each `sync`, unlike the renderer.)
+- **Compass/tracking HUD**: `components/game/TreasureCompass.tsx` and boss tracking (`lib/game/bossTracking.ts`) key off treasure/boss snapshot data, **not** dimension directly.
+- **Music/ambience**: keys off **daylight + biome, not dimension** — `moodFor(state.daylight, stableBiome)`, `lib/game/audio/audioDirector.ts:449`; `moodFor(daylight, biome)` `lib/game/audio/musicBrain.ts:36`. So music/ambience will NOT react to a dimension change on its own; today the Nether just gets pinned-daylight mood. This is a gap for your plan.
+- **What must react to a NET-driven dimension change**: the renderer (rebuild with the new profile), the minimap (already reads live), and — if you want it — the music brain. Today the only trigger for any of this is a full engine+renderer **remount** via `onReloadWorld` (see #4), which online play deliberately never does.
+
+### 4. Join flow (WELCOME + world-sync)
+
+- Join orchestration: `components/GameShell.tsx:268-294` (`playOnline`): `requestJoinTicket` → `connectNetworkSession` → screen `play-online`. Ticket fetch `lib/online/onlineClient.ts:104-118`.
+- Handshake → WELCOME: `NetworkSession.ts:246-275`; then the replica engine is built from `welcome.seed/worldType/difficulty/hardcore`, `NetworkSession.ts:279-296`. WELCOME shape: `lib/net/protocol.ts:86-100` — **no dimension field**.
+- World state (the big keyframe) arrives as one gzipped binary frame `WorldSync`, applied in `applyWorldSync`, `NetworkSession.ts:355-380` (block diff, block-entities, mobs, vehicles, projectiles, roster). `WorldSync` type: `protocol.ts:107-121` — **no dimension field**; it is a single flat block diff over one world volume.
+- Spawn: local player seated via `engine.addPlayer`, position from own roster entry, `NetworkSession.ts:293, 351-353`.
+- **Where a second dimension's state would need to land**: (a) the wire — `WelcomeMessage`/`WorldSync`/`TickMessage` need a dimension dimension-tag or per-dimension sections; (b) the client replica — today `GameEngine` holds exactly one live `state.world`+`state.dimension`, and other-dimension data is carried as inert `foreignDimensions`/`foreignOverworld` only for SP save round-tripping, `GameEngine.ts:253-261, 301-334`. The SP travel path that produces a second-dimension save is `serializeForTravel`, `GameEngine.ts:1333-1341` (writes target dimension + one-shot `portalArrival` anchor into the save's `players`/`dimensions`); the multiplayer join has no analog.
+
+### 5. Multiplayer tests
+
+- **Two-browser e2e**: `e2e/multiplayer.e2e.ts` — the full co-op journey (register → online profile → world → invite → join → see-each-other → shared edit → chat → kick). Two isolated `browser.newContext()` (`:86, :119`); asserts through `window.__monecraft.net`/`.engine.state`. It covers the "friend-dig / lagged-break" cases in-file (`:145-157` friend sees host's edit, `:179-219` lagged local-first break with `setSimulatedLatency(400,100)`).
+- **Local ws server**: real stack via `playwright.config.ts:27-47` — a Next build (`DATABASE_URL: pglite://memory`) plus the Bun game server (`bun server/index.ts`), both as `webServer` entries. No mocks, no Docker.
+- Shared plumbing: `e2e/helpers.ts` — but note it only wires the **single-player local** boot (`gamePage` fixture `:26-88`); the multiplayer spec rolls its own `waitForOnlineGame`/`signUp`/`createOnlineProfile` helpers (`multiplayer.e2e.ts:24-72`).
+- **Portal e2e**: `e2e/portal.e2e.ts` — single-player only; builds a frame, dwells, asserts `state.dimension` flips to `"nether"` and back via **shell remount**. A "two players cross a portal / split across dimensions" test would need to combine `multiplayer.e2e.ts`'s two-context pattern with a mechanism that does not yet exist (net-driven dimension), and can't reuse `portal.e2e.ts`'s remount approach.
+- **Net-layer unit/integration tests**: `lib/net/NetworkSession.test.ts`, `codec.test.ts`, `prediction.test.ts`, `interpolation.test.ts`, `clock.test.ts`, `protocol.test.ts`, `tickets.test.ts`; server-side `server/room.test.ts` (broadcast). Multiplayer engine tests: `lib/game/engine/GameEngine.multiplayer.test.ts`.
+- **loadSim**: `scripts/loadSim.ts` (not `lib/net`) — a soak harness that mints tickets (`signTicket`) and drives N synthetic ws clients into one room for bandwidth/tick tuning, `scripts/loadSim.ts:1-40`.
+
+### 6. Chat / toasts / events online
+
+- **Chat**: server `ChatBroadcastMessage` (`protocol.ts:197`) → `processServerFrame` case `"chat"` → `callbacks.onChat` + `chatListeners`, `NetworkSession.ts:632-635`; UI subscribes via `session.subscribeChat` in `components/game/ChatPanel.tsx` (wired at `components/MinecraftGame.tsx:199`). Outbound `session.sendChat`, `NetworkSession.ts:753-755`.
+- **Server GameEvents → client UI (the toast/advancement seam)**: tick `message.ev` events are pushed to `pendingEvents` and mirrored to `callbacks.onEvent`, `NetworkSession.ts:583-600`. The shell drains them alongside local events: `const events = online ? [...engine.consumeEvents(), ...online.drainEvents()] : ...`, `useMinecraftGame.ts:457`, then routes to toasts/audio/particles in the big event switch, `useMinecraftGame.ts:458-544` (advancement toast at `:524-526`, per-player filter at `:461`).
+- **Join/leave**: `playerJoined`/`playerLeft` frames update roster + `notifyRoster`, `NetworkSession.ts:614-626`; `RosterPanel` re-reads via `subscribeRoster` (`components/game/RosterPanel.tsx`, wired `MinecraftGame.tsx:201`).
+- **Status banner/modal**: `ConnectionStatus.tsx` subscribes `session.subscribeStatus` (`:16`) — the closest existing "net-driven UI reaction" pattern.
+
+**The seam a "player entered the Nether" message would use**: either (a) a `GameEvent` on the tick's `ev` stream surfaced as a toast through `useMinecraftGame.ts:457-544` (like `advancementUnlocked`), or (b) the chat channel. Note that `dimensionTravel` is already a defined event (`state.ts:618`) but it is emitted **only** in single-player (`portalsEnabled = authority === "local" &amp;&amp; !replica`, `GameEngine.ts:530-537`, `tickPortalDwell` gated at `GameEngine.ts:799-801`), and the shell handler for it is explicitly `if (event.type === "dimensionTravel" &amp;&amp; !online)`, `useMinecraftGame.ts:481-493`. Portal ignition online is refused with `portalDenied reason:"online"`, `portal.ts:124-126`, surfaced as "Portals aren't available in online worlds yet", `useMinecraftGame.ts:510-512`.
+
+### Bottom line for "Nether in multiplayer"
+There is no dimension on the wire (`protocol.ts` WELCOME/WorldSync/Tick/RosterEntry/PlayerPose all lack it), the client replica is hard-wired to one `state.dimension` at construction, remote players are assumed to share one world volume (`remotePlayerVisuals.ts:69-119`), presentation swaps happen only via full engine+renderer **remount** on the SP-only `dimensionTravel` path (`useMinecraftGame.ts:355-360, 481-493`), and online portal use is currently refused outright (`portal.ts:124-126`). A net-driven dimension change has no existing path — it needs new protocol fields, a client story for a second world volume, and a way to rebuild the renderer without the SP save-and-remount dance.</result>
+<usage><subagent_tokens>104487</subagent_tokens><tool_uses>32</tool_uses><duration_ms>204773</duration_ms></usage>
+</task-notification>

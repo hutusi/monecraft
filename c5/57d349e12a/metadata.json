@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c557d349e12a",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/architecture.md",
+    "docs/online.md",
+    "docs/tuning.md",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/blockChanges.ts",
+    "lib/world/voxelWorld.ts",
+    "server/fly.toml",
+    "server/roomRegistry.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c5/57d349e12a/0/metadata.json",
+      "transcript": "/c5/57d349e12a/0/full.jsonl",
+      "content_hash": "/c5/57d349e12a/0/content_hash.txt",
+      "prompt": "/c5/57d349e12a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 27067,
+    "cache_creation_tokens": 398409,
+    "cache_read_tokens": 4399576,
+    "output_tokens": 48342,
+    "api_call_count": 34
+  }
+}
