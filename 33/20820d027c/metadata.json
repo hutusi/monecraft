@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "3320820d027c",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/deploy.md",
+    "docs/manual.md",
+    "docs/online.md",
+    "docs/protocol.md",
+    "docs/testing.md",
+    "docs/tuning.md",
+    "server/fly.toml",
+    "server/roomRegistry.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/33/20820d027c/0/metadata.json",
+      "transcript": "/33/20820d027c/0/full.jsonl",
+      "content_hash": "/33/20820d027c/0/content_hash.txt",
+      "prompt": "/33/20820d027c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 75792,
+    "cache_creation_tokens": 876142,
+    "cache_read_tokens": 105003603,
+    "output_tokens": 297748,
+    "api_call_count": 267
+  }
+}
