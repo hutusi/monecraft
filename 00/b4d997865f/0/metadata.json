@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "00b4d997865f",
+  "session_id": "6f98c144-ac18-4c31-a9e5-e4a8d6f4876e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T06:31:42.517476Z",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lib/net/tickets.ts",
+    "lib/online/worldsService.ts",
+    "server/room.test.ts",
+    "server/room.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "98768b93a52f",
+  "checkpoint_transcript_start": 1286,
+  "transcript_lines_at_start": 1286,
+  "token_usage": {
+    "input_tokens": 15828,
+    "cache_creation_tokens": 180562,
+    "cache_read_tokens": 55767092,
+    "output_tokens": 114196,
+    "api_call_count": 97
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T06:31:42.41454Z",
+    "agent_lines": 28,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 28,
+    "total_lines_changed": 30,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 549,
+      "agent_lines_removed": 56
+    }
+  ]
+}
