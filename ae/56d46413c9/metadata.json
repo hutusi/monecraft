@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ae56d46413c9",
+  "strategy": "manual-commit",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts",
+    "lib/world/slabs.test.ts",
+    "lib/world/slabs.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ae/56d46413c9/0/metadata.json",
+      "transcript": "/ae/56d46413c9/0/full.jsonl",
+      "content_hash": "/ae/56d46413c9/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1060,
+    "cache_creation_tokens": 20353,
+    "cache_read_tokens": 3870394,
+    "output_tokens": 13303,
+    "api_call_count": 12
+  }
+}

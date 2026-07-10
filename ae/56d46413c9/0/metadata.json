@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ae56d46413c9",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T13:13:13.440526Z",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/blocks.ts",
+    "lib/world/slabs.ts",
+    "lib/world/atlas.ts",
+    "lib/game/items.ts",
+    "lib/game/audio/materials.ts",
+    "lib/game/recipes.ts",
+    "lib/world/slabs.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "420728023e4c",
+  "checkpoint_transcript_start": 804,
+  "transcript_lines_at_start": 804,
+  "token_usage": {
+    "input_tokens": 1060,
+    "cache_creation_tokens": 20353,
+    "cache_read_tokens": 3870394,
+    "output_tokens": 13303,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T13:13:13.405476Z",
+    "agent_lines": 106,
+    "agent_removed": 19,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 106,
+    "total_lines_changed": 125,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
