@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7fdaa2f2656f",
+  "strategy": "manual-commit",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/engine/systems/mining.test.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/xp.ts",
+    "lib/game/items.test.ts",
+    "lib/game/items.ts",
+    "lib/game/recipes.ts",
+    "lib/world/atlas.ts",
+    "lib/world/blocks.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7f/daa2f2656f/0/metadata.json",
+      "transcript": "/7f/daa2f2656f/0/full.jsonl",
+      "content_hash": "/7f/daa2f2656f/0/content_hash.txt",
+      "prompt": "/7f/daa2f2656f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24058,
+    "cache_creation_tokens": 287248,
+    "cache_read_tokens": 7097466,
+    "output_tokens": 42523,
+    "api_call_count": 46
+  }
+}

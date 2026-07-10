@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "7fdaa2f2656f",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T12:34:41.742961Z",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/blocks.ts",
+    "lib/world/atlas.ts",
+    "lib/game/items.ts",
+    "lib/game/engine/systems/mining.ts",
+    "lib/game/engine/systems/xp.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/recipes.ts",
+    "lib/game/items.test.ts",
+    "lib/game/engine/systems/mining.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "420728023e4c",
+  "token_usage": {
+    "input_tokens": 24058,
+    "cache_creation_tokens": 287248,
+    "cache_read_tokens": 7097466,
+    "output_tokens": 42523,
+    "api_call_count": 46
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T12:34:41.713454Z",
+    "agent_lines": 102,
+    "agent_removed": 6,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 102,
+    "total_lines_changed": 108,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
