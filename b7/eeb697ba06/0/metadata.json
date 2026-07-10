@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b7eeb697ba06",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T13:26:54.752599Z",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/reference.md",
+    "docs/manual.md",
+    "docs/tuning.md",
+    "docs/testing.md",
+    "docs/save-format.md",
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "docs/adding-content.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "420728023e4c",
+  "checkpoint_transcript_start": 992,
+  "transcript_lines_at_start": 992,
+  "token_usage": {
+    "input_tokens": 3076,
+    "cache_creation_tokens": 51580,
+    "cache_read_tokens": 12029510,
+    "output_tokens": 21983,
+    "api_call_count": 32
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T13:26:54.597807Z",
+    "agent_lines": 212,
+    "agent_removed": 152,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 212,
+    "total_lines_changed": 364,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
