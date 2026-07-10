@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ae357fd0d54d",
+  "session_id": "6f98c144-ac18-4c31-a9e5-e4a8d6f4876e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-10T05:06:52.497183Z",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/systems/portal.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/types.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/save.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/systems/portal.test.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/save.test.ts",
+    "docs/save-format.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "81ee957e25d1",
+  "checkpoint_transcript_start": 327,
+  "transcript_lines_at_start": 327,
+  "token_usage": {
+    "input_tokens": 2513,
+    "cache_creation_tokens": 44600,
+    "cache_read_tokens": 5925553,
+    "output_tokens": 18990,
+    "api_call_count": 28
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-10T05:06:52.46063Z",
+    "agent_lines": 89,
+    "agent_removed": 11,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 89,
+    "total_lines_changed": 100,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "ae357fd0d54d",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/save-format.md",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/interact.ts",
+    "lib/game/engine/systems/portal.test.ts",
+    "lib/game/engine/systems/portal.ts",
+    "lib/game/save.test.ts",
+    "lib/game/save.ts",
+    "lib/game/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ae/357fd0d54d/0/metadata.json",
+      "transcript": "/ae/357fd0d54d/0/full.jsonl",
+      "content_hash": "/ae/357fd0d54d/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2513,
+    "cache_creation_tokens": 44600,
+    "cache_read_tokens": 5925553,
+    "output_tokens": 18990,
+    "api_call_count": 28
+  }
+}
