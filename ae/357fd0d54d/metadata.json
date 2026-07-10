@@ -3,7 +3,7 @@
   "checkpoint_id": "ae357fd0d54d",
   "strategy": "manual-commit",
   "branch": "feat/nether-online",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "docs/save-format.md",
     "lib/game/engine/GameEngine.test.ts",
@@ -22,13 +22,19 @@
       "transcript": "/ae/357fd0d54d/0/full.jsonl",
       "content_hash": "/ae/357fd0d54d/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/ae/357fd0d54d/1/metadata.json",
+      "transcript": "/ae/357fd0d54d/1/full.jsonl",
+      "content_hash": "/ae/357fd0d54d/1/content_hash.txt",
+      "prompt": "/ae/357fd0d54d/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2513,
-    "cache_creation_tokens": 44600,
-    "cache_read_tokens": 5925553,
-    "output_tokens": 18990,
-    "api_call_count": 28
+    "input_tokens": 112960,
+    "cache_creation_tokens": 3385166,
+    "cache_read_tokens": 250929288,
+    "output_tokens": 379714,
+    "api_call_count": 512
   }
 }
