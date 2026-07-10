@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "b3b5ee32b2de",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/b3/b5ee32b2de/0/metadata.json",
+      "transcript": "/b3/b5ee32b2de/0/full.jsonl",
+      "content_hash": "/b3/b5ee32b2de/0/content_hash.txt",
+      "prompt": "/b3/b5ee32b2de/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 80943,
+    "cache_creation_tokens": 1689418,
+    "cache_read_tokens": 163468645,
+    "output_tokens": 365028,
+    "api_call_count": 350
+  }
+}
