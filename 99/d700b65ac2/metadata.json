@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "99d700b65ac2",
+  "strategy": "manual-commit",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/world/generationBaselines.ts",
+    "lib/world/index.ts",
+    "lib/world/netherGeneration.test.ts",
+    "lib/world/netherGeneration.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/99/d700b65ac2/0/metadata.json",
+      "transcript": "/99/d700b65ac2/0/full.jsonl",
+      "content_hash": "/99/d700b65ac2/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1164,
+    "cache_creation_tokens": 38503,
+    "cache_read_tokens": 4062827,
+    "output_tokens": 23980,
+    "api_call_count": 16
+  }
+}
