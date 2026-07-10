@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "54b39bf7c316",
+  "strategy": "manual-commit",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/engine/systems/advancements.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/54/b39bf7c316/0/metadata.json",
+      "transcript": "/54/b39bf7c316/0/full.jsonl",
+      "content_hash": "/54/b39bf7c316/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 556,
+    "cache_creation_tokens": 7558,
+    "cache_read_tokens": 2399080,
+    "output_tokens": 2913,
+    "api_call_count": 7
+  }
+}
