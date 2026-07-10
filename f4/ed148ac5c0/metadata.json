@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "f4ed148ac5c0",
+  "strategy": "manual-commit",
+  "branch": "feat/nether-online",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/protocol.md",
+    "lib/game/engine/state.ts",
+    "lib/net/NetworkSession.ts",
+    "lib/net/protocol.test.ts",
+    "lib/net/protocol.ts",
+    "scripts/loadSim.ts",
+    "server/room.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f4/ed148ac5c0/0/metadata.json",
+      "transcript": "/f4/ed148ac5c0/0/full.jsonl",
+      "content_hash": "/f4/ed148ac5c0/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2383,
+    "cache_creation_tokens": 47051,
+    "cache_read_tokens": 6259205,
+    "output_tokens": 18025,
+    "api_call_count": 23
+  }
+}
