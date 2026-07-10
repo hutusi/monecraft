@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "2d9159da240a",
+  "strategy": "manual-commit",
+  "branch": "feat/worldgen-v12-fortress-redstone",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/audio/materials.ts",
+    "lib/game/engine/GameEngine.test.ts",
+    "lib/game/engine/GameEngine.ts",
+    "lib/game/engine/state.ts",
+    "lib/game/engine/systems/advancements.test.ts",
+    "lib/game/engine/systems/advancements.ts",
+    "lib/game/engine/systems/dungeon.ts",
+    "lib/game/engine/systems/spawnDirector.ts",
+    "lib/game/fortressLoot.test.ts",
+    "lib/game/fortressLoot.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/2d/9159da240a/0/metadata.json",
+      "transcript": "/2d/9159da240a/0/full.jsonl",
+      "content_hash": "/2d/9159da240a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2780,
+    "cache_creation_tokens": 42841,
+    "cache_read_tokens": 10263426,
+    "output_tokens": 20018,
+    "api_call_count": 35
+  }
+}
