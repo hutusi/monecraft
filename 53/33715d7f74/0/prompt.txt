@@ -1,0 +1,1 @@
+please check the github ci status on the main branch, try to fix it. and I think the upstream repo should not trigger deploy to vercel and fly, because that config on this repo, what do you think?
