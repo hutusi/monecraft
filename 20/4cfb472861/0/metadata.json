@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "204cfb472861",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-11T05:11:14.084871Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/testing.md",
+    "e2e/multiplayer.e2e.ts",
+    "e2e/nether-online.e2e.ts",
+    "e2e/onlineHelpers.ts",
+    "playwright.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "7a6451d70837",
+  "token_usage": {
+    "input_tokens": 60005,
+    "cache_creation_tokens": 1226427,
+    "cache_read_tokens": 185927812,
+    "output_tokens": 336245,
+    "api_call_count": 436
+  },
+  "session_metrics": {
+    "turn_count": 30
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-11T05:11:13.983564Z",
+    "agent_lines": 145,
+    "agent_removed": 79,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 145,
+    "total_lines_changed": 224,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

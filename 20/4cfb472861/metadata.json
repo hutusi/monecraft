@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "204cfb472861",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/testing.md",
+    "e2e/multiplayer.e2e.ts",
+    "e2e/nether-online.e2e.ts",
+    "e2e/onlineHelpers.ts",
+    "playwright.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/20/4cfb472861/0/metadata.json",
+      "transcript": "/20/4cfb472861/0/full.jsonl",
+      "content_hash": "/20/4cfb472861/0/content_hash.txt",
+      "prompt": "/20/4cfb472861/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60005,
+    "cache_creation_tokens": 1226427,
+    "cache_read_tokens": 185927812,
+    "output_tokens": 336245,
+    "api_call_count": 436
+  }
+}
