@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "82012abfc7f7",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-11T06:07:06.124966Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "e2e/touch.e2e.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "aa411ab512f6",
+  "token_usage": {
+    "input_tokens": 65226,
+    "cache_creation_tokens": 1931749,
+    "cache_read_tokens": 200997160,
+    "output_tokens": 351526,
+    "api_call_count": 458
+  },
+  "session_metrics": {
+    "turn_count": 33
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-11T06:07:06.03224Z",
+    "agent_lines": 20,
+    "agent_removed": 29,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 20,
+    "total_lines_changed": 49,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 24,
+      "agent_lines_removed": 32
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 24,
+      "agent_lines_removed": 32
+    }
+  ]
+}
