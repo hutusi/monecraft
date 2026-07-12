@@ -1,0 +1,71 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cd00acf33e48",
+  "session_id": "cd96663f-51d5-4db7-afb5-a8c29d1d866e",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-12T08:41:41.945576Z",
+  "branch": "test/e2e-solid",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "playwright.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "7d9fe1e65149",
+  "token_usage": {
+    "input_tokens": 67168,
+    "cache_creation_tokens": 2653100,
+    "cache_read_tokens": 205384981,
+    "output_tokens": 357729,
+    "api_call_count": 465
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-vercel:next-forge-2026-07-11T18:48:11.491948Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "vercel:next-forge"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "7d9fe1e65149",
+      "timestamp": "2026-07-11T18:48:11.491948Z",
+      "native": {
+        "command": "/vercel:next-forge"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/vercel:next-forge",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 36
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-12T08:41:41.827431Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 217,
+    "human_modified": 7,
+    "human_removed": 0,
+    "total_committed": 217,
+    "total_lines_changed": 340,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

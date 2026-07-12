@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "cd00acf33e48",
+  "strategy": "manual-commit",
+  "branch": "test/e2e-solid",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "playwright.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cd/00acf33e48/0/metadata.json",
+      "transcript": "/cd/00acf33e48/0/full.jsonl",
+      "content_hash": "/cd/00acf33e48/0/content_hash.txt",
+      "prompt": "/cd/00acf33e48/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 67168,
+    "cache_creation_tokens": 2653100,
+    "cache_read_tokens": 205384981,
+    "output_tokens": 357729,
+    "api_call_count": 465
+  }
+}
