@@ -32,7 +32,12 @@ jobs:
     # to main (the push event), not every PR iteration — PRs still run the
     # full verify job, and renderer/input/shell work runs e2e locally per
     # AGENTS.md before landing.
-    if: github.event_name == 'push'
+    #
+    # TEMPORARY (revert before merge — same trick b131d9d later reverted): also
+    # run e2e on the `test/e2e-solid` PR, so the flake fixes are validated under
+    # real CI starvation with retries: 0 before they land on main. Branch-scoped
+    # so no other PR pays the cost.
+    if: github.event_name == 'push' || github.head_ref == 'test/e2e-solid'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
