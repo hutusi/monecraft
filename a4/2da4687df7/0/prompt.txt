@@ -1,0 +1,13 @@
+push
+
+---
+
+can we do not wait the ci end, let's redeploy on fly.io?
+
+---
+
+the ci on main branch seems broken, what do you think?
+
+---
+
+I want you to fix it, now the e2e tests seems too vulnerable, I want the ci to be solid, fail is fail, success is success, what do you think?
