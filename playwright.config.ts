@@ -42,11 +42,14 @@ export default defineConfig({
   timeout: 60000,
   use: {
     baseURL: "http://localhost:3000",
-    // Retain a trace only on failure. With retries: 0 there is no retry for
-    // "on-first-retry" to fire on, and a first-and-only failure is exactly when a
-    // trace is worth its cost. Failure-scoped keeps the 600+ MB green-run
-    // artifacts (continuous recording on a CPU-bound runner) off CI.
-    trace: "retain-on-failure"
+    // No trace. With retries: 0 there is no retry for "on-first-retry" to fire
+    // on, and "retain-on-failure" would record continuously for EVERY test
+    // (discarding on pass) — the CPU tax that, on this software-GL runner,
+    // starved the rAF-driven light specs (touch, mining) into 60 s timeouts.
+    // Failures still get Playwright's auto error-context page snapshot at no
+    // continuous cost; enable a trace ad hoc (locally, or a throwaway CI edit)
+    // when one is genuinely needed.
+    trace: "off"
   },
   // channel "chromium" runs the full browser in new-headless mode: the default
   // headless shell rejects requestPointerLock (WrongDocumentError).
