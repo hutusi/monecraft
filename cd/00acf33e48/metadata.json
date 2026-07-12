@@ -5,6 +5,7 @@
   "branch": "test/e2e-solid",
   "checkpoints_count": 1,
   "files_touched": [
+    "CHANGELOG.md",
     "playwright.config.ts"
   ],
   "sessions": [
@@ -13,13 +14,19 @@
       "transcript": "/cd/00acf33e48/0/full.jsonl",
       "content_hash": "/cd/00acf33e48/0/content_hash.txt",
       "prompt": "/cd/00acf33e48/0/prompt.txt"
+    },
+    {
+      "metadata": "/cd/00acf33e48/1/metadata.json",
+      "transcript": "/cd/00acf33e48/1/full.jsonl",
+      "content_hash": "/cd/00acf33e48/1/content_hash.txt",
+      "prompt": "/cd/00acf33e48/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 67168,
-    "cache_creation_tokens": 2653100,
-    "cache_read_tokens": 205384981,
-    "output_tokens": 357729,
-    "api_call_count": 465
+    "input_tokens": 100077,
+    "cache_creation_tokens": 3072154,
+    "cache_read_tokens": 235358093,
+    "output_tokens": 565929,
+    "api_call_count": 571
   }
 }
