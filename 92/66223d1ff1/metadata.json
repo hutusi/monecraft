@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9266223d1ff1",
+  "strategy": "manual-commit",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "components/GameShell.tsx",
+    "docs/online.md",
+    "docs/testing.md",
+    "lib/game/cloudPushQueue.test.ts",
+    "lib/game/cloudPushQueue.ts",
+    "lib/game/cloudSaves.test.ts",
+    "lib/game/cloudSaves.ts",
+    "lib/game/useMinecraftGame.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/92/66223d1ff1/0/metadata.json",
+      "transcript": "/92/66223d1ff1/0/full.jsonl",
+      "content_hash": "/92/66223d1ff1/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 54,
+    "cache_creation_tokens": 25201,
+    "cache_read_tokens": 8891301,
+    "output_tokens": 17501,
+    "api_call_count": 27
+  }
+}
