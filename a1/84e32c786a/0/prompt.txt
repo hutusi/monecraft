@@ -1,0 +1,158 @@
+codex has reviewed this codebase, find some issues, what do you think? these is the finding report: ## Review outcome
+
+  The baseline is healthy, but I found several serious latent issues around multiplayer persistence, save validation,
+  concurrency, and rendering performance. None are currently caught by the happy-path test suite.
+
+  ### Critical and high-priority findings
+
+  1. Critical — Multiplayer saves are writable and readable by every member
+
+     The browser save endpoint authorizes any world member for GET and PUT in app/api/worlds/[id]/save/route.ts:12 and
+     lib/online/worldsService.ts:237. Multiplayer servers store authoritative state in the same blob through server/
+     persistence.ts:43.
+
+     An invited player can therefore download private persisted player state or replace the authoritative world with
+     arbitrary bytes. PUT buffers up to 4 MiB before validation and does not validate gzip contents or decompressed
+     size, enabling corruption and decompression-bomb denial of service.
+
+     Restrict browser save operations to owner-controlled single-player cloud worlds. Multiplayer blobs should only be
+     written by the game server. Add compressed and decompressed limits plus strict validation before storage.
+
+  2. High — Current-version malformed saves pass validation and crash the engine
+
+     lib/game/save.ts:350 verifies top-level arrays but not their entries. I reproduced it accepting:
+
+     { version: 18, seed: 1, changes: [1], players: [null] }
+
+     Constructing GameEngine with that result throws while accessing p.id. Cloud downloads compound this by casting
+     decompressed JSON directly to SaveData in lib/game/cloudSaves.ts:74.
+
+     Introduce one strict, total and bounded save decoder used at every persistence Seam. Validate tuples, objects,
+     block identifiers, coordinates, array lengths, numeric ranges and decompressed size.
+
+  3. High — Cloud saves can conflict with themselves and lose progress
+
+     lib/game/useMinecraftGame.ts:340 starts unsequenced fire-and-forget pushes. Autosave, visibility, page-hide,
+     before-unload, manual save and unmount can overlap. Concurrent pushes read the same base timestamp, so one succeeds
+     and the other produces a false cross-device conflict; the older snapshot can win.
+
+     Additionally, worlds.updatedAt is both a metadata and save revision. Renaming a world in lib/online/
+     worldsService.ts:218 can make another device treat an unchanged, older save as newer. Pulling also advances the
+     local cursor before IndexedDB durably stores the downloaded data.
+
+     Add a dedicated monotonic saveRevision, CAS updates, and a per-world latest-wins push queue. Advance the local
+     cursor only after durable storage succeeds.
+
+  4. High — Server persistence loses changes and has write races
+
+     server/room.ts:662 is triggered by a narrow dirty flag. Block edits, joins and travel mark it, but inventory,
+     health, hunger, effects, statistics, advancements, movement and much other persisted state do not. A server crash
+     can therefore lose long stretches of progress without block activity.
+
+     Persistence is also fire-and-forget. Mutations during a database write can be hidden when the old operation clears
+     the dirty flag, and overlapping older/newer snapshots can complete out of order.
+
+     Add a coalescing persistence Module with a snapshot revision, one in-flight write and a queued latest snapshot.
+     Either mark every persisted mutation or persist active rooms at a bounded interval.
+
+  5. High — WebSocket frames can be applied out of order
+
+     lib/net/NetworkSession.ts:628 launches async frame processing without serialization. Binary world synchronization
+     awaits gzip decompression, allowing a later text tick to apply first and then be overwritten by the older snapshot.
+
+     Preserve WebSocket ordering with a sequential inbound frame queue.
+
+  6. High — Reconnect handling can create overlapping connections
+
+     Both onerror and onclose call the same close path in lib/net/NetworkSession.ts:282. Browsers commonly emit both.
+     lib/net/NetworkSession.ts:777 has no existing-timer or connection-generation guard, so two reconnect handshakes can
+     race.
+
+     Make socket closure idempotent per connection generation and enforce one reconnect timer/handshake.
+
+  7. High — A single block edit causes a full visible-region remesh
+
+     lib/game/render/GameRenderer.ts:616 rebuilds the complete 181×150×181 region whenever worldMeshDirty is set. The
+     minimap also rebuilds its base when the same global flag changes.
+
+     Local measurements:
+      - Full engine startup: approximately 3.6 seconds synchronously.
+      - Headless server world creation: approximately 1.4 seconds.
+      - One visible-region mesh rebuild: approximately 478 ms, producing about 1.19 million opaque vertices.
+
+     Use chunk meshes with per-chunk revisions and rebuild only changed visible chunks. Move world generation, lighting
+     and preferably mesh construction off the browser main thread. Server world creation should use workers or isolated
+     room processes so one new world cannot stall all active rooms.
+
+  ### Medium-priority findings
+
+  - server/roomRegistry.ts:61 removes a room before shutdown persistence completes. A new join can create a second room
+    from stale database state while the old room is still writing.
+
+  - Online world creation in lib/online/worldsService.ts:168 does not strictly validate world type, game mode,
+    difficulty, hardcore type or safe seed range. Omitting profileId also bypasses the profile world cap.
+
+  - Invite consumption is not atomic: concurrent acceptance by one user can consume multiple uses while inserting one
+    membership.
+
+  - Multiplayer resync requests have no cooldown or single-in-flight guard. An invited client can repeatedly force full
+    snapshot serialization, compression and transmission.
+
+  - Two tabs can open and autosave the same local world with silent last-writer-wins behavior. Add a per-world tab lease
+    or revision-based conflict handling.
+
+  - resetNow arms its unmount-save guard only after asynchronous deletion begins in lib/game/useMinecraftGame.ts:730,
+    allowing a concurrent flush to resurrect the deleted save.
+
+  - Contributor Bun versions are not pinned: CI uses 1.3.12 while this review ran on 1.3.14. Add a repository version
+    pin.
+
+  - docs/save-format.md still describes world generation as using Math.sin, contradicting the portable deterministic
+    trigonometry implementation. The project description also still says “client-only” despite the authoritative server
+    and database.
+
+  ### Architecture improvements
+
+  The architecture review skill led to four worthwhile deepening opportunities:
+
+  1. A world-change feed Module replacing worldMeshDirty with per-chunk revisions. Renderer, minimap, persistence and
+     networking would consume changes independently, improving Locality and Leverage. Currently the renderer clears
+     engine-owned state, making consumer order significant.
+
+  2. A persistence Module with a small Interface for validated snapshots, revisions and latest-wins sequencing.
+     IndexedDB, cloud HTTP and PostgreSQL become Adapter Implementations behind that Seam.
+
+  3. A network transport Module owning ordered decoding, socket generations, handshake and reconnect state. Replication
+     and prediction remain outside it, increasing Depth without splitting merely by file size.
+
+  4. A content-manifest Module to concentrate mob metadata currently repeated across rendering, audio, loot and behavior
+     tables.
+
+  I would not split save.ts or GameEngine.ts just because they are large; several large Modules already have good Depth.
+  The changes above target leaked state, duplicated concurrency logic and low-Locality edits.
+
+  ### Verification and recommended order
+
+  All existing checks passed, and the worktree remains unchanged:
+
+  - Lint passed with two existing set-state-in-effect warnings in GameShell.
+  - Typecheck, formatting check and production build passed.
+  - Unit/component/integration: 1,497 passed, 0 failed.
+  - Playwright: 35 passed, including multiplayer and Nether travel.
+
+  Recommended order:
+
+  1. Lock down multiplayer blob access and add bounded save validation.
+  2. Fix cloud revisioning and serialize cloud pushes.
+  3. Fix server persistence and room lifecycle races.
+  4. Serialize network frames and make reconnect idempotent.
+  5. Replace whole-region invalidation with chunk revisions and worker-based generation.
+  6. Add regression tests for every concurrency and malformed-input case above, then update relevant docs and
+     CHANGELOG.md.
+
+  This was a broad source, test and runtime review—not a production penetration test, dependency CVE audit, or real-
+  device visual pass.
+
+---
+
+I think we should update bun to the latest version, not 1.3.12, what do you think?
