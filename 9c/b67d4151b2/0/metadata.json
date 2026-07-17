@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "9cb67d4151b2",
+  "session_id": "1bf1e59c-054a-4be8-9edd-d9d6d415e47a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-17T15:13:44.567319Z",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/online/worldsService.ts",
+    "lib/online/worldsService.test.ts",
+    "app/api/worlds/route.ts",
+    "docs/testing.md",
+    "CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "a35a9398e2fd",
+  "checkpoint_transcript_start": 1763,
+  "transcript_lines_at_start": 1763,
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 26101,
+    "cache_read_tokens": 10102236,
+    "output_tokens": 17056,
+    "api_call_count": 25
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-17T15:13:44.514341Z",
+    "agent_lines": 74,
+    "agent_removed": 9,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 74,
+    "total_lines_changed": 83,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
