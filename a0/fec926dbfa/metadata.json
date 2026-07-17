@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "a0fec926dbfa",
+  "strategy": "manual-commit",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "lib/game/cloudSaves.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a0/fec926dbfa/0/metadata.json",
+      "transcript": "/a0/fec926dbfa/0/full.jsonl",
+      "content_hash": "/a0/fec926dbfa/0/content_hash.txt",
+      "prompt": "/a0/fec926dbfa/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 8562,
+    "cache_read_tokens": 2193349,
+    "output_tokens": 5319,
+    "api_call_count": 7
+  }
+}
