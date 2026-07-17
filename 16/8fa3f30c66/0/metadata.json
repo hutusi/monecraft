@@ -3,39 +3,38 @@
   "checkpoint_id": "168fa3f30c66",
   "session_id": "1bf1e59c-054a-4be8-9edd-d9d6d415e47a",
   "strategy": "manual-commit",
-  "created_at": "2026-07-17T14:55:49.999443Z",
+  "created_at": "2026-07-17T15:03:46.617417Z",
   "branch": "fix/review-hardening",
   "checkpoints_count": 0,
   "files_touched": [
     "lib/net/NetworkSession.ts",
-    "lib/net/NetworkSession.test.ts",
-    "docs/testing.md"
+    "lib/net/NetworkSession.test.ts"
   ],
   "agent": "Claude Code",
   "model": "claude-fable-5",
   "turn_id": "a35a9398e2fd",
-  "checkpoint_transcript_start": 1522,
-  "transcript_lines_at_start": 1522,
+  "checkpoint_transcript_start": 1617,
+  "transcript_lines_at_start": 1617,
   "token_usage": {
-    "input_tokens": 36,
-    "cache_creation_tokens": 334172,
-    "cache_read_tokens": 5991339,
-    "output_tokens": 6342,
-    "api_call_count": 18
+    "input_tokens": 44,
+    "cache_creation_tokens": 33920,
+    "cache_read_tokens": 8015256,
+    "output_tokens": 22846,
+    "api_call_count": 22
   },
   "session_metrics": {
     "turn_count": 3
   },
   "initial_attribution": {
-    "calculated_at": "2026-07-17T14:55:49.954582Z",
-    "agent_lines": 46,
-    "agent_removed": 3,
-    "human_added": 0,
+    "calculated_at": "2026-07-17T15:03:46.56747Z",
+    "agent_lines": 35,
+    "agent_removed": 14,
+    "human_added": 1,
     "human_modified": 0,
     "human_removed": 0,
-    "total_committed": 46,
-    "total_lines_changed": 49,
-    "agent_percentage": 100,
+    "total_committed": 36,
+    "total_lines_changed": 51,
+    "agent_percentage": 96.07843137254902,
     "metric_version": 2
   }
 }
