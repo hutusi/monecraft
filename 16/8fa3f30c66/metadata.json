@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "168fa3f30c66",
+  "strategy": "manual-commit",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/testing.md",
+    "lib/net/NetworkSession.test.ts",
+    "lib/net/NetworkSession.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/16/8fa3f30c66/0/metadata.json",
+      "transcript": "/16/8fa3f30c66/0/full.jsonl",
+      "content_hash": "/16/8fa3f30c66/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 36,
+    "cache_creation_tokens": 334172,
+    "cache_read_tokens": 5991339,
+    "output_tokens": 6342,
+    "api_call_count": 18
+  }
+}
