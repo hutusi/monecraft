@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "830d103b0f7b",
+  "session_id": "1bf1e59c-054a-4be8-9edd-d9d6d415e47a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-17T13:56:39.24354Z",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "db/schema.ts",
+    "db/ddl.ts",
+    "db/migrations/0004_save-revision.sql",
+    "lib/online/worldsService.ts",
+    "app/api/worlds/[id]/save/route.ts",
+    "server/persistence.ts",
+    "lib/game/cloudSaves.ts",
+    "lib/online/worldsService.test.ts",
+    "lib/game/cloudSaves.test.ts",
+    "docs/online.md",
+    "docs/deploy.md",
+    "docs/testing.md",
+    "CHANGELOG.md",
+    "db/migrations.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "f44f9253dfdb",
+  "checkpoint_transcript_start": 859,
+  "transcript_lines_at_start": 859,
+  "token_usage": {
+    "input_tokens": 98,
+    "cache_creation_tokens": 52416,
+    "cache_read_tokens": 13804238,
+    "output_tokens": 31341,
+    "api_call_count": 49
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-17T13:56:39.209426Z",
+    "agent_lines": 271,
+    "agent_removed": 72,
+    "human_added": 717,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 988,
+    "total_lines_changed": 1060,
+    "agent_percentage": 32.35849056603774,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

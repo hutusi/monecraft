@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "830d103b0f7b",
+  "strategy": "manual-commit",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "app/api/worlds/[id]/save/route.ts",
+    "db/ddl.ts",
+    "db/migrations.test.ts",
+    "db/migrations/0004_save-revision.sql",
+    "db/schema.ts",
+    "docs/deploy.md",
+    "docs/online.md",
+    "docs/testing.md",
+    "lib/game/cloudSaves.test.ts",
+    "lib/game/cloudSaves.ts",
+    "lib/online/worldsService.test.ts",
+    "lib/online/worldsService.ts",
+    "server/persistence.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/83/0d103b0f7b/0/metadata.json",
+      "transcript": "/83/0d103b0f7b/0/full.jsonl",
+      "content_hash": "/83/0d103b0f7b/0/content_hash.txt",
+      "prompt": "/83/0d103b0f7b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 98,
+    "cache_creation_tokens": 52416,
+    "cache_read_tokens": 13804238,
+    "output_tokens": 31341,
+    "api_call_count": 49
+  }
+}
