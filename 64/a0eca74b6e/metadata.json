@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "64a0eca74b6e",
+  "strategy": "manual-commit",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "CHANGELOG.md",
+    "db/ddl.ts",
+    "db/migrations.test.ts",
+    "docs/deploy.md",
+    "docs/online.md",
+    "docs/testing.md",
+    "lib/online/worldsService.ts",
+    "server/persistence.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/64/a0eca74b6e/0/metadata.json",
+      "transcript": "/64/a0eca74b6e/0/full.jsonl",
+      "content_hash": "/64/a0eca74b6e/0/content_hash.txt",
+      "prompt": "/64/a0eca74b6e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 82,
+    "cache_creation_tokens": 1005791,
+    "cache_read_tokens": 20639367,
+    "output_tokens": 56490,
+    "api_call_count": 42
+  }
+}
