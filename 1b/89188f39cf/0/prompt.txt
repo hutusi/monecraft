@@ -1,0 +1,126 @@
+codex has reviewed again find some new issues, what do you think? the review report is: ## Re-review outcome
+
+  The branch is substantially improved, but I would not merge it yet. Three high-severity issues remain, including two
+  upgrade paths that can lose saves.
+
+  ### Findings
+
+  1. High — The v1 → v2 cursor change can overwrite newer offline progress
+
+     lib/game/cloudSaves.ts:23 deliberately starts with a fresh localStorage key. Any existing device therefore has no
+     v2 cursor, so lib/game/cloudSaves.ts:134 treats it as a first download. components/GameShell.tsx:206 then
+     overwrites the durable IndexedDB save.
+
+     Reproduced: with a valid v1 cursor and no v2 cursor, the current code returns adopt: true.
+
+     Scenario: play offline after the last successful upload, upgrade the app, then open the world. The older cloud save
+     replaces the newer local progress.
+
+     Preserve the v1 cursor for a transition release and distinguish “fresh download” from “existing local save with an
+     unknown revision.” Ambiguous upgrades should retain local data or surface a conflict, never automatically overwrite
+     it.
+
+  2. High — Migration 0004 is not safe while the old web build is live
+
+     The migration says an old build can ignore the new column in db/migrations/0004_save-revision.sql:15. That is
+     structurally true but semantically unsafe: after migration, the old web build can update save_blob without
+     incrementing save_revision.
+
+     Consequences:
+      - An existing device can miss the update because its revision appears unchanged.
+      - An old first upload can leave save_blob != null with revision 0, allowing a new client’s “first upload” to
+        overwrite it.
+
+      - The independent Vercel and Fly jobs do not provide an atomic rollout; the Vercel hook returns before the new
+        build is live in .github/workflows/ci.yml:75.
+
+     Make the database own revision increments, such as with a trigger on save_blob, or enforce a real write-maintenance
+     window. Add a migration test that applies 0004, performs an old-style blob update, and verifies the revision
+     advances.
+
+  3. High — Multiplayer authoritative blobs remain downloadable by members
+
+     PUT is correctly restricted to sp-cloud, but lib/online/worldsService.ts:267 still returns blobs for both kinds,
+     and the app/api/worlds/[id]/save/route.ts:15 exposes them.
+
+     “The member can already play the world” is not equivalent access. The blob contains offline player slices,
+     inventories, coordinates, both dimensions and world state that the member may never have observed.
+
+     Restrict browser GET and PUT to sp-cloud. The authoritative server should access multiplayer persistence only
+     through its database Adapter.
+
+  4. Medium — Cloud decompression and upload validation are still insufficiently bounded
+
+     Browser decompression materializes the complete output in lib/game/cloudSaves.ts:56. Uploads are stored without
+     verifying gzip or save contents, and a lying/missing content length is rejected only after request.arrayBuffer()
+     has allocated the complete body in the app/api/worlds/[id]/save/route.ts:49.
+
+     The server-side bounded decoder is a good improvement, but its 96 MiB ceiling can still produce several hundred MiB
+     of peak memory after chunks, merged bytes, string, parsed JSON and sanitized arrays coexist.
+
+     Use a shared bounded save-envelope Module for browser and server decoding. Validate before storage and set limits
+     from measured real save sizes.
+
+  5. Medium — Other online request bodies still throw on hostile types
+
+     World creation is now validated correctly, but profile creation, profile updates and world renaming still trust
+     bare-cast JSON. I directly reproduced TypeError from all three with numeric names:
+      - lib/online/worldsService.ts:89
+      - lib/online/worldsService.ts:111
+      - lib/online/worldsService.ts:245
+
+     Add one untrusted-input decoding Module used by every online route, including profileId and skinId validation.
+
+  6. Medium — Process shutdown still misses loading and evicting rooms
+
+     server/roomRegistry.ts:102 waits only for rooms currently in rooms. A load can finish after shutdown starts, while
+     an eviction’s final persistence can still be running when server/index.ts:131 calls process.exit(0).
+
+     It should enter a terminal state, reject new loads, await loading and evicting, then shut down every resulting
+     room. Persistence failures should also be logged and produce a bounded nonzero shutdown path rather than leaving
+     the signal promise unresolved.
+
+  7. Remaining earlier findings
+      - The reset resurrection race remains: lib/game/useMinecraftGame.ts:740 arms the unmount guard only after deletion
+        completes.
+
+      - Same-world multi-tab saves still use silent last-writer-wins behavior.
+      - Account-level sp-cloud rows and invite creation remain uncapped, enabling storage growth.
+      - Resync is now bounded per client, but three full syncs per second per connected client can still produce
+        substantial synchronous gzip and socket-buffer pressure.
+
+      - The P1 performance work is untouched: whole-region remeshing and synchronous client/server world creation remain
+        the largest runtime costs.
+
+  ### Confirmed good fixes
+
+  The malformed-save crash, cloud push serialization, durable cursor commit, network frame ordering, reconnect
+  idempotence, occupied-room persistence, overlapping-store coalescing, room eviction handoff, invite transaction,
+  world-creation validation, documentation drift and Bun pinning are all materially improved and have appropriate
+  regression tests.
+
+  The new cloudPushQueue and persistence coordination have useful Depth and Locality. The next architectural step should
+  be a shared save-envelope Module with browser/server Adapters and a RoomRegistry lifecycle Module that owns live/
+  loading/evicting/terminal states behind one Interface.
+
+  ### Verification
+
+  - Typecheck, formatting and production build: passed.
+  - Unit/integration/component: 1,541 passed, 0 failed.
+  - Lint: passed with the same two GameShell warnings.
+  - E2E did not start because another workspace process, agrippa/apps/api, owns port 3000. I left that process
+    untouched.
+
+  - Worktree remains clean; no files were changed.
+
+---
+
+continue the plan, let me re-select
+
+---
+
+what's next?
+
+---
+
+check code reviews on the pr first, what do you think?
