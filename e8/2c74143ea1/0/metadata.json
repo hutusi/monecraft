@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "e82c74143ea1",
+  "session_id": "1bf1e59c-054a-4be8-9edd-d9d6d415e47a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-19T00:56:58.862892Z",
+  "branch": "fix/review-hardening",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "components/GameShell.tsx",
+    "e2e/cloudSaves.e2e.ts",
+    "lib/game/cloudSaves.test.ts",
+    "lib/game/cloudSaves.ts",
+    "lib/game/useMinecraftGame.ts",
+    "server/roomRegistry.test.ts",
+    "server/roomRegistry.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "15f7b5e1d9ad",
+  "token_usage": {
+    "input_tokens": 1334,
+    "cache_creation_tokens": 2943771,
+    "cache_read_tokens": 313059574,
+    "output_tokens": 543901,
+    "api_call_count": 668
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-19T00:56:58.742026Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 196,
+    "human_modified": 157,
+    "human_removed": 0,
+    "total_committed": 196,
+    "total_lines_changed": 424,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
